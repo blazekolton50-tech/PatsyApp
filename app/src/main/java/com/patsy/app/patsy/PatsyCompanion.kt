@@ -45,6 +45,7 @@ import com.patsy.app.patsy.rig.PatsyRigPose
 import com.patsy.app.patsy.rig.PatsyRigViseme
 import com.patsy.app.patsy.rig.rive.PatsyRiveHost
 import com.patsy.app.patsy.rig.rive.PatsyRiveRuntimeAdapter
+import kotlinx.coroutines.delay
 
 private val CompanionCharcoal = Color(0xFF2A2B2E)
 private val CompanionWhite = Color(0xFFF7F7F7)
@@ -177,6 +178,13 @@ fun PatsyMotion(
             PatsyRigMotion.JUMP, PatsyRigMotion.WAVE, PatsyRigMotion.POINT ->
                 rigCoordinator.retriggerAction(rigMotion)
             else -> Unit
+        }
+    }
+    LaunchedEffect(rigCoordinator) {
+        var blinkSequence = 0L
+        while (true) {
+            delay(patsyBlinkDelayMillis(blinkSequence++))
+            rigCoordinator.blink()
         }
     }
     DisposableEffect(riveRuntime) {
