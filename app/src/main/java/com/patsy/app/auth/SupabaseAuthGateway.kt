@@ -64,13 +64,15 @@ interface SupabaseAuthTransport {
 }
 
 /**
- * Production authentication adapter. Sign-up and login are backed by Supabase; email-token handling
- * and password-recovery completion remain separate slices so unavailable states stay truthful.
+ * Production authentication adapter. Sign-up, login, session restore and reset-request initiation are
+ * backed by Supabase. Email-token consumption and recovery completion remain separate slices so the
+ * app never invents verification or password-change success.
  */
 class SupabaseAuthGateway(
     private val transport: SupabaseAuthTransport,
     private val sessionStore: AuthSessionStore,
     private val registrationTransport: SupabaseRegistrationTransport = UnconfiguredRegistrationTransport,
+    private val recoveryTransport: SupabaseRecoveryTransport = UnconfiguredRecoveryTransport,
 ) : AuthGateway {
     override suspend fun startRegistration(request: StartRegistrationRequest): RegistrationStartResult =
         when (val result = registrationTransport.start(request)) {
@@ -117,7 +119,10 @@ class SupabaseAuthGateway(
     }
 
     override suspend fun requestPasswordReset(request: PasswordResetRequest): PasswordResetResult =
-        PasswordResetResult.Unavailable(ServiceFailure.NotConfigured)
+        when (val result = recoveryTransport.request(request.emailOrUsername.trim())) {
+            is RemotePasswordResetResult.Accepted -> PasswordResetResult.RequestAccepted(result.genericMessage)
+            is RemotePasswordResetResult.Unavailable -> PasswordResetResult.Unavailable(result.failure)
+        }
 
     override suspend fun restoreSession(): SessionState {
         val existing = sessionStore.read() ?: return SessionState.Anonymous
