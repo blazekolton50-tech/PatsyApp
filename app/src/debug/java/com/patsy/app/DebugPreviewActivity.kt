@@ -22,15 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.patsy.app.auth.DebugPreviewAuthGateway
-import com.patsy.app.auth.PatsyServiceBindings
+import com.patsy.app.auth.PREVIEW_AUTH_REQUESTED_EXTRA
 import com.patsy.app.ui.PatsyHeader
 import com.patsy.app.ui.PatsyPrimaryButton
 
 /** Debug-build launcher only. Release builds launch MainActivity directly and never include this file. */
 class DebugPreviewActivity : ComponentActivity() {
-    private val normalGateway by lazy { PatsyServiceBindings.authGateway }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -38,12 +35,10 @@ class DebugPreviewActivity : ComponentActivity() {
                 Surface(modifier = Modifier.fillMaxSize(), color = Color.Black) {
                     DebugPreviewScreen(
                         openNormalLogin = {
-                            PatsyServiceBindings.authGateway = normalGateway
-                            launchMainApp()
+                            launchMainApp(previewRequested = false)
                         },
                         openWorkspacePreview = {
-                            PatsyServiceBindings.authGateway = DebugPreviewAuthGateway
-                            launchMainApp()
+                            launchMainApp(previewRequested = true)
                         },
                     )
                 }
@@ -51,8 +46,11 @@ class DebugPreviewActivity : ComponentActivity() {
         }
     }
 
-    private fun launchMainApp() {
-        startActivity(Intent(this, MainActivity::class.java))
+    private fun launchMainApp(previewRequested: Boolean) {
+        startActivity(
+            Intent(this, MainActivity::class.java)
+                .putExtra(PREVIEW_AUTH_REQUESTED_EXTRA, previewRequested),
+        )
         finish()
     }
 }
