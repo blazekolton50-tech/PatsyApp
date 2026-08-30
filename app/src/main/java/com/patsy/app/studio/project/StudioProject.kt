@@ -32,6 +32,59 @@ data class StudioProject(
     val syncState: ProjectSyncState = ProjectSyncState.LOCAL_ONLY,
 )
 
+/**
+ * A project and the artifacts produced from it are intentionally different records.
+ * Exporting, retaining or publishing never mutates an editable StudioProject into a different kind of object.
+ */
+sealed interface ProjectArtifact {
+    val artifactId: String
+    val projectId: String
+    val ownerUserId: String
+    val createdAtEpochMs: Long
+}
+
+data class EditableProjectArtifact(
+    override val artifactId: String,
+    override val projectId: String,
+    override val ownerUserId: String,
+    override val createdAtEpochMs: Long,
+    val revisionToken: String? = null,
+) : ProjectArtifact
+
+data class ExportedMediaArtifact(
+    override val artifactId: String,
+    override val projectId: String,
+    override val ownerUserId: String,
+    override val createdAtEpochMs: Long,
+    val mediaReference: StudioMediaReference,
+) : ProjectArtifact
+
+data class RetainedMediaArtifact(
+    override val artifactId: String,
+    override val projectId: String,
+    override val ownerUserId: String,
+    override val createdAtEpochMs: Long,
+    val mediaReference: StudioMediaReference,
+    val retainedUntilEpochMs: Long? = null,
+) : ProjectArtifact
+
+data class PersonalTemplateArtifact(
+    override val artifactId: String,
+    override val projectId: String,
+    override val ownerUserId: String,
+    override val createdAtEpochMs: Long,
+) : ProjectArtifact
+
+data class CommunityTemplateArtifact(
+    override val artifactId: String,
+    override val projectId: String,
+    override val ownerUserId: String,
+    override val createdAtEpochMs: Long,
+    val reviewState: CommunityTemplateReviewState = CommunityTemplateReviewState.PENDING,
+) : ProjectArtifact
+
+enum class CommunityTemplateReviewState { PENDING, APPROVED, REJECTED }
+
 interface StudioProjectRepository {
     suspend fun create(context: AuthenticatedContext, project: StudioProject): ServiceResult<StudioProject>
     suspend fun load(context: AuthenticatedContext, projectId: String): ServiceResult<StudioProject>
