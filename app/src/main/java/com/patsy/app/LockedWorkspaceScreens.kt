@@ -35,7 +35,9 @@ fun HomeFeed(profile: Profile?, nav: (Screen) -> Unit) {
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        PatsyMotion("Heeeyy ${profile?.displayName ?: "you"}! What are we doing today?", action = PatsyAction.HAPPY)
+        PatsyMotion("Hey ${profile?.displayName ?: "you"} —", action = PatsyAction.HAPPY)
+        ConnectedAction("Ask your Pet Pal Patsy a question") { nav(Screen.CHAT) }
+
         Text("HOME", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = ConnectedWhite)
         Text("Patsy Social", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = ConnectedWhite)
         Panel {
@@ -45,15 +47,14 @@ fun HomeFeed(profile: Profile?, nav: (Screen) -> Unit) {
                 color = ConnectedMuted,
             )
         }
-        Text("Continue", fontWeight = FontWeight.Bold, color = ConnectedWhite)
+
+        Text("Continue Designs", fontWeight = FontWeight.Bold, color = ConnectedWhite)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ConnectedTile("Continue designs", Modifier.weight(1f)) { nav(Screen.THYNK) }
-            ConnectedTile("Create", Modifier.weight(1f)) { nav(Screen.CREATE) }
+            ConnectedTile("Camera", Modifier.weight(1f)) { nav(Screen.CAMERA) }
         }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            ConnectedTile("Ask Patsy", Modifier.weight(1f)) { nav(Screen.CHAT) }
-            ConnectedTile("Patsy DMs", Modifier.weight(1f)) { nav(Screen.DMS) }
-        }
+        ConnectedAction("Patsy DMs") { nav(Screen.DMS) }
+
         Panel {
             Text("Today", fontWeight = FontWeight.Bold, fontSize = 18.sp)
             Text("Tasks, reminders and scheduled work live here as a secondary workflow.", color = ConnectedMuted)
@@ -65,7 +66,7 @@ fun HomeFeed(profile: Profile?, nav: (Screen) -> Unit) {
     }
 }
 
-/** THyNK Studio home follows the approved ten-screen creation-area hierarchy. */
+/** THyNK Studio home follows the approved creation-area hierarchy. */
 @Composable
 fun ThynkStudioHome(nav: (Screen) -> Unit) {
     Column(
@@ -86,7 +87,34 @@ fun ThynkStudioHome(nav: (Screen) -> Unit) {
     }
 }
 
-/** Locked CREATE/+ destination: choose what to create before entering a tool. */
+/**
+ * Locked middle-plus destination. It is a Camera/Create hub rather than a normal CREATE tab.
+ * Camera capture itself stays truthful until the native camera pipeline is wired and verified.
+ */
+@Composable
+fun CameraCreateHome(nav: (Screen) -> Unit) {
+    Column(
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        PatsyMotion("Camera ready — what are we making?", action = PatsyAction.POINTING)
+        Text("CAMERA", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = ConnectedWhite)
+        Panel {
+            Text("Camera / upload entry", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Text(
+                "Preview C connects the Camera hub without pretending native capture is production-ready. Capture and media permissions remain a dedicated implementation step.",
+                color = ConnectedMuted,
+            )
+        }
+        ConnectedAction("Open THyNK Editor") { nav(Screen.THYNK_EDITOR) }
+        ConnectedAction("Use a Template") { nav(Screen.THYNK_TEMPLATES) }
+        ConnectedAction("AI Image") { nav(Screen.THYNK_AI_IMAGE) }
+        ConnectedAction("AI Video") { nav(Screen.THYNK_AI_VIDEO) }
+        ConnectedAction("Continue a Project") { nav(Screen.THYNK_PROJECTS) }
+    }
+}
+
+/** Secondary Create flow retained for THyNK Studio. */
 @Composable
 fun CreateNewHome(nav: (Screen) -> Unit) {
     Column(
@@ -125,6 +153,25 @@ fun ThynkSectionPage(
         }
         OutlinedButton(onClick = back, modifier = Modifier.fillMaxWidth()) {
             Text("Back to THyNK", color = ConnectedWhite)
+        }
+    }
+}
+
+/** Lightweight truthful shells for the locked three-dot workspace menu. */
+@Composable
+fun PreviewCSecondaryPage(
+    title: String,
+    detail: String,
+    back: () -> Unit,
+) {
+    Column(
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(title, fontSize = 26.sp, fontWeight = FontWeight.Bold, color = ConnectedWhite)
+        Panel { Text(detail, color = ConnectedMuted) }
+        OutlinedButton(onClick = back, modifier = Modifier.fillMaxWidth()) {
+            Text("Back", color = ConnectedWhite)
         }
     }
 }
