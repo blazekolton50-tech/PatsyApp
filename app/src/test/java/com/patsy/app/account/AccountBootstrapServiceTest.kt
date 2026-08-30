@@ -22,7 +22,7 @@ class AccountBootstrapServiceTest {
     }
     private fun stored() = StoredAuthSession("access", "refresh", session)
 
-    @Test fun validBootstrapUsesCanonicalServerIdentityAndSpecificCapabilities() = runBlocking {
+    @Test fun validBootstrapUsesCanonicalServerIdentityAndSpecificCapabilities(): Unit = runBlocking {
         val account = AccountBootstrap(
             canonicalUserId = "uuid-1", profileReadiness = ProfileReadiness.READY,
             onboardingState = OnboardingState.READY, ageState = TrustedAgeState.STANDARD_16_PLUS,
@@ -36,7 +36,7 @@ class AccountBootstrapServiceTest {
         assertEquals(setOf(OwnerCapability.VIEW_ANALYTICS), available.account.capabilities)
     }
 
-    @Test fun malformedIdentityOrUnavailableBackendFailsClosedProtected() = runBlocking {
+    @Test fun malformedIdentityOrUnavailableBackendFailsClosedProtected(): Unit = runBlocking {
         val malformed = AccountBootstrap(
             "different-user", ProfileReadiness.READY, OnboardingState.READY,
             TrustedAgeState.STANDARD_16_PLUS, setOf(OwnerCapability.VIEW_OWNER_TOOLS),
@@ -51,7 +51,7 @@ class AccountBootstrapServiceTest {
         assertIs<AccountBootstrapResult.FailedClosed>(unavailable.fetch(session))
     }
 
-    @Test fun expiredSessionOrLogoutFailsClosed() = runBlocking {
+    @Test fun expiredSessionOrLogoutFailsClosed(): Unit = runBlocking {
         val service = ServerAccountBootstrapService(Store(null), Transport(RemoteAccountBootstrapResult.Unavailable), { 2_001L })
         assertIs<AccountBootstrapResult.FailedClosed>(service.fetch(session))
     }
