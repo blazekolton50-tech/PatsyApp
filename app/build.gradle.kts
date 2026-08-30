@@ -4,11 +4,35 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-android { namespace = "com.patsy.app"; compileSdk = 35
-    compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
+android {
+    namespace = "com.patsy.app"
+    compileSdk = 35
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
     kotlinOptions { jvmTarget = "17" }
-    defaultConfig { applicationId = "com.patsy.app"; minSdk = 26; targetSdk = 35; versionCode = 338; versionName = "3.3.8-patsy1" }
-    buildTypes { debug { applicationIdSuffix = ".debug"; versionNameSuffix = "-debug" } }
+    buildFeatures { buildConfig = true }
+
+    defaultConfig {
+        applicationId = "com.patsy.app"
+        minSdk = 26
+        targetSdk = 35
+        versionCode = 338
+        versionName = "3.3.8-patsy1"
+
+        // Client-safe public Supabase configuration. No service-role/provider secret is shipped here.
+        buildConfigField("String", "SUPABASE_URL", "\"https://tvtknwqcqbkecszvppub.supabase.co\"")
+        buildConfigField("String", "SUPABASE_PUBLISHABLE_KEY", "\"sb_publishable_YF3M02GBd_F3yBxCII33JA_NJtkHq5Y\"")
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+        }
+    }
 }
 
 dependencies {
