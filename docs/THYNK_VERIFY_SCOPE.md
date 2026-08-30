@@ -1,0 +1,1 @@
+Verification scope for imported THyNK code: unit tests + debug assembly on the isolated branch only. No main merge, release deploy, provider activation, or production secret configuration is performed by this workflow.
