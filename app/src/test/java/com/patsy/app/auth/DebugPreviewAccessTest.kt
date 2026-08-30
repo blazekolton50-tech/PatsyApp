@@ -24,4 +24,12 @@ class DebugPreviewAccessTest {
         assertTrue(text.contains("debugPreviewEnabled = false"))
         assertTrue(text.contains("createDebugPreviewSession(): PublicSession? = null"))
     }
+
+    @Test
+    fun loginScreenOnlyShowsClearlyMarkedPreviewActionBehindDebugGate() {
+        val mainActivity = File("src/main/java/com/patsy/app/MainActivity.kt").readText()
+        assertTrue(mainActivity.contains("if(debugPreviewEnabled)"))
+        assertTrue(mainActivity.contains("Preview app (DEBUG ONLY)"))
+        assertTrue(mainActivity.contains("createDebugPreviewSession()?.let(onDone)"))
+    }
 }
