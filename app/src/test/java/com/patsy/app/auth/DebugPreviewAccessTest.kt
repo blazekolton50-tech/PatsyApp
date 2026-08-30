@@ -26,10 +26,17 @@ class DebugPreviewAccessTest {
     }
 
     @Test
-    fun loginScreenOnlyShowsClearlyMarkedPreviewActionBehindDebugGate() {
-        val mainActivity = File("src/main/java/com/patsy/app/MainActivity.kt").readText()
-        assertTrue(mainActivity.contains("if(debugPreviewEnabled)"))
-        assertTrue(mainActivity.contains("Preview app (DEBUG ONLY)"))
-        assertTrue(mainActivity.contains("createDebugPreviewSession()?.let(onDone)"))
+    fun debugBuildHasClearlyMarkedPreviewLauncherAndKeepsMainActivityNonLauncher() {
+        val activity = File("src/debug/java/com/patsy/app/DebugPreviewActivity.kt")
+        val manifest = File("src/debug/AndroidManifest.xml")
+        assertTrue(activity.exists(), "Debug preview activity must exist only in debug source set")
+        assertTrue(manifest.exists(), "Debug manifest must replace the launcher for test builds")
+
+        val activityText = activity.readText()
+        val manifestText = manifest.readText()
+        assertTrue(activityText.contains("Preview app (DEBUG ONLY)"))
+        assertTrue(activityText.contains("DebugPreviewAuthGateway"))
+        assertTrue(manifestText.contains(".DebugPreviewActivity"))
+        assertTrue(manifestText.contains("tools:node=\"replace\""))
     }
 }
