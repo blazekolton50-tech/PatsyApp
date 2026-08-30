@@ -7,6 +7,7 @@ import com.patsy.app.account.ProfileReadiness
 import com.patsy.app.account.SettingsAvailability
 import com.patsy.app.account.ShellRestriction
 import com.patsy.app.account.TrustedAgeState
+import com.patsy.app.account.isProtectedMode
 import com.patsy.app.security.OwnerCapability
 import kotlin.test.Test
 import kotlin.test.assertEquals
