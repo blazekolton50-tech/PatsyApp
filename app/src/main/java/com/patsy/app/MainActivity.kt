@@ -48,7 +48,14 @@ private val Muted = Color(0xFFAAAAAF)
 private val Rainbow = Brush.horizontalGradient(listOf(Color(0xFFFF6B35),Color(0xFFFFD447),Color(0xFF4CD964),Color(0xFF36A9FF),Color(0xFF9B59FF),Color(0xFFFF4FA3)))
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState); setContent { PatsyApp() } }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val launchAuthGateway = resolveLaunchAuthGateway(
+            previewRequested = intent.getBooleanExtra(PREVIEW_AUTH_REQUESTED_EXTRA, false),
+            productionGateway = PatsyServiceBindings.authGateway,
+        )
+        setContent { PatsyApp(authGateway = launchAuthGateway) }
+    }
 }
 
 data class Profile(
@@ -60,8 +67,7 @@ data class Profile(
 
 enum class Screen { WELCOME, MODE, PROFILE, PASSWORD_SETUP, EMAIL_LINKED, LOGIN, HOME, THYNK, CREATE, DMS, PROFILE_HOME, CHAT, SCHEDULE, MORE, THYNK_TEMPLATES, THYNK_EDITOR, THYNK_AI_IMAGE, THYNK_AI_VIDEO, THYNK_PROJECTS, THYNK_BRAND_KIT, THYNK_INSPIRATION, OWNER_PROFILE, OWNER_TOOLS }
 
-@Composable fun PatsyApp(){
-    val authGateway = remember { PatsyServiceBindings.authGateway }
+@Composable fun PatsyApp(authGateway: AuthGateway = PatsyServiceBindings.authGateway){
     val ownerGate = remember { FailClosedOwnerAuthorizationGate(PatsyServiceBindings.ownerAuthorizationService) }
     var screen by remember { mutableStateOf(Screen.WELCOME) }
     var profile by remember { mutableStateOf<Profile?>(null) }
@@ -274,15 +280,23 @@ fun PasswordSetupScreen(
 
 @Composable
 fun EmailLinkedScreen(email:String,acknowledgement:ConfirmationEmailAcknowledgement?,onContinue:()->Unit){
-    val confirmed=acknowledgement as? ConfirmationEmailAcknowledgement.Confirmed
+    val status=acknowledgement as? ConfirmationEmailAcknowledgement.Status
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),horizontalAlignment=Alignment.CenterHorizontally){
         Header()
-        PatsyMotion(if(confirmed!=null) "Check your inbox! 🎉🐾" else "Your account was created. 🐾",action=if(confirmed!=null) PatsyAction.CELEBRATE else PatsyAction.WARNING)
+        PatsyMotion(if(status?.deliveryState == EmailDeliveryState.SENT) "Check your inbox! 🎉🐾" else "Your account was created. 🐾",action=if(status?.deliveryState == EmailDeliveryState.SENT) PatsyAction.CELEBRATE else PatsyAction.WARNING)
         Panel{
-            Text(if(confirmed!=null) "Confirmation email ${confirmed.deliveryState.name.lowercase()}" else "Confirmation email pending",fontSize=26.sp,fontWeight=FontWeight.Bold)
-            when(val status=acknowledgement){
-                is ConfirmationEmailAcknowledgement.Confirmed -> Text("The secure email service confirmed ${status.deliveryState.name.lowercase()} delivery to ${status.maskedEmail}.",color=White)
-                is ConfirmationEmailAcknowledgement.NotConfirmed -> Text("Your account exists, but the email service did not confirm delivery. Try again later or contact support. (${status.reason.name.lowercase().replace('_',' ')})",color=Color(0xFFFFC46B))
+            Text("Confirmation email status",fontSize=26.sp,fontWeight=FontWeight.Bold)
+            when(val acknowledgementStatus=acknowledgement){
+                is ConfirmationEmailAcknowledgement.Status -> Text(
+                    when (acknowledgementStatus.deliveryState) {
+                        EmailDeliveryState.SENT -> "The email provider reports that confirmation instructions were sent to ${acknowledgementStatus.maskedEmail}."
+                        EmailDeliveryState.QUEUED -> "The email request is queued for ${acknowledgementStatus.maskedEmail}; it has not been confirmed sent or delivered."
+                        EmailDeliveryState.FAILED -> "The email provider reports that the confirmation message failed. You can retry later."
+                        EmailDeliveryState.UNKNOWN -> "Your account exists, but the confirmation email status is unknown."
+                    },
+                    color=White,
+                )
+                is ConfirmationEmailAcknowledgement.NotConfirmed -> Text("Your account exists, but the email service did not confirm delivery. Try again later or contact support. (${acknowledgementStatus.reason.name.lowercase().replace('_',' ')})",color=Color(0xFFFFC46B))
                 null -> Text("No verified delivery status is available. The app will not claim that an email was sent.",color=Color(0xFFFFC46B))
             }
             Text("Email: $email",color=Muted,modifier=Modifier.padding(top=8.dp))
