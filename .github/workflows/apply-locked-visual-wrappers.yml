@@ -1,8 +1,6 @@
 name: Apply locked visual wrappers
 
-on:
-  push:
-    branches: ["codex/patsy-rive-ui-foundation"]
+on: [push]
 
 permissions:
   contents: write
@@ -11,65 +9,20 @@ jobs:
   patch:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out branch
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          ref: codex/patsy-rive-ui-foundation
           fetch-depth: 0
-
-      - name: Apply exact wrapper migration
+      - name: Apply patch
         run: |
           set -euo pipefail
-          if [ "$(git log -1 --pretty=%s)" != "chore: apply locked visual wrappers v3" ]; then
-            echo "No patch requested for this commit."
+          if [ "$(git log -1 --pretty=%s)" != "chore: run locked wrapper patch" ]; then
+            echo "No wrapper patch requested."
             exit 0
           fi
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-
-          path = Path("app/src/main/java/com/patsy/app/MainActivity.kt")
-          text = path.read_text(encoding="utf-8")
-
-          anchor = "import com.patsy.app.patsy.rig.rive.PatsyRiveRuntimeAdapter\n"
-          if text.count(anchor) != 1:
-              raise SystemExit("Unsafe import anchor count")
-          text = text.replace(
-              anchor,
-              anchor + "import com.patsy.app.ui.PatsyHeader\nimport com.patsy.app.ui.PatsyPrimaryButton\n",
-              1,
-          )
-
-          header_pattern = re.compile(r'@Composable fun Header\(\)\{ Column\(horizontalAlignment=Alignment\.CenterHorizontally,modifier=Modifier\.fillMaxWidth\(\)\.padding\(top=18\.dp\)\)\{ Image\(painter=painterResource\(R\.drawable\.patsy_logo_official_white\),contentDescription="Patsy",modifier=Modifier\.width\(190\.dp\)\.height\(88\.dp\),contentScale=ContentScale\.Fit\); Text\("YOUR AI\. YOUR WORKSPACE\. YOUR CONTROL\.",fontSize=10\.sp,color=Muted,letterSpacing=1\.sp\) \} \}')
-          text, header_count = header_pattern.subn(
-              '@Composable fun Header(){ PatsyHeader(modifier=Modifier.padding(top=18.dp)) }',
-              text,
-              count=1,
-          )
-          if header_count != 1:
-              raise SystemExit(f"Unsafe Header match count: {header_count}")
-
-          primary_pattern = re.compile(r'@Composable fun Primary\(text:String,onClick:\(\)->Unit,enabled:Boolean=true\)\{ Button\(onClick=onClick,enabled=enabled,modifier=Modifier\.fillMaxWidth\(\)\.height\(58\.dp\),colors=ButtonDefaults\.buttonColors\(containerColor=White,contentColor=Color\.Black\),shape=RoundedCornerShape\(30\.dp\)\)\{ Text\(text,fontWeight=FontWeight\.Bold,fontSize=16\.sp\) \} \}')
-          text, primary_count = primary_pattern.subn(
-              '@Composable fun Primary(text:String,onClick:()->Unit,enabled:Boolean=true){ PatsyPrimaryButton(text=text,onClick=onClick,enabled=enabled) }',
-              text,
-              count=1,
-          )
-          if primary_count != 1:
-              raise SystemExit(f"Unsafe Primary match count: {primary_count}")
-
-          path.write_text(text, encoding="utf-8")
-          PY
-
-          grep -q 'import com.patsy.app.ui.PatsyHeader' app/src/main/java/com/patsy/app/MainActivity.kt
-          grep -q 'import com.patsy.app.ui.PatsyPrimaryButton' app/src/main/java/com/patsy/app/MainActivity.kt
-          grep -q '@Composable fun Header(){ PatsyHeader(modifier=Modifier.padding(top=18.dp)) }' app/src/main/java/com/patsy/app/MainActivity.kt
-          grep -q '@Composable fun Primary(text:String,onClick:()->Unit,enabled:Boolean=true){ PatsyPrimaryButton(text=text,onClick=onClick,enabled=enabled) }' app/src/main/java/com/patsy/app/MainActivity.kt
-          ! grep -q 'YOUR AI. YOUR WORKSPACE. YOUR CONTROL.' app/src/main/java/com/patsy/app/MainActivity.kt
+          python3 scripts/apply_locked_visual_wrappers.py
           git diff --check
-
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add app/src/main/java/com/patsy/app/MainActivity.kt
-          git commit -m 'ui: use locked Patsy visual wrappers'
-          git push origin HEAD:codex/patsy-rive-ui-foundation
+          git commit -m "ui: use locked Patsy visual wrappers"
+          git push
