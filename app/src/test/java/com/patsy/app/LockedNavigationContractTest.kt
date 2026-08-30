@@ -10,13 +10,13 @@ class LockedNavigationContractTest {
     @Test
     fun primaryNavigationMatchesLatestLockedProductRules() {
         assertEquals(
-            listOf("Home", "THyNK", "Camera", "Patsy DMs", "Profile"),
+            listOf("Home", "THyNK", "Camera", "PATSY DMs", "Profile"),
             ShellNavigationContract.primaryRoutes.map { it.label },
         )
     }
 
     @Test
-    fun chatScheduleAndMoreRemainSecondaryRoutesNotPrimaryTabs() {
+    fun chatScheduleMoreAndCreateRemainSecondaryRoutesNotPrimaryTabs() {
         assertFalse(
             ShellNavigationContract.primaryRoutes.any {
                 it.id == "chat" || it.id == "schedule" || it.id == "more" || it.id == "create"
@@ -27,8 +27,8 @@ class LockedNavigationContractTest {
 
     @Test
     fun homeThynkAndCameraHaveDedicatedPrimaryDestinations() {
-        assertEquals(ShellDestination.HOME_FEED, ShellNavigationContract.route("home")?.destination)
-        assertEquals(ShellDestination.THYNK, ShellNavigationContract.route("thynk")?.destination)
-        assertEquals(ShellDestination.CAMERA, ShellNavigationContract.route("camera")?.destination)
+        assertEquals("HOME_FEED", ShellNavigationContract.route("home")?.destination?.name)
+        assertEquals("THYNK", ShellNavigationContract.route("thynk")?.destination?.name)
+        assertEquals("CAMERA", ShellNavigationContract.route("camera")?.destination?.name)
     }
 }
