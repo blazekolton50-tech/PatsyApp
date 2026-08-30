@@ -4,6 +4,21 @@ Repository: `blazekolton50-tech/PatsyApp`
 
 Do not redesign or replace this project from scratch.
 
+## 30 August 2026 backend/API continuation
+
+Before implementing any production service, read:
+
+- `docs/backend/LIVE_SUPABASE_SNAPSHOT_2026-08-30.md`
+- `docs/backend/API_PROVIDER_CONFIG_2026-08-30.md`
+- `docs/codex/PATSY_CODEX_MASTER_HANDOFF_2026-08-29.md`
+- `docs/CHATGPT_CONTINUITY_AUDIT_2026-08-29.md`
+
+The live Supabase project already exists. Preserve it and inspect live policies/triggers before changing schema. Do not rebuild the backend from scratch.
+
+**Design freeze:** backend/API work must not change approved UI, branding, layouts, navigation, screen connections, Patsy visual treatment, THyNK Studio design, PawMoji visuals, colours, logo placement, button treatment or the existing Rive integration contract unless the owner explicitly requests a design change.
+
+Production secrets must stay server-side. Never put Supabase service-role keys, Gemini API keys, SMTP passwords or publishing access tokens in the Android client or public frontend configuration. Provider failures remain explicit `NOT_CONFIGURED`/unavailable states; never fake success.
+
 ## First task
 Before changing code, inspect the existing repository and return an audit with four sections:
 
