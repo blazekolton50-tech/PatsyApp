@@ -8,6 +8,11 @@ package com.patsy.app.auth
  */
 internal const val debugPreviewEnabled = true
 
+internal fun resolveLaunchAuthGateway(
+    previewRequested: Boolean,
+    productionGateway: AuthGateway,
+): AuthGateway = if (previewRequested) DebugPreviewAuthGateway else productionGateway
+
 internal fun createDebugPreviewSession(): PublicSession = PublicSession(
     sessionId = "debug-preview-${System.currentTimeMillis()}",
     userId = "debug-preview",
