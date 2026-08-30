@@ -7,21 +7,31 @@ import com.patsy.app.auth.SupabaseAuthGateway
 import com.patsy.app.auth.SupabaseHttpAuthTransport
 import com.patsy.app.auth.SupabaseHttpRecoveryTransport
 import com.patsy.app.auth.SupabaseHttpRegistrationTransport
+import com.patsy.app.security.ServerOwnerAuthorizationService
+import com.patsy.app.security.SupabaseHttpOwnerAuthorizationTransport
 
 class PatsyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+        val sessionStore = EncryptedAuthSessionStore(this)
         PatsyServiceBindings.authGateway = SupabaseAuthGateway(
             transport = SupabaseHttpAuthTransport(
                 baseUrl = BuildConfig.SUPABASE_URL,
                 publishableKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
             ),
-            sessionStore = EncryptedAuthSessionStore(this),
+            sessionStore = sessionStore,
             registrationTransport = SupabaseHttpRegistrationTransport(
                 baseUrl = BuildConfig.SUPABASE_URL,
                 publishableKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
             ),
             recoveryTransport = SupabaseHttpRecoveryTransport(
+                baseUrl = BuildConfig.SUPABASE_URL,
+                publishableKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
+            ),
+        )
+        PatsyServiceBindings.ownerAuthorizationService = ServerOwnerAuthorizationService(
+            sessionStore = sessionStore,
+            transport = SupabaseHttpOwnerAuthorizationTransport(
                 baseUrl = BuildConfig.SUPABASE_URL,
                 publishableKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
             ),
