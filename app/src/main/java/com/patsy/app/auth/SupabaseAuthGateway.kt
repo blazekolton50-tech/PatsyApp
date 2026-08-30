@@ -64,18 +64,40 @@ interface SupabaseAuthTransport {
 }
 
 /**
- * Production authentication adapter. Registration/email-confirmation are deliberately left unavailable
- * until their own server-backed flows are implemented and verified; login/session handling is real.
+ * Production authentication adapter. Sign-up and login are backed by Supabase; email-token handling
+ * and password-recovery completion remain separate slices so unavailable states stay truthful.
  */
 class SupabaseAuthGateway(
     private val transport: SupabaseAuthTransport,
     private val sessionStore: AuthSessionStore,
+    private val registrationTransport: SupabaseRegistrationTransport = UnconfiguredRegistrationTransport,
 ) : AuthGateway {
     override suspend fun startRegistration(request: StartRegistrationRequest): RegistrationStartResult =
-        RegistrationStartResult.Unavailable(ServiceFailure.NotConfigured)
+        when (val result = registrationTransport.start(request)) {
+            is RemoteRegistrationStartResult.Ready -> RegistrationStartResult.ReadyForPassword(
+                registrationAttemptId = result.attemptId,
+                normalizedUsername = result.normalizedUsername,
+                maskedEmail = result.maskedEmail,
+            )
+            is RemoteRegistrationStartResult.Failure -> result.failure.toRegistrationStartResult()
+        }
 
-    override suspend fun completeRegistration(request: CompleteRegistrationRequest): RegistrationResult =
-        RegistrationResult.Unavailable(ServiceFailure.NotConfigured)
+    override suspend fun completeRegistration(request: CompleteRegistrationRequest): RegistrationResult {
+        val result = request.password.useCopy { password ->
+            registrationTransport.complete(request.registrationAttemptId, password)
+        }
+        return when (result) {
+            is RemoteRegistrationResult.AccountCreated -> RegistrationResult.AccountCreated(
+                userId = result.userId,
+                username = result.username,
+                confirmationEmail = ConfirmationEmailAcknowledgement.Confirmed(
+                    deliveryState = result.deliveryState,
+                    maskedEmail = result.maskedEmail,
+                ),
+            )
+            is RemoteRegistrationResult.Failure -> result.failure.toRegistrationResult()
+        }
+    }
 
     override suspend fun confirmEmail(request: ConfirmEmailRequest): EmailConfirmationResult =
         EmailConfirmationResult.Unavailable(ServiceFailure.NotConfigured)
@@ -142,4 +164,34 @@ private fun RemoteAuthResult.Failure.toLoginResult(): LoginResult = when (failur
     RemoteAuthFailure.Timeout -> LoginResult.Unavailable(ServiceFailure.Timeout)
     RemoteAuthFailure.ServiceUnavailable -> LoginResult.Unavailable(ServiceFailure.ServerError)
     RemoteAuthFailure.Unknown -> LoginResult.Unavailable(ServiceFailure.Unknown)
+}
+
+private fun RemoteRegistrationFailure.toRegistrationStartResult(): RegistrationStartResult = when (this) {
+    RemoteRegistrationFailure.DuplicateUsername -> RegistrationStartResult.Rejected(AuthFailure.DuplicateUsername)
+    RemoteRegistrationFailure.InvalidUsername -> RegistrationStartResult.Rejected(AuthFailure.InvalidInput("username", "invalid"))
+    RemoteRegistrationFailure.InvalidEmail -> RegistrationStartResult.Rejected(AuthFailure.InvalidInput("email", "invalid"))
+    RemoteRegistrationFailure.InvalidExperienceMode -> RegistrationStartResult.Rejected(AuthFailure.InvalidInput("experience", "invalid"))
+    RemoteRegistrationFailure.RateLimited -> RegistrationStartResult.Rejected(AuthFailure.RateLimited)
+    RemoteRegistrationFailure.Offline -> RegistrationStartResult.Unavailable(ServiceFailure.Offline)
+    RemoteRegistrationFailure.Timeout -> RegistrationStartResult.Unavailable(ServiceFailure.Timeout)
+    RemoteRegistrationFailure.ServiceUnavailable -> RegistrationStartResult.Unavailable(ServiceFailure.ServerError)
+    RemoteRegistrationFailure.DuplicateEmail,
+    RemoteRegistrationFailure.InvalidAttempt,
+    RemoteRegistrationFailure.InvalidPassword,
+    RemoteRegistrationFailure.Unknown -> RegistrationStartResult.Unavailable(ServiceFailure.Unknown)
+}
+
+private fun RemoteRegistrationFailure.toRegistrationResult(): RegistrationResult = when (this) {
+    RemoteRegistrationFailure.DuplicateUsername -> RegistrationResult.Rejected(AuthFailure.DuplicateUsername)
+    RemoteRegistrationFailure.DuplicateEmail -> RegistrationResult.Rejected(AuthFailure.DuplicateEmail)
+    RemoteRegistrationFailure.InvalidAttempt -> RegistrationResult.Rejected(AuthFailure.InvalidOrExpiredToken)
+    RemoteRegistrationFailure.InvalidPassword -> RegistrationResult.Rejected(AuthFailure.InvalidInput("password", "invalid"))
+    RemoteRegistrationFailure.InvalidUsername -> RegistrationResult.Rejected(AuthFailure.InvalidInput("username", "invalid"))
+    RemoteRegistrationFailure.InvalidEmail -> RegistrationResult.Rejected(AuthFailure.InvalidInput("email", "invalid"))
+    RemoteRegistrationFailure.InvalidExperienceMode -> RegistrationResult.Rejected(AuthFailure.InvalidInput("experience", "invalid"))
+    RemoteRegistrationFailure.RateLimited -> RegistrationResult.Rejected(AuthFailure.RateLimited)
+    RemoteRegistrationFailure.Offline -> RegistrationResult.Unavailable(ServiceFailure.Offline)
+    RemoteRegistrationFailure.Timeout -> RegistrationResult.Unavailable(ServiceFailure.Timeout)
+    RemoteRegistrationFailure.ServiceUnavailable -> RegistrationResult.Unavailable(ServiceFailure.ServerError)
+    RemoteRegistrationFailure.Unknown -> RegistrationResult.Unavailable(ServiceFailure.Unknown)
 }
