@@ -85,14 +85,14 @@ class SupabaseAuthGateway(
         }
 
     override suspend fun completeRegistration(request: CompleteRegistrationRequest): RegistrationResult {
-        val result = request.password.useCopy { password ->
+        val result = request.password.useCopySuspending { password ->
             registrationTransport.complete(request.registrationAttemptId, password)
         }
         return when (result) {
             is RemoteRegistrationResult.AccountCreated -> RegistrationResult.AccountCreated(
                 userId = result.userId,
                 username = result.username,
-                confirmationEmail = ConfirmationEmailAcknowledgement.Confirmed(
+                confirmationEmail = ConfirmationEmailAcknowledgement.Status(
                     deliveryState = result.deliveryState,
                     maskedEmail = result.maskedEmail,
                 ),
@@ -105,7 +105,7 @@ class SupabaseAuthGateway(
         EmailConfirmationResult.Unavailable(ServiceFailure.NotConfigured)
 
     override suspend fun login(request: LoginRequest): LoginResult {
-        val remote = request.password.useCopy { password ->
+        val remote = request.password.useCopySuspending { password ->
             transport.login(request.identifier, password)
         }
         return when (remote) {
