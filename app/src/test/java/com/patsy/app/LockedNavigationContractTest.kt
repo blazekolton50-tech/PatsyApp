@@ -1,40 +1,27 @@
 package com.patsy.app
 
-import java.io.File
+import com.patsy.app.navigation.ShellDestination
+import com.patsy.app.navigation.ShellNavigationContract
 import kotlin.test.Test
 import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.assertEquals
 
 class LockedNavigationContractTest {
-    private val source = listOf(
-        File("src/main/java/com/patsy/app/MainActivity.kt"),
-        File("src/main/java/com/patsy/app/LockedWorkspaceScreens.kt"),
-    ).joinToString("\n") { it.readText() }
-
     @Test
     fun primaryNavigationMatchesLatestLockedProductRules() {
-        assertTrue(source.contains("Screen.HOME to \"Home\""))
-        assertTrue(source.contains("Screen.THYNK to \"THyNK\""))
-        assertTrue(source.contains("Screen.CREATE to \"Create\""))
-        assertTrue(source.contains("Screen.DMS to \"Patsy DMs\""))
-        assertTrue(source.contains("Screen.PROFILE_HOME to \"Profile\""))
+        assertEquals(listOf("Home","THyNK","Create","Patsy DMs","Profile"),ShellNavigationContract.primaryRoutes.map{it.label})
     }
 
     @Test
     fun chatAndScheduleRemainSecondaryRoutesNotPrimaryTabs() {
-        val navFunction = source.substringAfter("@Composable fun AppNavigationBar").substringBefore("\n}")
-        assertFalse(navFunction.contains("Screen.CHAT to"))
-        assertFalse(navFunction.contains("Screen.SCHEDULE to"))
-        assertTrue(source.contains("Screen.CHAT"))
-        assertTrue(source.contains("Screen.SCHEDULE"))
+        assertFalse(ShellNavigationContract.primaryRoutes.any{it.id=="chat"||it.id=="schedule"||it.id=="more"})
+        assertEquals(ShellDestination.SCHEDULE,ShellNavigationContract.route("schedule")?.destination)
     }
 
     @Test
     fun homeIsFeedAndThynkHasDedicatedStudioHome() {
-        assertTrue(source.contains("fun HomeFeed("))
-        assertTrue(source.contains("fun ThynkStudioHome("))
-        assertTrue(source.contains("fun CreateNewHome("))
-        assertTrue(source.contains("Screen.THYNK->ThynkStudioHome"))
-        assertTrue(source.contains("Screen.CREATE->CreateNewHome"))
+        assertEquals(ShellDestination.HOME_FEED,ShellNavigationContract.route("home")?.destination)
+        assertEquals(ShellDestination.THYNK,ShellNavigationContract.route("thynk")?.destination)
+        assertEquals(ShellDestination.CREATE,ShellNavigationContract.route("create")?.destination)
     }
 }
