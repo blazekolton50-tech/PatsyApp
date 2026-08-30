@@ -20,8 +20,10 @@ jobs:
           fetch-depth: 0
 
       - name: Patch only the locked wrapper delegation
-        shell: python
+        shell: bash
         run: |
+          set -euo pipefail
+          python - <<'PY'
           from pathlib import Path
 
           path = Path('app/src/main/java/com/patsy/app/MainActivity.kt')
@@ -51,6 +53,7 @@ jobs:
           text = text.replace(old_header, new_header, 1)
           text = text.replace(old_primary, new_primary, 1)
           path.write_text(text, encoding='utf-8')
+          PY
 
       - name: Verify migration scope
         shell: bash
