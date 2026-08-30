@@ -19,7 +19,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,6 +50,7 @@ fun StudioVideoPlayer(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val currentOnAction by rememberUpdatedState(onAction)
     val player = remember {
         ExoPlayer.Builder(context).build().apply {
             playWhenReady = false
@@ -61,15 +64,13 @@ fun StudioVideoPlayer(
                 if (playbackState == Player.STATE_READY) {
                     val duration = player.duration
                     if (duration != C.TIME_UNSET && duration in 1..Int.MAX_VALUE.toLong()) {
-                        onAction(StudioAction.SetDuration(duration.toInt()))
+                        currentOnAction(StudioAction.SetDuration(duration.toInt()))
                     }
                 }
             }
 
             override fun onIsPlayingChanged(isPlaying: Boolean) {
-                if (isPlaying != state.isPlaying) {
-                    onAction(StudioAction.TogglePlayPause)
-                }
+                currentOnAction(StudioAction.SetPlaying(isPlaying))
             }
         }
         player.addListener(listener)
@@ -82,6 +83,8 @@ fun StudioVideoPlayer(
     LaunchedEffect(sourceUri) {
         player.stop()
         player.clearMediaItems()
+        currentOnAction(StudioAction.SetPlaying(false))
+        currentOnAction(StudioAction.SeekTo(0))
         if (!sourceUri.isNullOrBlank()) {
             player.setMediaItem(MediaItem.fromUri(sourceUri))
             player.prepare()
@@ -121,7 +124,7 @@ fun StudioVideoPlayer(
             if (!sourceUri.isNullOrBlank() && player.isPlaying) {
                 val position = player.currentPosition.coerceAtLeast(0L)
                 if (position <= Int.MAX_VALUE) {
-                    onAction(StudioAction.SeekTo(position.toInt()))
+                    currentOnAction(StudioAction.SeekTo(position.toInt()))
                 }
             }
             delay(100)
@@ -162,7 +165,7 @@ fun StudioVideoPlayer(
         Slider(
             value = timelineFraction(state.playheadMs, state.durationMs),
             onValueChange = { fraction ->
-                onAction(
+                currentOnAction(
                     StudioAction.SeekTo(
                         timeFromTimelineFraction(fraction, state.durationMs),
                     ),
@@ -176,11 +179,11 @@ fun StudioVideoPlayer(
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TextButton(onClick = { onAction(StudioAction.StepBy(-1_000)) }) {
+            TextButton(onClick = { currentOnAction(StudioAction.StepBy(-1_000)) }) {
                 Text("−1s", color = StudioText)
             }
             Button(
-                onClick = { onAction(StudioAction.TogglePlayPause) },
+                onClick = { currentOnAction(StudioAction.TogglePlayPause) },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = StudioText,
                     contentColor = Color.Black,
@@ -188,7 +191,7 @@ fun StudioVideoPlayer(
             ) {
                 Text(if (state.isPlaying) "Pause" else "Play")
             }
-            TextButton(onClick = { onAction(StudioAction.StepBy(1_000)) }) {
+            TextButton(onClick = { currentOnAction(StudioAction.StepBy(1_000)) }) {
                 Text("+1s", color = StudioText)
             }
             Spacer(Modifier.weight(1f))
@@ -203,15 +206,15 @@ fun StudioVideoPlayer(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TextButton(onClick = { onAction(StudioAction.ToggleMute) }) {
+            TextButton(onClick = { currentOnAction(StudioAction.ToggleMute) }) {
                 Text(if (state.isMuted) "Unmute" else "Mute", color = StudioText)
             }
-            TextButton(onClick = { onAction(StudioAction.ToggleLoop) }) {
+            TextButton(onClick = { currentOnAction(StudioAction.ToggleLoop) }) {
                 Text(if (state.isLooping) "Loop on" else "Loop", color = StudioText)
             }
             Spacer(Modifier.weight(1f))
             listOf(0.5f, 1f, 1.5f, 2f).forEach { speed ->
-                TextButton(onClick = { onAction(StudioAction.SetPlaybackSpeed(speed)) }) {
+                TextButton(onClick = { currentOnAction(StudioAction.SetPlaybackSpeed(speed)) }) {
                     Text(
                         if (speed == state.playbackSpeed) "${speed}×" else speedLabel(speed),
                         color = if (speed == state.playbackSpeed) StudioText else StudioMuted,
