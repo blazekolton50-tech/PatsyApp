@@ -88,11 +88,18 @@ sealed interface EmailConfirmationResult {
     data class Unavailable(val failure: ServiceFailure) : EmailConfirmationResult
 }
 
+enum class LoginSessionRetention {
+    CURRENT_PROCESS_ONLY,
+    RESTORE_ON_NEXT_LAUNCH,
+}
+
 class LoginRequest(
     val identifier: LoginIdentifier,
     val password: SecretChars,
+    val sessionRetention: LoginSessionRetention = LoginSessionRetention.CURRENT_PROCESS_ONLY,
 ) {
-    override fun toString(): String = "LoginRequest(identifier=$identifier, password=[REDACTED])"
+    override fun toString(): String =
+        "LoginRequest(identifier=$identifier, password=[REDACTED], sessionRetention=$sessionRetention)"
 }
 
 sealed interface LoginResult {
