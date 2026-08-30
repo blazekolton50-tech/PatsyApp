@@ -83,7 +83,7 @@ data class PatsyCompanionState(
     val mode: PatsyCompanionMode = PatsyCompanionMode.IDLE,
     val pose: PatsyRigPose = PatsyRigPose(
         motion = PatsyRigMotion.IDLE,
-        motionSpeed = IDLE_MOTION_SPEED,
+        motionSpeed = 0.12f,
     ),
 )
 
@@ -234,12 +234,13 @@ class PatsyCompanionController(
     }
 
     private fun pointOrGuide(target: PatsyCompanionTarget) {
-        val pose = state.pose.lookAt(target).copy(
+        val normalisedTarget = target.normalised()
+        val pose = state.pose.lookAt(normalisedTarget).copy(
             motion = PatsyRigMotion.POINT,
             motionSpeed = 0.45f,
-            pointX = target.normalised().normalizedX,
-            pointY = target.normalised().normalizedY,
-            headTilt = -lookHorizontal(target) * 0.16f,
+            pointX = normalisedTarget.normalizedX,
+            pointY = normalisedTarget.normalizedY,
+            headTilt = -lookHorizontal(normalisedTarget) * 0.16f,
             expression = PatsyRigExpression.PROUD,
             expressionIntensity = 0.82f,
             talking = false,
@@ -264,8 +265,7 @@ class PatsyCompanionController(
             PatsyCompanionReaction.CONCERNED -> 0.18f
             PatsyCompanionReaction.CURIOUS -> 0.32f
             PatsyCompanionReaction.CHEEKY,
-            PatsyCompanionReaction.PROUD,
-            -> 0.48f
+            PatsyCompanionReaction.PROUD -> 0.48f
         }
         render(
             PatsyCompanionMode.REACTING,
