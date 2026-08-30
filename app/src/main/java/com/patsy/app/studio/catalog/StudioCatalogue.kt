@@ -55,6 +55,92 @@ data class CatalogueFamilySpec(
     val plannedCount: Int,
 )
 
+data class CatalogueViolation(
+    val stableId: String,
+    val code: CatalogueViolationCode,
+    val safeMessage: String,
+)
+
+enum class CatalogueViolationCode {
+    FORBIDDEN_VISIBLE_NAME,
+    BUNDLED_WITHOUT_APPROVAL,
+    BUNDLED_WITHOUT_SOURCE,
+    COMPLETED_BUT_UNAVAILABLE,
+}
+
+/**
+ * Truth/safety gate for catalogue data before it is treated as shippable content.
+ *
+ * The default forbidden terms cover third-party platform/editor branding that must not appear in
+ * the neutral THyNK catalogue. Real integrations can use a separately configured validator only
+ * after branding permission has been confirmed for that surface.
+ */
+class StudioCatalogueValidator(
+    forbiddenVisibleTerms: Set<String> = DEFAULT_FORBIDDEN_VISIBLE_TERMS,
+) {
+    private val normalizedForbiddenTerms = forbiddenVisibleTerms.map { it.trim().lowercase() }.filter { it.isNotEmpty() }.toSet()
+
+    fun validate(item: StudioCatalogueItem): List<CatalogueViolation> {
+        val violations = mutableListOf<CatalogueViolation>()
+        val visibleText = buildList {
+            add(item.displayName)
+            add(item.category)
+            add(item.subcategory)
+            addAll(item.tags)
+        }.joinToString(" ").lowercase()
+
+        if (normalizedForbiddenTerms.any { term -> term in visibleText }) {
+            violations += CatalogueViolation(
+                stableId = item.stableId,
+                code = CatalogueViolationCode.FORBIDDEN_VISIBLE_NAME,
+                safeMessage = "Catalogue item contains third-party visible branding",
+            )
+        }
+
+        if (item.availability == AssetAvailability.BUNDLED && !item.licence.approvedForBundling) {
+            violations += CatalogueViolation(
+                stableId = item.stableId,
+                code = CatalogueViolationCode.BUNDLED_WITHOUT_APPROVAL,
+                safeMessage = "Bundled asset is not approved for bundling",
+            )
+        }
+
+        if (item.availability == AssetAvailability.BUNDLED && item.sourceReference.isNullOrBlank()) {
+            violations += CatalogueViolation(
+                stableId = item.stableId,
+                code = CatalogueViolationCode.BUNDLED_WITHOUT_SOURCE,
+                safeMessage = "Bundled asset has no source reference",
+            )
+        }
+
+        if (item.completionStatus == CompletionStatus.COMPLETED && item.availability == AssetAvailability.UNAVAILABLE) {
+            violations += CatalogueViolation(
+                stableId = item.stableId,
+                code = CatalogueViolationCode.COMPLETED_BUT_UNAVAILABLE,
+                safeMessage = "Unavailable asset cannot be marked completed",
+            )
+        }
+
+        return violations
+    }
+
+    fun validate(items: Iterable<StudioCatalogueItem>): List<CatalogueViolation> = items.flatMap(::validate)
+
+    companion object {
+        val DEFAULT_FORBIDDEN_VISIBLE_TERMS: Set<String> = setOf(
+            "instagram",
+            "facebook",
+            "tiktok",
+            "youtube",
+            "canva",
+            "capcut",
+            "photoshop",
+            "premiere",
+            "adobe",
+        )
+    }
+}
+
 object BuiltInCataloguePlan {
     val families = listOf(
         CatalogueFamilySpec("templates", "cvs", CatalogueItemType.TEMPLATE, 10),
