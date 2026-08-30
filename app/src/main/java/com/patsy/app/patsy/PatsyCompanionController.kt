@@ -33,6 +33,8 @@ enum class PatsyCompanionMode {
     SPEAKING,
     REACTING,
     CELEBRATING,
+    JUMPING,
+    RESTING,
     HELPER,
     ENGAGED,
     REPOSITIONED,
@@ -72,6 +74,8 @@ sealed interface PatsyCompanionIntent {
     ) : PatsyCompanionIntent
     data class React(val reaction: PatsyCompanionReaction) : PatsyCompanionIntent
     data object Celebrate : PatsyCompanionIntent
+    data object Jump : PatsyCompanionIntent
+    data object Sleep : PatsyCompanionIntent
     data object ShrinkHelper : PatsyCompanionIntent
     data object ExpandAssistant : PatsyCompanionIntent
     data class Reposition(val normalizedX: Float, val normalizedY: Float) : PatsyCompanionIntent
@@ -193,6 +197,8 @@ class PatsyCompanionController(
             )
             is PatsyCompanionIntent.React -> react(intent.reaction)
             PatsyCompanionIntent.Celebrate -> celebrate()
+            PatsyCompanionIntent.Jump -> jump()
+            PatsyCompanionIntent.Sleep -> sleep()
             PatsyCompanionIntent.ShrinkHelper -> render(
                 PatsyCompanionMode.HELPER,
                 state.pose.copy(stageScale = HELPER_SCALE),
@@ -301,6 +307,49 @@ class PatsyCompanionController(
             ),
         )
         retriggerIfMotionAllowed(PatsyRigMotion.WAVE)
+    }
+
+    private fun jump() {
+        render(
+            PatsyCompanionMode.JUMPING,
+            state.pose.copy(
+                motion = PatsyRigMotion.JUMP,
+                motionSpeed = 0.85f,
+                leftEarDrive = 0.34f,
+                rightEarDrive = 0.28f,
+                tailEnergy = 0.85f,
+                expression = PatsyRigExpression.EXCITED,
+                expressionIntensity = 0.92f,
+                talking = false,
+                viseme = PatsyRigViseme.REST,
+                visemeIntensity = 0f,
+                speechEnergy = 0f,
+            ),
+        )
+        retriggerIfMotionAllowed(PatsyRigMotion.JUMP)
+    }
+
+    private fun sleep() {
+        render(
+            PatsyCompanionMode.RESTING,
+            state.pose.copy(
+                motion = PatsyRigMotion.LIE,
+                motionSpeed = 0f,
+                lookX = 0f,
+                lookY = 0f,
+                headTilt = 0.08f,
+                leftEarDrive = -0.10f,
+                rightEarDrive = -0.10f,
+                tailDrive = 0f,
+                tailEnergy = 0.12f,
+                expression = PatsyRigExpression.SLEEPY,
+                expressionIntensity = 0.72f,
+                talking = false,
+                viseme = PatsyRigViseme.REST,
+                visemeIntensity = 0f,
+                speechEnergy = 0f,
+            ),
+        )
     }
 
     private fun retriggerIfMotionAllowed(action: PatsyRigMotion) {
