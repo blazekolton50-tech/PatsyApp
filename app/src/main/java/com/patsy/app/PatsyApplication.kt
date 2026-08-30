@@ -5,6 +5,7 @@ import com.patsy.app.auth.EncryptedAuthSessionStore
 import com.patsy.app.auth.PatsyServiceBindings
 import com.patsy.app.auth.SupabaseAuthGateway
 import com.patsy.app.auth.SupabaseHttpAuthTransport
+import com.patsy.app.auth.SupabaseHttpRecoveryTransport
 import com.patsy.app.auth.SupabaseHttpRegistrationTransport
 
 class PatsyApplication : Application() {
@@ -17,6 +18,10 @@ class PatsyApplication : Application() {
             ),
             sessionStore = EncryptedAuthSessionStore(this),
             registrationTransport = SupabaseHttpRegistrationTransport(
+                baseUrl = BuildConfig.SUPABASE_URL,
+                publishableKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
+            ),
+            recoveryTransport = SupabaseHttpRecoveryTransport(
                 baseUrl = BuildConfig.SUPABASE_URL,
                 publishableKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
             ),
