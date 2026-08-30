@@ -27,31 +27,31 @@ class ServerOwnerAuthorizationServiceTest {
 
     private fun stored(public: PublicSession = session()) = StoredAuthSession("access", "refresh", public)
 
-    @Test fun ordinaryUserIsDeniedByServerDecision() = runBlocking {
+    @Test fun ordinaryUserIsDeniedByServerDecision(): Unit = runBlocking {
         val service = ServerOwnerAuthorizationService(Store(stored()), Transport(RemoteOwnerAuthorizationDecision.Denied(OwnerDenialReason.NOT_OWNER)), { now })
         assertEquals(OwnerAuthorizationDecision.Denied(OwnerDenialReason.NOT_OWNER), service.verify(session(), OwnerCapability.VIEW_OWNER_PROFILE))
     }
 
-    @Test fun expiredOrMismatchedSessionFailsClosedBeforeTransportGrant() = runBlocking {
+    @Test fun expiredOrMismatchedSessionFailsClosedBeforeTransportGrant(): Unit = runBlocking {
         val grant = RemoteOwnerAuthorizationDecision.Allowed("grant", OwnerCapability.VIEW_OWNER_TOOLS, 2_000L, "audit")
         val service = ServerOwnerAuthorizationService(Store(stored()), Transport(grant), { now })
         assertEquals(OwnerAuthorizationDecision.Denied(OwnerDenialReason.SESSION_EXPIRED), service.verify(session(expiresAt = 999L), OwnerCapability.VIEW_OWNER_TOOLS))
         assertEquals(OwnerAuthorizationDecision.Denied(OwnerDenialReason.SESSION_REVOKED), service.verify(session(userId = "forged"), OwnerCapability.VIEW_OWNER_TOOLS))
     }
 
-    @Test fun oneCapabilityNeverGrantsAnother() = runBlocking {
+    @Test fun oneCapabilityNeverGrantsAnother(): Unit = runBlocking {
         val wrong = RemoteOwnerAuthorizationDecision.Allowed("grant", OwnerCapability.VIEW_OWNER_PROFILE, 2_000L, "audit")
         val service = ServerOwnerAuthorizationService(Store(stored()), Transport(wrong), { now })
         assertEquals(OwnerAuthorizationDecision.Denied(OwnerDenialReason.CAPABILITY_NOT_GRANTED), service.verify(session(), OwnerCapability.VIEW_OWNER_TOOLS))
     }
 
-    @Test fun validServerGrantAllowsOnlyRequestedCurrentCapability() = runBlocking {
+    @Test fun validServerGrantAllowsOnlyRequestedCurrentCapability(): Unit = runBlocking {
         val grant = RemoteOwnerAuthorizationDecision.Allowed("grant", OwnerCapability.VIEW_ANALYTICS, 2_000L, "audit")
         val service = ServerOwnerAuthorizationService(Store(stored()), Transport(grant), { now })
         assertIs<OwnerAuthorizationDecision.Allowed>(service.verify(session(), OwnerCapability.VIEW_ANALYTICS))
     }
 
-    @Test fun logoutOrBackendFailureDeniesAccess() = runBlocking {
+    @Test fun logoutOrBackendFailureDeniesAccess(): Unit = runBlocking {
         val empty = ServerOwnerAuthorizationService(Store(null), Transport(RemoteOwnerAuthorizationDecision.Unavailable), { now })
         assertEquals(OwnerAuthorizationDecision.Denied(OwnerDenialReason.NOT_AUTHENTICATED), empty.verify(session(), OwnerCapability.MANAGE_BACKUPS))
         val unavailable = ServerOwnerAuthorizationService(Store(stored()), Transport(RemoteOwnerAuthorizationDecision.Unavailable), { now })
