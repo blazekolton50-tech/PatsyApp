@@ -23,7 +23,7 @@ sealed interface RemoteRegistrationResult {
         val userId: String,
         val username: String,
         val maskedEmail: String,
-        val deliveryState: ConfirmedEmailDeliveryState,
+        val deliveryState: EmailDeliveryState,
     ) : RemoteRegistrationResult
     data class Failure(val failure: RemoteRegistrationFailure) : RemoteRegistrationResult
 }
@@ -115,8 +115,10 @@ class SupabaseHttpRegistrationTransport(
                     val root = JSONObject(body)
                     val confirmation = root.getJSONObject("confirmation_email")
                     val state = when (confirmation.optString("state")) {
-                        "SENT" -> ConfirmedEmailDeliveryState.SENT
-                        else -> ConfirmedEmailDeliveryState.QUEUED
+                        "QUEUED" -> EmailDeliveryState.QUEUED
+                        "SENT" -> EmailDeliveryState.SENT
+                        "FAILED" -> EmailDeliveryState.FAILED
+                        else -> EmailDeliveryState.UNKNOWN
                     }
                     RemoteRegistrationResult.AccountCreated(
                         userId = root.getString("user_id"),
