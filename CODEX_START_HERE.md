@@ -10,6 +10,16 @@ A consolidated project handoff has now been added at:
 
 **Read that file before starting a new substantial task.** It records the 2026-08-30 consolidation of Patsy App / THyNK requirements, Studio AI material, Rive/animation work, PawMoji/keyboard work, security/under-16 plans, backend work, Library/reference assets, historical builds and the current repository state. Historical files are reference/recovery material and must not override newer locked decisions or the current repository.
 
+## NEW — Safe Storage + Remember Me lock
+
+Read:
+
+`docs/codex/PATSY_SAFE_STORAGE_REMEMBER_ME_LOCK_2026-08-30.md`
+
+This is a **SAVE MAIN APP / SAVE LOCK IN** architecture decision. It defines the separation between durable Remember Me semantic memory, 90-day temporary feed/media storage, durable saved/locked media, device-first storage, THyNK app-owned assets and owner backup/archive. It also locks atomic lifecycle/reference promotion instead of unnecessary blob copying, compression/deduplication, server-side retention, cross-device sync requirements and direct cross-user security tests.
+
+The storage lock extends the product rules; it does not prove production implementation. Audit live code/backend evidence and mark each item DONE / PARTIAL / BLOCKED.
+
 Do not redesign or replace this project from scratch.
 
 ## First task
@@ -56,6 +66,8 @@ If any provider/API is unavailable, mark it `NOT_CONFIGURED`. Never fake a worki
 
 ## Remember Me
 Anything intentionally remembered/locked uses Patsy's paw. Outline by default; when saved it fills with bright neon, gives a short click + soft chime, pulses once, sparkles fade, then remains locked in.
+
+The UI interaction above maps to the durable semantic-memory architecture in `docs/codex/PATSY_SAFE_STORAGE_REMEMBER_ME_LOCK_2026-08-30.md`. Remember Me and saved/locked media are separate concepts and must not be implemented as one raw-media folder.
 
 ## Messaging
 Default DM retention target: auto-delete after 3 days unless settings/age rules permit otherwise.
