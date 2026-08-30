@@ -29,7 +29,7 @@ class SupabaseRegistrationGatewayTest {
             userId = "user-1",
             username = "PatsyUser",
             maskedEmail = "pa***@example.com",
-            deliveryState = ConfirmedEmailDeliveryState.QUEUED,
+            deliveryState = EmailDeliveryState.QUEUED,
         )
         override suspend fun start(request: StartRegistrationRequest) = startResult
         override suspend fun complete(attemptId: String, password: CharArray) = completeResult
@@ -65,7 +65,7 @@ class SupabaseRegistrationGatewayTest {
     }
 
     @Test
-    fun completedRegistrationReportsOnlyProviderConfirmedQueuedEmail() = kotlinx.coroutines.runBlocking {
+    fun completedRegistrationReportsQueuedEmailWithoutCallingItSent() = kotlinx.coroutines.runBlocking {
         val registration = FakeRegistrationTransport()
         val secret = SecretChars.copyOf("ValidPassword123!".toCharArray())
         val result = try {
@@ -74,8 +74,8 @@ class SupabaseRegistrationGatewayTest {
             secret.close()
         }
         val created = assertIs<RegistrationResult.AccountCreated>(result)
-        val confirmation = assertIs<ConfirmationEmailAcknowledgement.Confirmed>(created.confirmationEmail)
-        assertEquals(ConfirmedEmailDeliveryState.QUEUED, confirmation.deliveryState)
+        val confirmation = assertIs<ConfirmationEmailAcknowledgement.Status>(created.confirmationEmail)
+        assertEquals(EmailDeliveryState.QUEUED, confirmation.deliveryState)
         assertEquals("pa***@example.com", confirmation.maskedEmail)
     }
 
