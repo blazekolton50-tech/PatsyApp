@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class SupabaseAuthGatewayTest {
     private class MemoryStore : AuthSessionStore {
@@ -17,7 +18,11 @@ class SupabaseAuthGatewayTest {
         var loginResult: RemoteAuthResult = RemoteAuthResult.Failure(RemoteAuthFailure.InvalidCredentials)
         var refreshResult: RemoteAuthResult = RemoteAuthResult.Failure(RemoteAuthFailure.InvalidSession)
         var signOutResult: RemoteSignOutResult = RemoteSignOutResult.SignedOut
-        override suspend fun login(identifier: LoginIdentifier, password: CharArray): RemoteAuthResult = loginResult
+        var observedPassword: CharArray? = null
+        override suspend fun login(identifier: LoginIdentifier, password: CharArray): RemoteAuthResult {
+            observedPassword = password
+            return loginResult
+        }
         override suspend fun refresh(refreshToken: String): RemoteAuthResult = refreshResult
         override suspend fun signOut(accessToken: String): RemoteSignOutResult = signOutResult
     }
@@ -50,6 +55,7 @@ class SupabaseAuthGatewayTest {
         assertEquals("PatsyUser", authenticated.session.username)
         assertEquals("access", store.value?.accessToken)
         assertEquals("refresh", store.value?.refreshToken)
+        assertTrue(transport.observedPassword?.all { it == '\u0000' } == true)
     }
 
     @Test
