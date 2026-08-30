@@ -6,6 +6,7 @@ import com.patsy.app.studio.sizing.*
 import org.junit.Assert.*
 import org.junit.Test
 
+// RED verification: these requirements intentionally fail against the pre-import delta.
 class StudioImportedDeltaRedTest {
     @Test
     fun anchorAndScaleDoesNotStretchBottomRightFixedElement() {
@@ -17,8 +18,6 @@ class StudioImportedDeltaRedTest {
             to = to,
             strategy = ReflowStrategy.ANCHOR_AND_SCALE,
         )
-        // Imported requirement: a bottom-right, no-scale element must preserve size.
-        // The current simpler engine scales it, so this is the RED test.
         assertEquals(150f, current.width, 0.001f)
         assertEquals(50f, current.height, 0.001f)
     }
@@ -52,17 +51,6 @@ class StudioImportedDeltaRedTest {
 
     @Test
     fun catalogueValidatorRejectsForbiddenVisibleNamesAndUnsafeBundling() {
-        val licence = LicenceMetadata(origin = "generated", approvedForBundling = true)
-        val item = StudioCatalogueItem(
-            stableId = "templates-social-0001",
-            category = "templates",
-            subcategory = "social",
-            displayName = "Instagram Post",
-            itemType = CatalogueItemType.TEMPLATE,
-            licence = licence,
-            availability = AssetAvailability.STAGED,
-            completionStatus = CompletionStatus.METADATA_ONLY,
-        )
         val validatorClassExists = runCatching {
             Class.forName("com.patsy.app.studio.catalog.StudioCatalogueValidator")
         }.isSuccess
