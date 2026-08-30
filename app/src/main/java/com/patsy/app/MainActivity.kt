@@ -40,6 +40,8 @@ import com.patsy.app.patsy.rig.rive.PatsyRiveHost
 import com.patsy.app.patsy.rig.rive.PatsyRiveRuntimeAdapter
 import com.patsy.app.ui.PatsyHeader
 import com.patsy.app.ui.PatsyPrimaryButton
+import com.patsy.app.ui.PatsyTopMenuAction
+import com.patsy.app.ui.PatsyWorkspaceHeader
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -67,7 +69,7 @@ data class Profile(
     val mode:String = "16+ Patsy"
 )
 
-enum class Screen { WELCOME, MODE, PROFILE, PASSWORD_SETUP, EMAIL_LINKED, LOGIN, HOME, THYNK, CREATE, DMS, PROFILE_HOME, CHAT, SCHEDULE, MORE, THYNK_TEMPLATES, THYNK_EDITOR, THYNK_AI_IMAGE, THYNK_AI_VIDEO, THYNK_PROJECTS, THYNK_BRAND_KIT, THYNK_INSPIRATION, OWNER_PROFILE, OWNER_TOOLS, SAFE_STATE }
+enum class Screen { WELCOME, MODE, PROFILE, PASSWORD_SETUP, EMAIL_LINKED, LOGIN, HOME, THYNK, CAMERA, CREATE, DMS, PROFILE_HOME, CHAT, SCHEDULE, MORE, ACCOUNT, ABOUT, SETTINGS, REMEMBER_ME, THYNK_TEMPLATES, THYNK_EDITOR, THYNK_AI_IMAGE, THYNK_AI_VIDEO, THYNK_PROJECTS, THYNK_BRAND_KIT, THYNK_INSPIRATION, OWNER_PROFILE, OWNER_TOOLS, SAFE_STATE }
 
 @Composable fun PatsyApp(
     authGateway: AuthGateway = PatsyServiceBindings.authGateway,
@@ -487,7 +489,18 @@ fun Workspace(
         }
     }
     Column(Modifier.fillMaxSize()){
-        Header()
+        PatsyWorkspaceHeader(
+            onAction={action->
+                when(action){
+                    PatsyTopMenuAction.ACCOUNT->navigate(Screen.ACCOUNT)
+                    PatsyTopMenuAction.ABOUT->navigate(Screen.ABOUT)
+                    PatsyTopMenuAction.PROFILE->navigate(Screen.PROFILE_HOME)
+                    PatsyTopMenuAction.SETTINGS->navigate(Screen.SETTINGS)
+                    PatsyTopMenuAction.REMEMBER_ME->navigate(Screen.REMEMBER_ME)
+                }
+            },
+            modifier=Modifier.padding(top=6.dp),
+        )
         Box(Modifier.weight(1f).fillMaxWidth()){
             when {
                 loadingBootstrap -> AccountShellState("Checking your account securely…","Feature content stays locked until Patsy can verify your account state.")
@@ -497,6 +510,7 @@ fun Workspace(
                 Screen.HOME->HomeFeed(profile){navigate(it)}
                 Screen.CHAT->Chat()
                 Screen.THYNK->ThynkStudioHome{navigate(it)}
+                Screen.CAMERA->CameraCreateHome{navigate(it)}
                 Screen.CREATE->CreateNewHome{navigate(it)}
                 Screen.SCHEDULE->Schedule()
                 Screen.PROFILE_HOME,Screen.MORE->More(
@@ -510,6 +524,26 @@ fun Workspace(
                     signOut={scope.launch{onSignedOut();authGateway.signOut()}},
                 )
                 Screen.DMS->Dms()
+                Screen.ACCOUNT->PreviewCSecondaryPage(
+                    title="Account",
+                    detail="Account controls stay behind the verified Patsy account/session boundary. Preview C does not grant OWNER authority or bypass production security.",
+                    back={selected=Screen.PROFILE_HOME},
+                )
+                Screen.ABOUT->PreviewCSecondaryPage(
+                    title="About",
+                    detail="About Patsy App and THyNK Studio. This Preview C surface is for visual walkthrough and does not claim unfinished providers are live.",
+                    back={selected=Screen.HOME},
+                )
+                Screen.SETTINGS->PreviewCSecondaryPage(
+                    title="Settings",
+                    detail="Settings are connected as a secondary route. Provider, privacy and account settings remain fail-closed until their real integrations are verified.",
+                    back={selected=Screen.PROFILE_HOME},
+                )
+                Screen.REMEMBER_ME->PreviewCSecondaryPage(
+                    title="Remember Me",
+                    detail="Saved pictures and videos belong here using the approved Remember Me paw asset and user-controlled storage rules. Preview C shows the route without inventing stored media.",
+                    back={selected=Screen.PROFILE_HOME},
+                )
                 Screen.THYNK_TEMPLATES->ThynkSectionPage(
                     title="Templates",
                     detail="The THyNK template library route is connected. Editable template content is loaded only from approved Patsy assets; the full 100-image / 50-video target is not being pretended complete.",
@@ -561,17 +595,17 @@ fun Workspace(
 }
 
 private fun Screen.routeId():String?=when(this){
-    Screen.HOME->"home";Screen.THYNK->"thynk";Screen.CREATE->"create";Screen.DMS->"patsy_dms";Screen.PROFILE_HOME,Screen.MORE->"profile"
-    Screen.CHAT->"chat";Screen.SCHEDULE->"schedule";Screen.THYNK_TEMPLATES->"thynk_templates";Screen.THYNK_EDITOR->"thynk_editor"
-    Screen.THYNK_AI_IMAGE->"thynk_ai_image";Screen.THYNK_AI_VIDEO->"thynk_ai_video";Screen.THYNK_PROJECTS->"thynk_projects"
+    Screen.HOME->"home";Screen.THYNK->"thynk";Screen.CAMERA->"camera";Screen.CREATE->"create";Screen.DMS->"patsy_dms";Screen.PROFILE_HOME,Screen.MORE->"profile"
+    Screen.CHAT->"chat";Screen.SCHEDULE->"schedule";Screen.ACCOUNT->"account";Screen.ABOUT->"about";Screen.SETTINGS->"settings";Screen.REMEMBER_ME->"remember_me"
+    Screen.THYNK_TEMPLATES->"thynk_templates";Screen.THYNK_EDITOR->"thynk_editor";Screen.THYNK_AI_IMAGE->"thynk_ai_image";Screen.THYNK_AI_VIDEO->"thynk_ai_video";Screen.THYNK_PROJECTS->"thynk_projects"
     Screen.THYNK_BRAND_KIT->"thynk_brand_kit";Screen.THYNK_INSPIRATION->"thynk_inspiration";Screen.OWNER_PROFILE->"owner_profile";Screen.OWNER_TOOLS->"owner_tools"
     else->null
 }
 
 private fun ShellDestination.toScreen():Screen=when(this){
-    ShellDestination.HOME_FEED->Screen.HOME;ShellDestination.THYNK->Screen.THYNK;ShellDestination.CREATE->Screen.CREATE;ShellDestination.DMS->Screen.DMS;ShellDestination.PROFILE->Screen.PROFILE_HOME
-    ShellDestination.CHAT->Screen.CHAT;ShellDestination.SCHEDULE->Screen.SCHEDULE;ShellDestination.THYNK_TEMPLATES->Screen.THYNK_TEMPLATES;ShellDestination.THYNK_EDITOR->Screen.THYNK_EDITOR
-    ShellDestination.THYNK_AI_IMAGE->Screen.THYNK_AI_IMAGE;ShellDestination.THYNK_AI_VIDEO->Screen.THYNK_AI_VIDEO;ShellDestination.THYNK_PROJECTS->Screen.THYNK_PROJECTS
+    ShellDestination.HOME_FEED->Screen.HOME;ShellDestination.THYNK->Screen.THYNK;ShellDestination.CAMERA->Screen.CAMERA;ShellDestination.CREATE->Screen.CREATE;ShellDestination.DMS->Screen.DMS;ShellDestination.PROFILE->Screen.PROFILE_HOME
+    ShellDestination.CHAT->Screen.CHAT;ShellDestination.SCHEDULE->Screen.SCHEDULE;ShellDestination.ACCOUNT->Screen.ACCOUNT;ShellDestination.ABOUT->Screen.ABOUT;ShellDestination.SETTINGS->Screen.SETTINGS;ShellDestination.REMEMBER_ME->Screen.REMEMBER_ME
+    ShellDestination.THYNK_TEMPLATES->Screen.THYNK_TEMPLATES;ShellDestination.THYNK_EDITOR->Screen.THYNK_EDITOR;ShellDestination.THYNK_AI_IMAGE->Screen.THYNK_AI_IMAGE;ShellDestination.THYNK_AI_VIDEO->Screen.THYNK_AI_VIDEO;ShellDestination.THYNK_PROJECTS->Screen.THYNK_PROJECTS
     ShellDestination.THYNK_BRAND_KIT->Screen.THYNK_BRAND_KIT;ShellDestination.THYNK_INSPIRATION->Screen.THYNK_INSPIRATION;ShellDestination.OWNER_PROFILE->Screen.OWNER_PROFILE;ShellDestination.OWNER_TOOLS->Screen.OWNER_TOOLS
     else->Screen.SAFE_STATE
 }
@@ -646,14 +680,44 @@ private fun ShellDestination.toScreen():Screen=when(this){
 
 @Composable fun AppNavigationBar(selected:Screen,onNavigate:(Screen)->Unit){
     Row(
-        Modifier.fillMaxWidth().background(Color(0xFF0A0A0B)).padding(6.dp),
+        Modifier.fillMaxWidth().background(Color(0xFF151518)).padding(horizontal=4.dp,vertical=6.dp),
         horizontalArrangement=Arrangement.SpaceEvenly,
+        verticalAlignment=Alignment.CenterVertically,
     ){
-        ShellNavigationContract.primaryRoutes.forEach{route->
-            val s=route.destination.toScreen();val t=route.label
-            TextButton(onClick={onNavigate(s)}){
-                Text(t,color=if(selected==s)White else Muted,fontSize=11.sp)
+        PreviewPrimaryNavItem(Screen.HOME,"⌂","HOME",selected,onNavigate)
+        PreviewPrimaryNavItem(Screen.THYNK,"TH","THyNK",selected,onNavigate)
+        Box(Modifier.weight(1f),contentAlignment=Alignment.Center){
+            Button(
+                onClick={onNavigate(Screen.CAMERA)},
+                modifier=Modifier.size(56.dp),
+                shape=RoundedCornerShape(28.dp),
+                contentPadding=PaddingValues(0.dp),
+                colors=ButtonDefaults.buttonColors(containerColor=White,contentColor=Color.Black),
+            ){
+                Text("+",color=Color.Black,fontSize=28.sp,fontWeight=FontWeight.Black)
             }
+        }
+        PreviewPrimaryNavItem(Screen.DMS,"✉","PATSY DMs",selected,onNavigate)
+        PreviewPrimaryNavItem(Screen.PROFILE_HOME,"◍","PROFILE",selected,onNavigate)
+    }
+}
+
+@Composable
+private fun RowScope.PreviewPrimaryNavItem(
+    screen:Screen,
+    icon:String,
+    label:String,
+    selected:Screen,
+    onNavigate:(Screen)->Unit,
+){
+    TextButton(
+        onClick={onNavigate(screen)},
+        modifier=Modifier.weight(1f),
+        contentPadding=PaddingValues(horizontal=2.dp,vertical=2.dp),
+    ){
+        Column(horizontalAlignment=Alignment.CenterHorizontally){
+            Text(icon,color=if(selected==screen)White else Muted,fontSize=17.sp,fontWeight=FontWeight.Bold)
+            Text(label,color=if(selected==screen)White else Muted,fontSize=9.sp,maxLines=1)
         }
     }
 }
