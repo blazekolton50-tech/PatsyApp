@@ -6,7 +6,10 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class LockedNavigationContractTest {
-    private val source = File("src/main/java/com/patsy/app/MainActivity.kt").readText()
+    private val source = listOf(
+        File("src/main/java/com/patsy/app/MainActivity.kt"),
+        File("src/main/java/com/patsy/app/LockedWorkspaceScreens.kt"),
+    ).joinToString("\n") { it.readText() }
 
     @Test
     fun primaryNavigationMatchesLatestLockedProductRules() {
