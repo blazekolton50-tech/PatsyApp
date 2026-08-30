@@ -4,32 +4,46 @@ PATH = Path("app/src/main/java/com/patsy/app/MainActivity.kt")
 text = PATH.read_text(encoding="utf-8")
 
 import_anchor = "import com.patsy.app.patsy.rig.rive.PatsyRiveRuntimeAdapter\n"
-import_block = (
-    import_anchor
-    + "import com.patsy.app.ui.PatsyHeader\n"
-    + "import com.patsy.app.ui.PatsyPrimaryButton\n"
+companion_imports = (
+    "import com.patsy.app.patsy.ui.PatsyAction\n"
+    "import com.patsy.app.patsy.ui.PatsyMotion\n"
 )
-old_header = '@Composable fun Header(){ Column(horizontalAlignment=Alignment.CenterHorizontally,modifier=Modifier.fillMaxWidth().padding(top=18.dp)){ Image(painter=painterResource(R.drawable.patsy_logo_official_white),contentDescription="Patsy",modifier=Modifier.width(190.dp).height(88.dp),contentScale=ContentScale.Fit); Text("YOUR AI. YOUR WORKSPACE. YOUR CONTROL.",fontSize=10.sp,color=Muted,letterSpacing=1.sp) } }'
-new_header = '@Composable fun Header(){ PatsyHeader(modifier=Modifier.padding(top=18.dp)) }'
-old_primary = '@Composable fun Primary(text:String,onClick:()->Unit,enabled:Boolean=true){ Button(onClick=onClick,enabled=enabled,modifier=Modifier.fillMaxWidth().height(58.dp),colors=ButtonDefaults.buttonColors(containerColor=White,contentColor=Color.Black),shape=RoundedCornerShape(30.dp)){ Text(text,fontWeight=FontWeight.Bold,fontSize=16.sp) } }'
-new_primary = '@Composable fun Primary(text:String,onClick:()->Unit,enabled:Boolean=true){ PatsyPrimaryButton(text=text,onClick=onClick,enabled=enabled) }'
 
-targets = {
-    "Rive import anchor": (import_anchor, import_block),
-    "legacy Header wrapper": (old_header, new_header),
-    "legacy Primary wrapper": (old_primary, new_primary),
-}
+if companion_imports not in text:
+    if text.count(import_anchor) != 1:
+        raise SystemExit("Refusing unsafe patch: Rive import anchor was not unique")
+    text = text.replace(import_anchor, import_anchor + companion_imports, 1)
 
-for name, (old, _) in targets.items():
-    count = text.count(old)
-    if count != 1:
-        raise SystemExit(f"Refusing unsafe patch: {name} matched {count} times; expected exactly 1")
+actor_start_marker = "/**\n * Animated Patsy actor architecture."
+panel_anchor = "@Composable fun Panel(content:@Composable ColumnScope.()->Unit)"
 
-for old, new in targets.values():
-    text = text.replace(old, new, 1)
+if text.count(actor_start_marker) != 1:
+    raise SystemExit("Refusing unsafe patch: legacy Patsy actor start marker was not unique")
+if text.count(panel_anchor) != 1:
+    raise SystemExit("Refusing unsafe patch: Panel anchor was not unique")
 
-if "YOUR AI. YOUR WORKSPACE. YOUR CONTROL." in text:
-    raise SystemExit("Legacy tagline remained after patch")
+actor_start = text.index(actor_start_marker)
+panel_start = text.index(panel_anchor)
+if actor_start >= panel_start:
+    raise SystemExit("Refusing unsafe patch: legacy actor block boundaries were invalid")
+
+text = text[:actor_start] + text[panel_start:]
+
+old_welcome = '@Composable fun Welcome(start:()->Unit,login:()->Unit){ Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),horizontalAlignment=Alignment.CenterHorizontally){ Header(); PatsyMotion("Hey there! 🐾",action=PatsyAction.HAPPY); Text("Let’s get you",fontSize=28.sp,color=White,fontWeight=FontWeight.Bold); Text("all set up…",style=TextStyle(brush=Rainbow,fontSize=30.sp,fontWeight=FontWeight.ExtraBold)); Spacer(Modifier.height(18.dp)); Primary("Get Started  →",start); Spacer(Modifier.height(10.dp)); OutlinedButton(login,Modifier.fillMaxWidth().height(54.dp),shape=RoundedCornerShape(28.dp),colors=ButtonDefaults.outlinedButtonColors(contentColor=White)){Text("I already have an account")}; Spacer(Modifier.height(18.dp)); Text("Patsy’s ready when you are! 🐾",color=Muted) } }'
+new_welcome = '@Composable fun Welcome(start:()->Unit,login:()->Unit){ Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),horizontalAlignment=Alignment.CenterHorizontally){ Header(); PatsyMotion("Hey! Incase you can’t tell, I’m Patsy.",action=PatsyAction.HAPPY); Text("I\'m Patsy. Your personal AI PetPal. Log in and I\'ll show you what I can do!",fontSize=24.sp,color=White,fontWeight=FontWeight.Bold); Spacer(Modifier.height(18.dp)); Primary("Get Started  →",start); Spacer(Modifier.height(10.dp)); OutlinedButton(login,Modifier.fillMaxWidth().height(54.dp),shape=RoundedCornerShape(28.dp),colors=ButtonDefaults.outlinedButtonColors(contentColor=White)){Text("I already have an account")}; Spacer(Modifier.height(18.dp)); Text("Patsy’s ready when you are!",color=Muted) } }'
+
+if text.count(old_welcome) != 1:
+    raise SystemExit(f"Refusing unsafe patch: welcome screen matched {text.count(old_welcome)} times; expected exactly 1")
+text = text.replace(old_welcome, new_welcome, 1)
+
+if "enum class PatsyAction" in text:
+    raise SystemExit("Legacy MainActivity PatsyAction remained after extraction")
+if "@Composable fun PatsyMotion(" in text:
+    raise SystemExit("Legacy MainActivity PatsyMotion remained after extraction")
+if "Text(\"🐾\"" in text or "Text(\"↗\"" in text:
+    raise SystemExit("Legacy decorative Patsy motion substitute remained after extraction")
+if "I'M Patsy" in text:
+    raise SystemExit("Unexpected signup copy mutation")
 
 PATH.write_text(text, encoding="utf-8")
-print("Locked wrapper migration applied safely.")
+print("Unboxed Patsy companion extraction applied safely.")
