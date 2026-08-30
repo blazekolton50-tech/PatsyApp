@@ -58,7 +58,7 @@ data class Profile(
     val mode:String = "16+ Patsy"
 )
 
-enum class Screen { WELCOME, MODE, PROFILE, PASSWORD_SETUP, EMAIL_LINKED, LOGIN, HOME, CHAT, CREATE, SCHEDULE, MORE, DMS, OWNER_PROFILE, OWNER_TOOLS }
+enum class Screen { WELCOME, MODE, PROFILE, PASSWORD_SETUP, EMAIL_LINKED, LOGIN, HOME, THYNK, CREATE, DMS, PROFILE_HOME, CHAT, SCHEDULE, MORE, THYNK_TEMPLATES, THYNK_EDITOR, THYNK_AI_IMAGE, THYNK_AI_VIDEO, THYNK_PROJECTS, THYNK_BRAND_KIT, THYNK_INSPIRATION, OWNER_PROFILE, OWNER_TOOLS }
 
 @Composable fun PatsyApp(){
     val authGateway = remember { PatsyServiceBindings.authGateway }
@@ -421,11 +421,12 @@ fun Workspace(
         Header()
         Box(Modifier.weight(1f).fillMaxWidth()){
             when(selected){
-                Screen.HOME->Home(profile){selected=it}
+                Screen.HOME->HomeFeed(profile){selected=it}
                 Screen.CHAT->Chat()
-                Screen.CREATE->CreateStudio()
+                Screen.THYNK->ThynkStudioHome{selected=it}
+                Screen.CREATE->CreateNewHome{selected=it}
                 Screen.SCHEDULE->Schedule()
-                Screen.MORE->More(
+                Screen.PROFILE_HOME,Screen.MORE->More(
                     profile=profile,
                     emailVerified=session?.emailVerified==true,
                     ownerAccessChecked=ownerAccessChecked,
@@ -436,9 +437,40 @@ fun Workspace(
                     signOut={scope.launch{authGateway.signOut();onSignedOut()}},
                 )
                 Screen.DMS->Dms()
-                Screen.OWNER_PROFILE->if(ownerProfileGrant.isCurrentGrant(OwnerCapability.VIEW_OWNER_PROFILE)) OwnerProfile(profile){selected=Screen.MORE} else OwnerAccessDenied{selected=Screen.MORE}
-                Screen.OWNER_TOOLS->if(ownerToolsGrant.isCurrentGrant(OwnerCapability.VIEW_OWNER_TOOLS)) OwnerTools{selected=Screen.MORE} else OwnerAccessDenied{selected=Screen.MORE}
-                else->Home(profile){selected=it}
+                Screen.THYNK_TEMPLATES->ThynkSectionPage(
+                    title="Templates",
+                    detail="The THyNK template library route is connected. Editable template content is loaded only from approved Patsy assets; the full 100-image / 50-video target is not being pretended complete.",
+                    back={selected=Screen.THYNK},
+                )
+                Screen.THYNK_EDITOR->CreateStudio()
+                Screen.THYNK_AI_IMAGE->ThynkSectionPage(
+                    title="AI Image Generator",
+                    detail="This page is connected to the THyNK flow. A production image-generation provider is not configured yet, so no fake generated result is shown.",
+                    back={selected=Screen.THYNK},
+                )
+                Screen.THYNK_AI_VIDEO->ThynkSectionPage(
+                    title="AI Video Generator",
+                    detail="This is the locked 10-second video workflow route. The production video provider is not configured yet, so generation remains unavailable rather than simulated.",
+                    back={selected=Screen.THYNK},
+                )
+                Screen.THYNK_PROJECTS->ThynkSectionPage(
+                    title="My Projects",
+                    detail="Project continuation is connected at the UI route. Cross-device project persistence remains a backend integration task.",
+                    back={selected=Screen.THYNK},
+                )
+                Screen.THYNK_BRAND_KIT->ThynkSectionPage(
+                    title="Brand Kit",
+                    detail="The Brand Kit route is connected and reserved for user-owned brand assets, colours, fonts and approved reusable elements.",
+                    back={selected=Screen.THYNK},
+                )
+                Screen.THYNK_INSPIRATION->ThynkSectionPage(
+                    title="Inspiration",
+                    detail="The Inspiration route is connected. Live AI/search suggestions will remain unavailable until the secure provider gateway is configured.",
+                    back={selected=Screen.THYNK},
+                )
+                Screen.OWNER_PROFILE->if(ownerProfileGrant.isCurrentGrant(OwnerCapability.VIEW_OWNER_PROFILE)) OwnerProfile(profile){selected=Screen.PROFILE_HOME} else OwnerAccessDenied{selected=Screen.PROFILE_HOME}
+                Screen.OWNER_TOOLS->if(ownerToolsGrant.isCurrentGrant(OwnerCapability.VIEW_OWNER_TOOLS)) OwnerTools{selected=Screen.PROFILE_HOME} else OwnerAccessDenied{selected=Screen.PROFILE_HOME}
+                else->HomeFeed(profile){selected=it}
             }
         }
         if(selected!=Screen.OWNER_PROFILE&&selected!=Screen.OWNER_TOOLS){
@@ -452,7 +484,7 @@ fun Workspace(
 
 @Composable fun Chat(){ var q by remember{mutableStateOf("")}; var answer by remember{mutableStateOf("Ask Patsy anything. Web/AI calls are routed through the configured secure backend.")}; Column(Modifier.fillMaxSize().padding(16.dp)){PatsyMotion("I'm your AI search. Ask me anything. 🐾",true,PatsyAction.TALKING); Panel{Text(answer,color=White)}; Spacer(Modifier.height(10.dp)); OutlinedTextField(q,{q=it},modifier=Modifier.fillMaxWidth(),placeholder={Text("Ask Patsy…")}); Spacer(Modifier.height(8.dp)); Primary("ASK PATSY / SEARCH WEB",{answer=if(q.isBlank())"Tell me what you want to know." else "Patsy received: $q\n\nConnect the secure AI/search backend to return live results."})} }
 
-@Composable fun CreateStudio(){ var brightness by remember{mutableStateOf(0f)}; var contrast by remember{mutableStateOf(0f)}; var saturation by remember{mutableStateOf(0f)}; Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)){PatsyMotion("Tell me what to create or change. 🎨",true,PatsyAction.POINTING); Panel{Text("CREATION STUDIO",fontSize=24.sp,fontWeight=FontWeight.Bold); Text("High-spec creative workspace",color=Muted); Spacer(Modifier.height(10.dp)); Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){Button({}){Text("Import")};Button({}){Text("AI Image")};Button({}){Text("10s Video")}}; Text("Editor canvas",Modifier.padding(top=14.dp),fontWeight=FontWeight.Bold); Box(Modifier.fillMaxWidth().height(150.dp).background(Color(0xFF111216),RoundedCornerShape(18.dp)),contentAlignment=Alignment.Center){Text("Preview / canvas")}; Adjust("Brightness",brightness){brightness=it};Adjust("Contrast",contrast){contrast=it};Adjust("Saturation",saturation){saturation=it};Text("Filters • Crop • Resize • Rotate • Text • Stickers • Shapes • Layers • Undo • Redo • Reset • Export",color=Muted); Spacer(Modifier.height(8.dp)); OutlinedTextField("",{},modifier=Modifier.fillMaxWidth(),placeholder={Text("Tell Patsy: make this brighter / turn into a Reel / make a 10 second video…")}); Primary("APPLY WITH PATSY",{})} } }
+@Composable fun CreateStudio(){ var brightness by remember{mutableStateOf(0f)}; var contrast by remember{mutableStateOf(0f)}; var saturation by remember{mutableStateOf(0f)}; Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)){PatsyMotion("Tell me what to create or change. 🎨",true,PatsyAction.POINTING); Panel{Text("THyNK EDITOR",fontSize=24.sp,fontWeight=FontWeight.Bold); Text("High-spec creative workspace",color=Muted); Spacer(Modifier.height(10.dp)); Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){Button({}){Text("Import")};Button({}){Text("AI Image")};Button({}){Text("10s Video")}}; Text("Editor canvas",Modifier.padding(top=14.dp),fontWeight=FontWeight.Bold); Box(Modifier.fillMaxWidth().height(150.dp).background(Color(0xFF111216),RoundedCornerShape(18.dp)),contentAlignment=Alignment.Center){Text("Preview / canvas")}; Adjust("Brightness",brightness){brightness=it};Adjust("Contrast",contrast){contrast=it};Adjust("Saturation",saturation){saturation=it};Text("Filters • Crop • Resize • Rotate • Text • Stickers • Shapes • Layers • Undo • Redo • Reset • Export",color=Muted); Spacer(Modifier.height(8.dp)); OutlinedTextField("",{},modifier=Modifier.fillMaxWidth(),placeholder={Text("Tell Patsy: make this brighter / turn into a Reel / make a 10 second video…")}); Primary("APPLY WITH PATSY",{})} } }
 @Composable fun Adjust(label:String,value:Float,onChange:(Float)->Unit){Text(label);Slider(value,{onChange(it)},valueRange=-1f..1f)}
 @Composable fun Schedule(){Panel{Text("SCHEDULE",fontSize=24.sp,fontWeight=FontWeight.Bold);Text("Plan and organise content here. Backend calendar/publishing integrations plug into this surface.",color=Muted)}}
 @Composable fun Dms(){Panel{Text("DMS",fontSize=24.sp,fontWeight=FontWeight.Bold);Text("Private messaging workspace. Authenticated access only.",color=Muted);Text("Conversation list → conversation → send → delivery states",color=Muted)}}
@@ -515,4 +547,21 @@ fun Workspace(
     }
 }
 
-@Composable fun AppNavigationBar(selected:Screen,onNavigate:(Screen)->Unit){ Row(Modifier.fillMaxWidth().background(Color(0xFF0A0A0B)).padding(6.dp),horizontalArrangement=Arrangement.SpaceEvenly){listOf(Screen.HOME to "⌂\nHome",Screen.CHAT to "💬\nChat",Screen.CREATE to "✎\nCreate",Screen.SCHEDULE to "▣\nSchedule",Screen.MORE to "•••\nMore").forEach{(s,t)->TextButton(onClick={onNavigate(s)}){Text(t,color=if(selected==s)White else Muted,fontSize=11.sp)}}} }
+@Composable fun AppNavigationBar(selected:Screen,onNavigate:(Screen)->Unit){
+    Row(
+        Modifier.fillMaxWidth().background(Color(0xFF0A0A0B)).padding(6.dp),
+        horizontalArrangement=Arrangement.SpaceEvenly,
+    ){
+        listOf(
+            Screen.HOME to "Home",
+            Screen.THYNK to "THyNK",
+            Screen.CREATE to "Create",
+            Screen.DMS to "Patsy DMs",
+            Screen.PROFILE_HOME to "Profile",
+        ).forEach{(s,t)->
+            TextButton(onClick={onNavigate(s)}){
+                Text(t,color=if(selected==s)White else Muted,fontSize=11.sp)
+            }
+        }
+    }
+}
