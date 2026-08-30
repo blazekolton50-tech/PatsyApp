@@ -35,15 +35,20 @@ class ShellNavigationContractTest {
 
     @Test fun primaryRoutesHaveExactStableOrderLabelsAndMeaning() {
         assertEquals(
-            listOf("home", "thynk", "create", "patsy_dms", "profile"),
+            listOf("home", "thynk", "camera", "patsy_dms", "profile"),
             ShellNavigationContract.primaryRoutes.map { it.id },
         )
         assertEquals(
-            listOf("Home", "THyNK", "Create", "Patsy DMs", "Profile"),
+            listOf("Home", "THyNK", "Camera", "PATSY DMs", "Profile"),
             ShellNavigationContract.primaryRoutes.map { it.label },
         )
         assertEquals(ShellDestination.HOME_FEED, ShellNavigationContract.route("home")?.destination)
-        assertFalse(ShellNavigationContract.primaryRoutes.any { it.id == "schedule" || it.id == "more" })
+        assertEquals(ShellDestination.CAMERA, ShellNavigationContract.route("camera")?.destination)
+        assertFalse(
+            ShellNavigationContract.primaryRoutes.any {
+                it.id == "create" || it.id == "schedule" || it.id == "more"
+            },
+        )
     }
 
     @Test fun unknownAgeIsProtectedAndDmDeepLinkCannotBypassGate() {
