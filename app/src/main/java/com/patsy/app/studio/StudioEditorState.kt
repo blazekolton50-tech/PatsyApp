@@ -100,6 +100,7 @@ sealed interface StudioAction {
     data object TogglePlayPause : StudioAction
     data object ToggleLoop : StudioAction
     data object ToggleMute : StudioAction
+    data class SetPlaying(val playing: Boolean) : StudioAction
     data class SeekTo(val timeMs: Int) : StudioAction
     data class StepBy(val deltaMs: Int) : StudioAction
     data class SetDuration(val durationMs: Int) : StudioAction
@@ -120,6 +121,9 @@ fun reduceStudioState(
 
     StudioAction.ToggleLoop -> state.copy(isLooping = !state.isLooping)
     StudioAction.ToggleMute -> state.copy(isMuted = !state.isMuted)
+    is StudioAction.SetPlaying -> state.copy(
+        isPlaying = action.playing && state.durationMs > 0,
+    )
     is StudioAction.SeekTo -> state.copy(
         playheadMs = action.timeMs.coerceIn(0, state.durationMs.coerceAtLeast(0)),
     )
