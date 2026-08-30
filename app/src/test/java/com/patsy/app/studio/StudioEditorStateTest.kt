@@ -46,6 +46,19 @@ class StudioEditorStateTest {
     }
 
     @Test
+    fun playerCallbacksSetPlaybackStateInsteadOfBlindlyTogglingIt() {
+        val paused = StudioEditorState.video(durationMs = 10_000)
+        val playing = reduceStudioState(paused, StudioAction.SetPlaying(true))
+        val stillPlaying = reduceStudioState(playing, StudioAction.SetPlaying(true))
+        val pausedAgain = reduceStudioState(stillPlaying, StudioAction.SetPlaying(false))
+
+        assertTrue(playing.isPlaying)
+        assertTrue(stillPlaying.isPlaying)
+        assertFalse(pausedAgain.isPlaying)
+        assertFalse(reduceStudioState(StudioEditorState.image(1080, 1350), StudioAction.SetPlaying(true)).isPlaying)
+    }
+
+    @Test
     fun playbackSpeedIsRestrictedToSupportedStudioSpeeds() {
         val state = StudioEditorState.video(durationMs = 10_000)
 
