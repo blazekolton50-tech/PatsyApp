@@ -36,6 +36,8 @@ import com.patsy.app.patsy.rig.PatsyRigPose
 import com.patsy.app.patsy.rig.PatsyRigViseme
 import com.patsy.app.patsy.rig.rive.PatsyRiveHost
 import com.patsy.app.patsy.rig.rive.PatsyRiveRuntimeAdapter
+import com.patsy.app.ui.PatsyHeader
+import com.patsy.app.ui.PatsyPrimaryButton
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -135,7 +137,7 @@ enum class Screen { WELCOME, MODE, PROFILE, PASSWORD_SETUP, EMAIL_LINKED, LOGIN,
     }
 }
 
-@Composable fun Header(){ Column(horizontalAlignment=Alignment.CenterHorizontally,modifier=Modifier.fillMaxWidth().padding(top=18.dp)){ Image(painter=painterResource(R.drawable.patsy_logo_official_white),contentDescription="Patsy",modifier=Modifier.width(190.dp).height(88.dp),contentScale=ContentScale.Fit); Text("YOUR AI. YOUR WORKSPACE. YOUR CONTROL.",fontSize=10.sp,color=Muted,letterSpacing=1.sp) } }
+@Composable fun Header(){ PatsyHeader(modifier=Modifier.padding(top=18.dp)) }
 
 /**
  * Animated Patsy actor architecture. The production actor must use generated Patsy character
@@ -255,7 +257,7 @@ enum class PatsyAction { IDLE, THINKING, TALKING, POINTING, JUMPING, HAPPY, WARN
 }
 
 @Composable fun Panel(content:@Composable ColumnScope.()->Unit){ Column(content=content,modifier=Modifier.fillMaxWidth().background(Charcoal,RoundedCornerShape(28.dp)).padding(20.dp)) }
-@Composable fun Primary(text:String,onClick:()->Unit,enabled:Boolean=true){ Button(onClick=onClick,enabled=enabled,modifier=Modifier.fillMaxWidth().height(58.dp),colors=ButtonDefaults.buttonColors(containerColor=White,contentColor=Color.Black),shape=RoundedCornerShape(30.dp)){ Text(text,fontWeight=FontWeight.Bold,fontSize=16.sp) } }
+@Composable fun Primary(text:String,onClick:()->Unit,enabled:Boolean=true){ PatsyPrimaryButton(text=text,onClick=onClick,enabled=enabled) }
 
 @Composable fun Welcome(start:()->Unit,login:()->Unit){ Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),horizontalAlignment=Alignment.CenterHorizontally){ Header(); PatsyMotion("Hey there! 🐾",action=PatsyAction.HAPPY); Text("Let’s get you",fontSize=28.sp,color=White,fontWeight=FontWeight.Bold); Text("all set up…",style=TextStyle(brush=Rainbow,fontSize=30.sp,fontWeight=FontWeight.ExtraBold)); Spacer(Modifier.height(18.dp)); Primary("Get Started  →",start); Spacer(Modifier.height(10.dp)); OutlinedButton(login,Modifier.fillMaxWidth().height(54.dp),shape=RoundedCornerShape(28.dp),colors=ButtonDefaults.outlinedButtonColors(contentColor=White)){Text("I already have an account")}; Spacer(Modifier.height(18.dp)); Text("Patsy’s ready when you are! 🐾",color=Muted) } }
 
