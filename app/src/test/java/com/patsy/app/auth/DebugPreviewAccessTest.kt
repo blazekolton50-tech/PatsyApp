@@ -33,9 +33,12 @@ class DebugPreviewAccessTest {
         assertTrue(manifest.exists(), "Debug manifest must replace the launcher for test builds")
 
         val activityText = activity.readText()
+        val accessText = File("src/debug/java/com/patsy/app/auth/DebugPreviewAccess.kt").readText()
         val manifestText = manifest.readText()
         assertTrue(activityText.contains("Preview app (DEBUG ONLY)"))
-        assertTrue(activityText.contains("DebugPreviewAuthGateway"))
+        assertTrue(activityText.contains("PREVIEW_AUTH_REQUESTED_EXTRA"))
+        assertTrue(accessText.contains("DebugPreviewAuthGateway"))
+        assertFalse(activityText.contains("PatsyServiceBindings.authGateway ="))
         assertTrue(manifestText.contains(".DebugPreviewActivity"))
         assertTrue(manifestText.contains("tools:node=\"replace\""))
     }
