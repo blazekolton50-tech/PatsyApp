@@ -2,6 +2,14 @@
 
 Repository: `blazekolton50-tech/PatsyApp`
 
+## NEW — Mega Master context
+
+A consolidated project handoff has now been added at:
+
+`docs/codex/PATSY_MEGA_MASTER_HANDOFF_2026-08-30.md`
+
+**Read that file before starting a new substantial task.** It records the 2026-08-30 consolidation of Patsy App / THyNK requirements, Studio AI material, Rive/animation work, PawMoji/keyboard work, security/under-16 plans, backend work, Library/reference assets, historical builds and the current repository state. Historical files are reference/recovery material and must not override newer locked decisions or the current repository.
+
 Do not redesign or replace this project from scratch.
 
 ## First task

@@ -26,6 +26,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.patsy.app.auth.*
+import com.patsy.app.account.*
+import com.patsy.app.navigation.*
 import com.patsy.app.security.FailClosedOwnerAuthorizationGate
 import com.patsy.app.security.OwnerAuthorizationDecision
 import com.patsy.app.security.OwnerCapability
@@ -36,6 +38,10 @@ import com.patsy.app.patsy.rig.PatsyRigPose
 import com.patsy.app.patsy.rig.PatsyRigViseme
 import com.patsy.app.patsy.rig.rive.PatsyRiveHost
 import com.patsy.app.patsy.rig.rive.PatsyRiveRuntimeAdapter
+import com.patsy.app.ui.PatsyHeader
+import com.patsy.app.ui.PatsyPrimaryButton
+import com.patsy.app.ui.PatsyTopMenuAction
+import com.patsy.app.ui.PatsyWorkspaceHeader
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -46,7 +52,14 @@ private val Muted = Color(0xFFAAAAAF)
 private val Rainbow = Brush.horizontalGradient(listOf(Color(0xFFFF6B35),Color(0xFFFFD447),Color(0xFF4CD964),Color(0xFF36A9FF),Color(0xFF9B59FF),Color(0xFFFF4FA3)))
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState); setContent { PatsyApp() } }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val launchAuthGateway = resolveLaunchAuthGateway(
+            previewRequested = intent.getBooleanExtra(PREVIEW_AUTH_REQUESTED_EXTRA, false),
+            productionGateway = PatsyServiceBindings.authGateway,
+        )
+        setContent { PatsyApp(authGateway = launchAuthGateway, initialDeepLink = intent.dataString) }
+    }
 }
 
 data class Profile(
@@ -56,11 +69,15 @@ data class Profile(
     val mode:String = "16+ Patsy"
 )
 
-enum class Screen { WELCOME, MODE, PROFILE, PASSWORD_SETUP, EMAIL_LINKED, LOGIN, HOME, CHAT, CREATE, SCHEDULE, MORE, DMS, OWNER_PROFILE, OWNER_TOOLS }
+enum class Screen { WELCOME, MODE, PROFILE, PASSWORD_SETUP, EMAIL_LINKED, LOGIN, HOME, THYNK, CAMERA, CREATE, DMS, PROFILE_HOME, CHAT, SCHEDULE, MORE, ACCOUNT, ABOUT, SETTINGS, REMEMBER_ME, THYNK_TEMPLATES, THYNK_EDITOR, THYNK_AI_IMAGE, THYNK_AI_VIDEO, THYNK_PROJECTS, THYNK_BRAND_KIT, THYNK_INSPIRATION, OWNER_PROFILE, OWNER_TOOLS, SAFE_STATE }
 
-@Composable fun PatsyApp(){
-    val authGateway = remember { PatsyServiceBindings.authGateway }
+@Composable fun PatsyApp(
+    authGateway: AuthGateway = PatsyServiceBindings.authGateway,
+    accountBootstrapService: AccountBootstrapService = PatsyServiceBindings.accountBootstrapService,
+    initialDeepLink: String? = null,
+){
     val ownerGate = remember { FailClosedOwnerAuthorizationGate(PatsyServiceBindings.ownerAuthorizationService) }
+    val appScope = rememberCoroutineScope()
     var screen by remember { mutableStateOf(Screen.WELCOME) }
     var profile by remember { mutableStateOf<Profile?>(null) }
     var session by remember { mutableStateOf<PublicSession?>(null) }
@@ -69,12 +86,21 @@ enum class Screen { WELCOME, MODE, PROFILE, PASSWORD_SETUP, EMAIL_LINKED, LOGIN,
     var pendingMode by remember { mutableStateOf("16+ Patsy") }
     var registrationAttemptId by remember { mutableStateOf<String?>(null) }
     var confirmationAcknowledgement by remember { mutableStateOf<ConfirmationEmailAcknowledgement?>(null) }
+    var bootstrapResult by remember { mutableStateOf<AccountBootstrapResult?>(null) }
+    var bootstrapLoading by remember { mutableStateOf(false) }
+    suspend fun loadBootstrap(authenticatedSession: PublicSession) {
+        bootstrapLoading = true
+        val result = accountBootstrapService.fetch(authenticatedSession)
+        if (session?.sessionId == authenticatedSession.sessionId) bootstrapResult = result
+        bootstrapLoading = false
+    }
     LaunchedEffect(authGateway){
         when(val restored=authGateway.restoreSession()){
             is SessionState.Authenticated -> {
                 session=restored.session
-                profile=restored.session.toProfile(pendingMode)
+                profile=restored.session.toProfile("Protected Mode")
                 screen=Screen.HOME
+                loadBootstrap(restored.session)
             }
             SessionState.Anonymous,is SessionState.Expired,is SessionState.Unavailable -> Unit
         }
@@ -114,17 +140,23 @@ enum class Screen { WELCOME, MODE, PROFILE, PASSWORD_SETUP, EMAIL_LINKED, LOGIN,
                     authGateway=authGateway,
                     onDone={authenticatedSession ->
                         session=authenticatedSession
-                        profile=authenticatedSession.toProfile(pendingMode)
+                        profile=authenticatedSession.toProfile("Protected Mode")
                         screen=Screen.HOME
+                        appScope.launch { loadBootstrap(authenticatedSession) }
                     },
                     back={screen=Screen.WELCOME},
                 )
                 else -> Workspace(
-                    profile=profile,
+                    profile=(bootstrapResult as? AccountBootstrapResult.Available)?.account?.let { profile?.copy(mode=it.ageState.displayLabel()) } ?: profile,
                     session=session,
+                    bootstrap=(bootstrapResult as? AccountBootstrapResult.Available)?.account,
+                    initialDeepLink=initialDeepLink,
                     authGateway=authGateway,
                     ownerGate=ownerGate,
+                    loadingBootstrap=bootstrapLoading,
+                    bootstrapFailure=(bootstrapResult as? AccountBootstrapResult.FailedClosed)?.reason,
                     onSignedOut={
+                        bootstrapResult=null
                         session=null
                         profile=null
                         screen=Screen.WELCOME
@@ -135,127 +167,17 @@ enum class Screen { WELCOME, MODE, PROFILE, PASSWORD_SETUP, EMAIL_LINKED, LOGIN,
     }
 }
 
-@Composable fun Header(){ Column(horizontalAlignment=Alignment.CenterHorizontally,modifier=Modifier.fillMaxWidth().padding(top=18.dp)){ Image(painter=painterResource(R.drawable.patsy_logo_official_white),contentDescription="Patsy",modifier=Modifier.width(190.dp).height(88.dp),contentScale=ContentScale.Fit); Text("YOUR AI. YOUR WORKSPACE. YOUR CONTROL.",fontSize=10.sp,color=Muted,letterSpacing=1.sp) } }
-
-/**
- * Animated Patsy actor architecture. The production actor must use generated Patsy character
- * assets based on the locked real-photo references. Real photographs are reference-only and must not appear in-app unless explicitly authorised. Motion states are intentionally separated from the UI so the real
- * asset can move, point, jump between controls, talk/lip-sync and react to app events.
- */
-enum class PatsyAction { IDLE, THINKING, TALKING, POINTING, JUMPING, HAPPY, WARNING, SLEEPY, CELEBRATE }
-
-@Composable fun PatsyMotion(label:String="Hi! 🐾", pointing:Boolean=false, action:PatsyAction = if(pointing) PatsyAction.POINTING else PatsyAction.IDLE, modifier:Modifier=Modifier){
-    val riveRuntime = remember { PatsyRiveRuntimeAdapter() }
-    val rigCoordinator = remember(riveRuntime) { PatsyRigCoordinator(riveRuntime) }
-    val transition = rememberInfiniteTransition(label="patsy-motion")
-    val bob by transition.animateFloat(0f, 1f, infiniteRepeatable(tween(900, easing=FastOutSlowInEasing), RepeatMode.Reverse), label="bob")
-    val breathe by transition.animateFloat(0.985f, 1.015f, infiniteRepeatable(tween(1200, easing=FastOutSlowInEasing), RepeatMode.Reverse), label="breathe")
-    val look by transition.animateFloat(-1f, 1f, infiniteRepeatable(tween(2200, easing=FastOutSlowInEasing), RepeatMode.Reverse), label="look")
-    val jump by transition.animateFloat(0f, 1f, infiniteRepeatable(tween(1200, easing=FastOutSlowInEasing), RepeatMode.Reverse), label="jump")
-    val rigMotion = when {
-        action==PatsyAction.JUMPING -> PatsyRigMotion.JUMP
-        action==PatsyAction.POINTING || pointing -> PatsyRigMotion.POINT
-        action==PatsyAction.CELEBRATE -> PatsyRigMotion.WAVE
-        action==PatsyAction.SLEEPY -> PatsyRigMotion.LIE
-        else -> PatsyRigMotion.IDLE
-    }
-    val rigExpression = when(action){
-        PatsyAction.THINKING -> PatsyRigExpression.CURIOUS
-        PatsyAction.TALKING, PatsyAction.IDLE -> PatsyRigExpression.CHEEKY
-        PatsyAction.POINTING -> PatsyRigExpression.PROUD
-        PatsyAction.JUMPING, PatsyAction.HAPPY, PatsyAction.CELEBRATE -> PatsyRigExpression.EXCITED
-        PatsyAction.WARNING -> PatsyRigExpression.CONCERNED
-        PatsyAction.SLEEPY -> PatsyRigExpression.SLEEPY
-    }
-    val talking = action==PatsyAction.TALKING
-    SideEffect {
-        rigCoordinator.render(
-            PatsyRigPose(
-                motion=rigMotion,
-                motionSpeed=when(rigMotion){
-                    PatsyRigMotion.JUMP -> 0.85f
-                    PatsyRigMotion.WAVE, PatsyRigMotion.POINT -> 0.45f
-                    else -> 0.12f
-                },
-                pointX=if(pointing || action==PatsyAction.POINTING) 0.88f else 0.5f,
-                pointY=if(pointing || action==PatsyAction.POINTING) 0.55f else 0.5f,
-                lookX=look,
-                lookY=(bob-0.5f)*0.12f,
-                headTilt=-look*0.18f,
-                leftEarDrive=(look*0.32f+(bob-0.5f)*0.08f).coerceIn(-1f,1f),
-                rightEarDrive=(-look*0.22f+(bob-0.5f)*0.12f).coerceIn(-1f,1f),
-                earPhysicsEnabled=true,
-                tailDrive=look*0.2f,
-                tailEnergy=when(action){
-                    PatsyAction.HAPPY, PatsyAction.CELEBRATE, PatsyAction.JUMPING -> 0.85f
-                    PatsyAction.SLEEPY, PatsyAction.WARNING -> 0.18f
-                    else -> 0.38f
-                },
-                expression=rigExpression,
-                expressionIntensity=when(action){
-                    PatsyAction.IDLE -> 0.45f
-                    PatsyAction.SLEEPY -> 0.65f
-                    else -> 0.82f
-                },
-                talking=talking,
-                viseme=if(talking) PatsyRigViseme.A else PatsyRigViseme.REST,
-                visemeIntensity=if(talking) 0.25f+(bob*0.5f) else 0f,
-                speechEnergy=if(talking) 0.2f+(bob*0.35f) else 0f,
-            )
-        )
-    }
-    LaunchedEffect(action,pointing){
-        when(rigMotion){
-            PatsyRigMotion.JUMP, PatsyRigMotion.WAVE, PatsyRigMotion.POINT -> rigCoordinator.retriggerAction(rigMotion)
-            else -> Unit
-        }
-    }
-    DisposableEffect(riveRuntime){ onDispose { riveRuntime.close() } }
-    val x = when(action){
-        PatsyAction.JUMPING -> ((jump * 210f) - 105f).dp
-        PatsyAction.POINTING -> 18.dp
-        else -> 0.dp
-    }
-    val y = when(action){
-        PatsyAction.JUMPING -> (-32f * kotlin.math.sin(jump * Math.PI)).toFloat().dp
-        else -> (12f * bob).dp
-    }
-    Box(modifier.fillMaxWidth().height(210.dp)){
-        Text(label,color=White,modifier=Modifier.align(Alignment.TopEnd).background(Charcoal2,RoundedCornerShape(22.dp)).padding(12.dp))
-        Box(
-            modifier=Modifier
-                .size(155.dp)
-                .align(Alignment.Center)
-                .offset(x=x,y=y)
-                .graphicsLayer(
-                    scaleX=breathe,
-                    scaleY=breathe,
-                    rotationY=look*7f,
-                    rotationZ=look*1.8f,
-                    translationX=look*3f
-                )
-        ){
-            PatsyRiveHost(
-                runtime=riveRuntime,
-                modifier=Modifier.fillMaxSize(),
-                fallback={
-                    // Generated Patsy only in-app. Real photos remain reference-only.
-                    Image(
-                        painter=painterResource(R.drawable.patsy_generated_main),
-                        contentDescription="Patsy AI — moving generated fallback; validated Rive rig activates automatically when present",
-                        contentScale=ContentScale.Fit,
-                        modifier=Modifier.fillMaxSize()
-                    )
-                }
-            )
-        }
-        if(action==PatsyAction.POINTING || pointing) Text("🐾",fontSize=32.sp,modifier=Modifier.align(Alignment.CenterEnd).offset(x=(-52).dp,y=20.dp))
-        if(action==PatsyAction.JUMPING) Text("↗",style=TextStyle(brush=Rainbow,fontSize=40.sp),modifier=Modifier.align(Alignment.CenterEnd).offset(x=(-34).dp,y=(-28).dp))
-    }
+private fun TrustedAgeState.displayLabel():String=when(this){
+    TrustedAgeState.UNKNOWN_UNVERIFIED->"Protected Mode"
+    TrustedAgeState.UNDER_16_PROTECTED->"Under-16 Protected"
+    TrustedAgeState.STANDARD_16_PLUS->"16+"
+    TrustedAgeState.SAFEGUARDING_AUTHORIZED->"Safeguarding authorised"
 }
 
+@Composable fun Header(){ PatsyHeader(modifier=Modifier.padding(top=18.dp)) }
+
 @Composable fun Panel(content:@Composable ColumnScope.()->Unit){ Column(content=content,modifier=Modifier.fillMaxWidth().background(Charcoal,RoundedCornerShape(28.dp)).padding(20.dp)) }
-@Composable fun Primary(text:String,onClick:()->Unit,enabled:Boolean=true){ Button(onClick=onClick,enabled=enabled,modifier=Modifier.fillMaxWidth().height(58.dp),colors=ButtonDefaults.buttonColors(containerColor=White,contentColor=Color.Black),shape=RoundedCornerShape(30.dp)){ Text(text,fontWeight=FontWeight.Bold,fontSize=16.sp) } }
+@Composable fun Primary(text:String,onClick:()->Unit,enabled:Boolean=true){ PatsyPrimaryButton(text=text,onClick=onClick,enabled=enabled) }
 
 @Composable fun Welcome(start:()->Unit,login:()->Unit){ Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),horizontalAlignment=Alignment.CenterHorizontally){ Header(); PatsyMotion("Hey there! 🐾",action=PatsyAction.HAPPY); Text("Let’s get you",fontSize=28.sp,color=White,fontWeight=FontWeight.Bold); Text("all set up…",style=TextStyle(brush=Rainbow,fontSize=30.sp,fontWeight=FontWeight.ExtraBold)); Spacer(Modifier.height(18.dp)); Primary("Get Started  →",start); Spacer(Modifier.height(10.dp)); OutlinedButton(login,Modifier.fillMaxWidth().height(54.dp),shape=RoundedCornerShape(28.dp),colors=ButtonDefaults.outlinedButtonColors(contentColor=White)){Text("I already have an account")}; Spacer(Modifier.height(18.dp)); Text("Patsy’s ready when you are! 🐾",color=Muted) } }
 
@@ -389,15 +311,23 @@ fun PasswordSetupScreen(
 
 @Composable
 fun EmailLinkedScreen(email:String,acknowledgement:ConfirmationEmailAcknowledgement?,onContinue:()->Unit){
-    val confirmed=acknowledgement as? ConfirmationEmailAcknowledgement.Confirmed
+    val status=acknowledgement as? ConfirmationEmailAcknowledgement.Status
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),horizontalAlignment=Alignment.CenterHorizontally){
         Header()
-        PatsyMotion(if(confirmed!=null) "Check your inbox! 🎉🐾" else "Your account was created. 🐾",action=if(confirmed!=null) PatsyAction.CELEBRATE else PatsyAction.WARNING)
+        PatsyMotion(if(status?.deliveryState == EmailDeliveryState.SENT) "Check your inbox! 🎉🐾" else "Your account was created. 🐾",action=if(status?.deliveryState == EmailDeliveryState.SENT) PatsyAction.CELEBRATE else PatsyAction.WARNING)
         Panel{
-            Text(if(confirmed!=null) "Confirmation email ${confirmed.deliveryState.name.lowercase()}" else "Confirmation email pending",fontSize=26.sp,fontWeight=FontWeight.Bold)
-            when(val status=acknowledgement){
-                is ConfirmationEmailAcknowledgement.Confirmed -> Text("The secure email service confirmed ${status.deliveryState.name.lowercase()} delivery to ${status.maskedEmail}.",color=White)
-                is ConfirmationEmailAcknowledgement.NotConfirmed -> Text("Your account exists, but the email service did not confirm delivery. Try again later or contact support. (${status.reason.name.lowercase().replace('_',' ')})",color=Color(0xFFFFC46B))
+            Text("Confirmation email status",fontSize=26.sp,fontWeight=FontWeight.Bold)
+            when(val acknowledgementStatus=acknowledgement){
+                is ConfirmationEmailAcknowledgement.Status -> Text(
+                    when (acknowledgementStatus.deliveryState) {
+                        EmailDeliveryState.SENT -> "The email provider reports that confirmation instructions were sent to ${acknowledgementStatus.maskedEmail}."
+                        EmailDeliveryState.QUEUED -> "The email request is queued for ${acknowledgementStatus.maskedEmail}; it has not been confirmed sent or delivered."
+                        EmailDeliveryState.FAILED -> "The email provider reports that the confirmation message failed. You can retry later."
+                        EmailDeliveryState.UNKNOWN -> "Your account exists, but the confirmation email status is unknown."
+                    },
+                    color=White,
+                )
+                is ConfirmationEmailAcknowledgement.NotConfirmed -> Text("Your account exists, but the email service did not confirm delivery. Try again later or contact support. (${acknowledgementStatus.reason.name.lowercase().replace('_',' ')})",color=Color(0xFFFFC46B))
                 null -> Text("No verified delivery status is available. The app will not claim that an email was sent.",color=Color(0xFFFFC46B))
             }
             Text("Email: $email",color=Muted,modifier=Modifier.padding(top=8.dp))
@@ -513,8 +443,12 @@ private fun PublicSession.toProfile(mode:String)=Profile(
 fun Workspace(
     profile:Profile?,
     session:PublicSession?,
+    bootstrap:AccountBootstrap?,
+    initialDeepLink:String?,
     authGateway:AuthGateway,
     ownerGate:FailClosedOwnerAuthorizationGate,
+    loadingBootstrap:Boolean,
+    bootstrapFailure:BootstrapFailure?,
     onSignedOut:()->Unit,
 ){
     var selected by remember{mutableStateOf(Screen.HOME)}
@@ -522,6 +456,15 @@ fun Workspace(
     var ownerToolsGrant by remember{mutableStateOf<OwnerAuthorizationDecision.Allowed?>(null)}
     var ownerAccessChecked by remember{mutableStateOf(false)}
     val scope=rememberCoroutineScope()
+
+    fun navigate(requested:Screen){
+        val account=bootstrap ?: run { selected=Screen.SAFE_STATE; return }
+        val routeId=requested.routeId() ?: run { selected=Screen.SAFE_STATE; return }
+        selected=when(val decision=ShellNavigationGate.resolve(routeId,account)){
+            is NavigationDecision.Allowed->decision.route.destination.toScreen()
+            is NavigationDecision.Denied->Screen.SAFE_STATE
+        }
+    }
 
     suspend fun refreshOwnerAccess(){
         ownerProfileGrant=(ownerGate.verify(session,OwnerCapability.VIEW_OWNER_PROFILE) as? OwnerAuthorizationDecision.Allowed)
@@ -531,35 +474,140 @@ fun Workspace(
         ownerAccessChecked=true
     }
 
-    LaunchedEffect(session?.sessionId){ refreshOwnerAccess() }
+    LaunchedEffect(session?.sessionId,bootstrap?.validUntilEpochMillis){
+        ownerProfileGrant=null
+        ownerToolsGrant=null
+        ownerAccessChecked=false
+        if(bootstrap!=null) refreshOwnerAccess()
+    }
+    LaunchedEffect(initialDeepLink,bootstrap?.validUntilEpochMillis){
+        if(initialDeepLink!=null&&bootstrap!=null){
+            selected=when(val decision=ShellNavigationGate.resolveDeepLink(initialDeepLink,bootstrap)){
+                is NavigationDecision.Allowed->decision.route.destination.toScreen()
+                is NavigationDecision.Denied->Screen.SAFE_STATE
+            }
+        }
+    }
     Column(Modifier.fillMaxSize()){
-        Header()
+        PatsyWorkspaceHeader(
+            onAction={action->
+                when(action){
+                    PatsyTopMenuAction.ACCOUNT->navigate(Screen.ACCOUNT)
+                    PatsyTopMenuAction.ABOUT->navigate(Screen.ABOUT)
+                    PatsyTopMenuAction.PROFILE->navigate(Screen.PROFILE_HOME)
+                    PatsyTopMenuAction.SETTINGS->navigate(Screen.SETTINGS)
+                    PatsyTopMenuAction.REMEMBER_ME->navigate(Screen.REMEMBER_ME)
+                }
+            },
+            modifier=Modifier.padding(top=6.dp),
+        )
         Box(Modifier.weight(1f).fillMaxWidth()){
-            when(selected){
-                Screen.HOME->Home(profile){selected=it}
+            when {
+                loadingBootstrap -> AccountShellState("Checking your account securely…","Feature content stays locked until Patsy can verify your account state.")
+                bootstrap==null -> AccountShellState("Protected access only",bootstrapFailure?.name?.lowercase()?.replace('_',' ') ?: "Account bootstrap is unavailable.")
+                bootstrap.onboardingState!=OnboardingState.READY -> AccountShellState("Finish account setup",bootstrap.onboardingState.name.lowercase().replace('_',' '))
+                else -> when(selected){
+                Screen.HOME->HomeFeed(profile){navigate(it)}
                 Screen.CHAT->Chat()
-                Screen.CREATE->CreateStudio()
+                Screen.THYNK->ThynkStudioHome{navigate(it)}
+                Screen.CAMERA->CameraCreateHome{navigate(it)}
+                Screen.CREATE->CreateNewHome{navigate(it)}
                 Screen.SCHEDULE->Schedule()
-                Screen.MORE->More(
+                Screen.PROFILE_HOME,Screen.MORE->More(
                     profile=profile,
                     emailVerified=session?.emailVerified==true,
                     ownerAccessChecked=ownerAccessChecked,
                     canViewOwnerProfile=ownerProfileGrant!=null,
                     canViewOwnerTools=ownerToolsGrant!=null,
-                    openOwnerProfile={scope.launch{refreshOwnerAccess();if(ownerProfileGrant!=null)selected=Screen.OWNER_PROFILE}},
-                    openOwnerTools={scope.launch{refreshOwnerAccess();if(ownerToolsGrant!=null)selected=Screen.OWNER_TOOLS}},
-                    signOut={scope.launch{authGateway.signOut();onSignedOut()}},
+                    openOwnerProfile={scope.launch{refreshOwnerAccess();if(ownerProfileGrant!=null)navigate(Screen.OWNER_PROFILE)}},
+                    openOwnerTools={scope.launch{refreshOwnerAccess();if(ownerToolsGrant!=null)navigate(Screen.OWNER_TOOLS)}},
+                    signOut={scope.launch{onSignedOut();authGateway.signOut()}},
                 )
                 Screen.DMS->Dms()
-                Screen.OWNER_PROFILE->if(ownerProfileGrant.isCurrentGrant(OwnerCapability.VIEW_OWNER_PROFILE)) OwnerProfile(profile){selected=Screen.MORE} else OwnerAccessDenied{selected=Screen.MORE}
-                Screen.OWNER_TOOLS->if(ownerToolsGrant.isCurrentGrant(OwnerCapability.VIEW_OWNER_TOOLS)) OwnerTools{selected=Screen.MORE} else OwnerAccessDenied{selected=Screen.MORE}
-                else->Home(profile){selected=it}
+                Screen.ACCOUNT->PreviewCSecondaryPage(
+                    title="Account",
+                    detail="Account controls stay behind the verified Patsy account/session boundary. Preview C does not grant OWNER authority or bypass production security.",
+                    back={selected=Screen.PROFILE_HOME},
+                )
+                Screen.ABOUT->PreviewCSecondaryPage(
+                    title="About",
+                    detail="About Patsy App and THyNK Studio. This Preview C surface is for visual walkthrough and does not claim unfinished providers are live.",
+                    back={selected=Screen.HOME},
+                )
+                Screen.SETTINGS->PreviewCSecondaryPage(
+                    title="Settings",
+                    detail="Settings are connected as a secondary route. Provider, privacy and account settings remain fail-closed until their real integrations are verified.",
+                    back={selected=Screen.PROFILE_HOME},
+                )
+                Screen.REMEMBER_ME->PreviewCSecondaryPage(
+                    title="Remember Me",
+                    detail="Saved pictures and videos belong here using the approved Remember Me paw asset and user-controlled storage rules. Preview C shows the route without inventing stored media.",
+                    back={selected=Screen.PROFILE_HOME},
+                )
+                Screen.THYNK_TEMPLATES->ThynkSectionPage(
+                    title="Templates",
+                    detail="The THyNK template library route is connected. Editable template content is loaded only from approved Patsy assets; the full 100-image / 50-video target is not being pretended complete.",
+                    back={selected=Screen.THYNK},
+                )
+                Screen.THYNK_EDITOR->CreateStudio()
+                Screen.THYNK_AI_IMAGE->ThynkSectionPage(
+                    title="AI Image Generator",
+                    detail="This page is connected to the THyNK flow. A production image-generation provider is not configured yet, so no fake generated result is shown.",
+                    back={selected=Screen.THYNK},
+                )
+                Screen.THYNK_AI_VIDEO->ThynkSectionPage(
+                    title="AI Video Generator",
+                    detail="This is the locked 10-second video workflow route. The production video provider is not configured yet, so generation remains unavailable rather than simulated.",
+                    back={selected=Screen.THYNK},
+                )
+                Screen.THYNK_PROJECTS->ThynkSectionPage(
+                    title="My Projects",
+                    detail="Project continuation is connected at the UI route. Cross-device project persistence remains a backend integration task.",
+                    back={selected=Screen.THYNK},
+                )
+                Screen.THYNK_BRAND_KIT->ThynkSectionPage(
+                    title="Brand Kit",
+                    detail="The Brand Kit route is connected and reserved for user-owned brand assets, colours, fonts and approved reusable elements.",
+                    back={selected=Screen.THYNK},
+                )
+                Screen.THYNK_INSPIRATION->ThynkSectionPage(
+                    title="Inspiration",
+                    detail="The Inspiration route is connected. Live AI/search suggestions will remain unavailable until the secure provider gateway is configured.",
+                    back={selected=Screen.THYNK},
+                )
+                Screen.OWNER_PROFILE->if(ownerProfileGrant.isCurrentGrant(OwnerCapability.VIEW_OWNER_PROFILE)) OwnerProfile(profile){selected=Screen.PROFILE_HOME} else OwnerAccessDenied{selected=Screen.PROFILE_HOME}
+                Screen.OWNER_TOOLS->if(ownerToolsGrant.isCurrentGrant(OwnerCapability.VIEW_OWNER_TOOLS)) OwnerTools{selected=Screen.PROFILE_HOME} else OwnerAccessDenied{selected=Screen.PROFILE_HOME}
+                Screen.SAFE_STATE->AccountShellState("Access unavailable","This route is not available for the current verified account state.")
+                else->AccountShellState("Access unavailable","The requested route could not be verified.")
+                }
             }
         }
-        if(selected!=Screen.OWNER_PROFILE&&selected!=Screen.OWNER_TOOLS){
-            AppNavigationBar(selected=selected,onNavigate={selected=it})
+        if(bootstrap?.onboardingState==OnboardingState.READY&&selected!=Screen.OWNER_PROFILE&&selected!=Screen.OWNER_TOOLS){
+            AppNavigationBar(selected=selected,onNavigate={navigate(it)})
         }
     }
+}
+
+@Composable private fun AccountShellState(title:String,detail:String){
+    Column(Modifier.fillMaxSize().padding(24.dp),verticalArrangement=Arrangement.Center){
+        Panel{Text(title,fontSize=22.sp,fontWeight=FontWeight.Bold);Text(detail,color=Muted,modifier=Modifier.padding(top=8.dp))}
+    }
+}
+
+private fun Screen.routeId():String?=when(this){
+    Screen.HOME->"home";Screen.THYNK->"thynk";Screen.CAMERA->"camera";Screen.CREATE->"create";Screen.DMS->"patsy_dms";Screen.PROFILE_HOME,Screen.MORE->"profile"
+    Screen.CHAT->"chat";Screen.SCHEDULE->"schedule";Screen.ACCOUNT->"account";Screen.ABOUT->"about";Screen.SETTINGS->"settings";Screen.REMEMBER_ME->"remember_me"
+    Screen.THYNK_TEMPLATES->"thynk_templates";Screen.THYNK_EDITOR->"thynk_editor";Screen.THYNK_AI_IMAGE->"thynk_ai_image";Screen.THYNK_AI_VIDEO->"thynk_ai_video";Screen.THYNK_PROJECTS->"thynk_projects"
+    Screen.THYNK_BRAND_KIT->"thynk_brand_kit";Screen.THYNK_INSPIRATION->"thynk_inspiration";Screen.OWNER_PROFILE->"owner_profile";Screen.OWNER_TOOLS->"owner_tools"
+    else->null
+}
+
+private fun ShellDestination.toScreen():Screen=when(this){
+    ShellDestination.HOME_FEED->Screen.HOME;ShellDestination.THYNK->Screen.THYNK;ShellDestination.CAMERA->Screen.CAMERA;ShellDestination.CREATE->Screen.CREATE;ShellDestination.DMS->Screen.DMS;ShellDestination.PROFILE->Screen.PROFILE_HOME
+    ShellDestination.CHAT->Screen.CHAT;ShellDestination.SCHEDULE->Screen.SCHEDULE;ShellDestination.ACCOUNT->Screen.ACCOUNT;ShellDestination.ABOUT->Screen.ABOUT;ShellDestination.SETTINGS->Screen.SETTINGS;ShellDestination.REMEMBER_ME->Screen.REMEMBER_ME
+    ShellDestination.THYNK_TEMPLATES->Screen.THYNK_TEMPLATES;ShellDestination.THYNK_EDITOR->Screen.THYNK_EDITOR;ShellDestination.THYNK_AI_IMAGE->Screen.THYNK_AI_IMAGE;ShellDestination.THYNK_AI_VIDEO->Screen.THYNK_AI_VIDEO;ShellDestination.THYNK_PROJECTS->Screen.THYNK_PROJECTS
+    ShellDestination.THYNK_BRAND_KIT->Screen.THYNK_BRAND_KIT;ShellDestination.THYNK_INSPIRATION->Screen.THYNK_INSPIRATION;ShellDestination.OWNER_PROFILE->Screen.OWNER_PROFILE;ShellDestination.OWNER_TOOLS->Screen.OWNER_TOOLS
+    else->Screen.SAFE_STATE
 }
 
 @Composable fun Home(profile:Profile?,nav:(Screen)->Unit){ LazyColumn(Modifier.fillMaxSize().padding(16.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){ item{PatsyMotion("Hi ${profile?.displayName ?: "there"}! 👋",true,PatsyAction.HAPPY)}; item{Text("What would you like to do?",fontSize=20.sp,fontWeight=FontWeight.Bold)}; item{Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){Tile("💡","Get Ideas") {nav(Screen.CHAT)};Tile("🎨","Create") {nav(Screen.CREATE)};Tile("📈","Grow") {}}}; item{Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){Tile("💬","DMs") {nav(Screen.DMS)};Tile("#️⃣","Hashtags") {nav(Screen.CHAT)};Tile("🛠","Tools") {nav(Screen.MORE)}}}; item{Panel{Text("Patsy says…",fontWeight=FontWeight.Bold,fontSize=18.sp);Text("Ask me like you ask your AI. I can help search, plan, create and guide you.",color=Muted);Text("Rainbow active states + charcoal workspace",color=White)}} } }
@@ -567,7 +615,7 @@ fun Workspace(
 
 @Composable fun Chat(){ var q by remember{mutableStateOf("")}; var answer by remember{mutableStateOf("Ask Patsy anything. Web/AI calls are routed through the configured secure backend.")}; Column(Modifier.fillMaxSize().padding(16.dp)){PatsyMotion("I'm your AI search. Ask me anything. 🐾",true,PatsyAction.TALKING); Panel{Text(answer,color=White)}; Spacer(Modifier.height(10.dp)); OutlinedTextField(q,{q=it},modifier=Modifier.fillMaxWidth(),placeholder={Text("Ask Patsy…")}); Spacer(Modifier.height(8.dp)); Primary("ASK PATSY / SEARCH WEB",{answer=if(q.isBlank())"Tell me what you want to know." else "Patsy received: $q\n\nConnect the secure AI/search backend to return live results."})} }
 
-@Composable fun CreateStudio(){ var brightness by remember{mutableStateOf(0f)}; var contrast by remember{mutableStateOf(0f)}; var saturation by remember{mutableStateOf(0f)}; Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)){PatsyMotion("Tell me what to create or change. 🎨",true,PatsyAction.POINTING); Panel{Text("CREATION STUDIO",fontSize=24.sp,fontWeight=FontWeight.Bold); Text("High-spec creative workspace",color=Muted); Spacer(Modifier.height(10.dp)); Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){Button({}){Text("Import")};Button({}){Text("AI Image")};Button({}){Text("10s Video")}}; Text("Editor canvas",Modifier.padding(top=14.dp),fontWeight=FontWeight.Bold); Box(Modifier.fillMaxWidth().height(150.dp).background(Color(0xFF111216),RoundedCornerShape(18.dp)),contentAlignment=Alignment.Center){Text("Preview / canvas")}; Adjust("Brightness",brightness){brightness=it};Adjust("Contrast",contrast){contrast=it};Adjust("Saturation",saturation){saturation=it};Text("Filters • Crop • Resize • Rotate • Text • Stickers • Shapes • Layers • Undo • Redo • Reset • Export",color=Muted); Spacer(Modifier.height(8.dp)); OutlinedTextField("",{},modifier=Modifier.fillMaxWidth(),placeholder={Text("Tell Patsy: make this brighter / turn into a Reel / make a 10 second video…")}); Primary("APPLY WITH PATSY",{})} } }
+@Composable fun CreateStudio(){ var brightness by remember{mutableStateOf(0f)}; var contrast by remember{mutableStateOf(0f)}; var saturation by remember{mutableStateOf(0f)}; Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)){PatsyMotion("Tell me what to create or change. 🎨",true,PatsyAction.POINTING); Panel{Text("THyNK EDITOR",fontSize=24.sp,fontWeight=FontWeight.Bold); Text("High-spec creative workspace",color=Muted); Spacer(Modifier.height(10.dp)); Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){Button({}){Text("Import")};Button({}){Text("AI Image")};Button({}){Text("10s Video")}}; Text("Editor canvas",Modifier.padding(top=14.dp),fontWeight=FontWeight.Bold); Box(Modifier.fillMaxWidth().height(150.dp).background(Color(0xFF111216),RoundedCornerShape(18.dp)),contentAlignment=Alignment.Center){Text("Preview / canvas")}; Adjust("Brightness",brightness){brightness=it};Adjust("Contrast",contrast){contrast=it};Adjust("Saturation",saturation){saturation=it};Text("Filters • Crop • Resize • Rotate • Text • Stickers • Shapes • Layers • Undo • Redo • Reset • Export",color=Muted); Spacer(Modifier.height(8.dp)); OutlinedTextField("",{},modifier=Modifier.fillMaxWidth(),placeholder={Text("Tell Patsy: make this brighter / turn into a Reel / make a 10 second video…")}); Primary("APPLY WITH PATSY",{})} } }
 @Composable fun Adjust(label:String,value:Float,onChange:(Float)->Unit){Text(label);Slider(value,{onChange(it)},valueRange=-1f..1f)}
 @Composable fun Schedule(){Panel{Text("SCHEDULE",fontSize=24.sp,fontWeight=FontWeight.Bold);Text("Plan and organise content here. Backend calendar/publishing integrations plug into this surface.",color=Muted)}}
 @Composable fun Dms(){Panel{Text("DMS",fontSize=24.sp,fontWeight=FontWeight.Bold);Text("Private messaging workspace. Authenticated access only.",color=Muted);Text("Conversation list → conversation → send → delivery states",color=Muted)}}
@@ -630,4 +678,46 @@ fun Workspace(
     }
 }
 
-@Composable fun AppNavigationBar(selected:Screen,onNavigate:(Screen)->Unit){ Row(Modifier.fillMaxWidth().background(Color(0xFF0A0A0B)).padding(6.dp),horizontalArrangement=Arrangement.SpaceEvenly){listOf(Screen.HOME to "⌂\nHome",Screen.CHAT to "💬\nChat",Screen.CREATE to "✎\nCreate",Screen.SCHEDULE to "▣\nSchedule",Screen.MORE to "•••\nMore").forEach{(s,t)->TextButton(onClick={onNavigate(s)}){Text(t,color=if(selected==s)White else Muted,fontSize=11.sp)}}} }
+@Composable fun AppNavigationBar(selected:Screen,onNavigate:(Screen)->Unit){
+    Row(
+        Modifier.fillMaxWidth().background(Color(0xFF151518)).padding(horizontal=4.dp,vertical=6.dp),
+        horizontalArrangement=Arrangement.SpaceEvenly,
+        verticalAlignment=Alignment.CenterVertically,
+    ){
+        PreviewPrimaryNavItem(Screen.HOME,"⌂","HOME",selected,onNavigate)
+        PreviewPrimaryNavItem(Screen.THYNK,"TH","THyNK",selected,onNavigate)
+        Box(Modifier.weight(1f),contentAlignment=Alignment.Center){
+            Button(
+                onClick={onNavigate(Screen.CAMERA)},
+                modifier=Modifier.size(56.dp),
+                shape=RoundedCornerShape(28.dp),
+                contentPadding=PaddingValues(0.dp),
+                colors=ButtonDefaults.buttonColors(containerColor=White,contentColor=Color.Black),
+            ){
+                Text("+",color=Color.Black,fontSize=28.sp,fontWeight=FontWeight.Black)
+            }
+        }
+        PreviewPrimaryNavItem(Screen.DMS,"✉","PATSY DMs",selected,onNavigate)
+        PreviewPrimaryNavItem(Screen.PROFILE_HOME,"◍","PROFILE",selected,onNavigate)
+    }
+}
+
+@Composable
+private fun RowScope.PreviewPrimaryNavItem(
+    screen:Screen,
+    icon:String,
+    label:String,
+    selected:Screen,
+    onNavigate:(Screen)->Unit,
+){
+    TextButton(
+        onClick={onNavigate(screen)},
+        modifier=Modifier.weight(1f),
+        contentPadding=PaddingValues(horizontal=2.dp,vertical=2.dp),
+    ){
+        Column(horizontalAlignment=Alignment.CenterHorizontally){
+            Text(icon,color=if(selected==screen)White else Muted,fontSize=17.sp,fontWeight=FontWeight.Bold)
+            Text(label,color=if(selected==screen)White else Muted,fontSize=9.sp,maxLines=1)
+        }
+    }
+}

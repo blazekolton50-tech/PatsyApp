@@ -1,0 +1,102 @@
+name: Phone Preview B Export
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-and-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Verify unit tests and build debug APK
+        run: ./gradlew testDebugUnitTest assembleDebug --stacktrace
+
+      - name: Prepare phone-preview source package
+        if: success()
+        shell: bash
+        run: |
+          cat > PHONE_PREVIEW_README.txt <<'EOF'
+          PATSY APP — PHONE PREVIEW B
+
+          Purpose:
+          - Android Studio / physical-phone DEBUG preview only.
+          - Built from the newest combined secure auth + protected navigation snapshot used for this export.
+          - Does NOT merge to main.
+
+          Locked primary navigation:
+          HOME • THyNK • CREATE • PATSY DMS • PROFILE
+
+          Important truthfulness boundaries:
+          - Debug preview is not production authentication authority.
+          - OWNER authority remains server-backed/fail-closed and is not granted by preview mode.
+          - No production .riv asset is claimed if one is not present and verified.
+          - Unconfigured providers remain NOT_CONFIGURED.
+
+          Android Studio:
+          1. Extract this ZIP.
+          2. Open the extracted project folder in Android Studio.
+          3. Let Gradle sync.
+          4. Connect an Android phone with USB debugging enabled, or use an emulator.
+          5. Select the app configuration and press Run.
+
+          Direct phone install:
+          The workflow also exports app-debug.apk beside this source ZIP.
+          EOF
+
+          printf 'GitHub head SHA: %s\n' "${GITHUB_SHA}" > BUILD_VERIFICATION.txt
+          printf 'Verified command: ./gradlew testDebugUnitTest assembleDebug --stacktrace\n' >> BUILD_VERIFICATION.txt
+          printf 'Workflow: Phone Preview B Export\n' >> BUILD_VERIFICATION.txt
+
+          zip -r PatsyApp_PHONE_PREVIEW_B_2026-08-30.zip . \
+            -x '.git/*' \
+               '.gradle/*' \
+               '.idea/*' \
+               'app/build/*' \
+               'build/*' \
+               'local.properties' \
+               '**/local.properties' \
+               '.env' \
+               '.env.*' \
+               '**/*.jks' \
+               '**/*.keystore' \
+               'PatsyApp_PHONE_PREVIEW_B_2026-08-30.zip'
+
+          sha256sum PatsyApp_PHONE_PREVIEW_B_2026-08-30.zip > PatsyApp_PHONE_PREVIEW_B_2026-08-30.zip.sha256
+          sha256sum app/build/outputs/apk/debug/app-debug.apk > app-debug.apk.sha256
+
+      - name: Upload phone preview package
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: patsy-phone-preview-b
+          path: |
+            PatsyApp_PHONE_PREVIEW_B_2026-08-30.zip
+            PatsyApp_PHONE_PREVIEW_B_2026-08-30.zip.sha256
+            app/build/outputs/apk/debug/app-debug.apk
+            app-debug.apk.sha256
+            PHONE_PREVIEW_README.txt
+            BUILD_VERIFICATION.txt
+          if-no-files-found: error
