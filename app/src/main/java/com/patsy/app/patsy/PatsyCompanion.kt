@@ -22,13 +22,18 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
@@ -82,6 +87,8 @@ fun PatsyMotion(
 ) {
     val riveRuntime = remember { PatsyRiveRuntimeAdapter() }
     val rigCoordinator = remember(riveRuntime) { PatsyRigCoordinator(riveRuntime) }
+    val hostView = LocalView.current
+    var stage by remember { mutableStateOf(PatsyStageSnapshot()) }
     val transition = rememberInfiniteTransition(label = "patsy-motion")
     val bob by transition.animateFloat(
         0f,
@@ -136,6 +143,9 @@ fun PatsyMotion(
                 },
                 pointX = if (pointing || action == PatsyAction.POINTING) 0.88f else 0.5f,
                 pointY = if (pointing || action == PatsyAction.POINTING) 0.55f else 0.5f,
+                stageX = stage.x,
+                stageY = stage.y,
+                stageScale = breathe,
                 lookX = look,
                 lookY = (bob - 0.5f) * 0.12f,
                 headTilt = -look * 0.18f,
@@ -197,6 +207,15 @@ fun PatsyMotion(
                 .size(155.dp)
                 .align(Alignment.Center)
                 .offset(x = x, y = y)
+                .onGloballyPositioned { coordinates ->
+                    val position = coordinates.positionInWindow()
+                    stage = normalisePatsyStage(
+                        centreX = position.x + coordinates.size.width / 2f,
+                        centreY = position.y + coordinates.size.height / 2f,
+                        viewportWidth = hostView.width.toFloat(),
+                        viewportHeight = hostView.height.toFloat(),
+                    )
+                }
                 .graphicsLayer(
                     scaleX = breathe,
                     scaleY = breathe,
