@@ -9,7 +9,8 @@ import com.patsy.app.account.isProtectedMode
 import com.patsy.app.security.OwnerCapability
 
 enum class ShellDestination {
-    HOME_FEED, THYNK, CREATE, DMS, PROFILE, CHAT, SCHEDULE,
+    HOME_FEED, THYNK, CAMERA, CREATE, DMS, PROFILE, CHAT, SCHEDULE,
+    ACCOUNT, ABOUT, SETTINGS, REMEMBER_ME,
     THYNK_TEMPLATES, THYNK_EDITOR, THYNK_AI_IMAGE, THYNK_AI_VIDEO,
     THYNK_PROJECTS, THYNK_BRAND_KIT, THYNK_INSPIRATION,
     OWNER_PROFILE, OWNER_TOOLS, OWNER_ANALYTICS,
@@ -33,11 +34,16 @@ object ShellNavigationContract {
     private val routes = listOf(
         ShellRoute("home", "Home", ShellDestination.HOME_FEED, true, ShellRestriction.SOCIAL_RESTRICTED),
         ShellRoute("thynk", "THyNK", ShellDestination.THYNK, true, ShellRestriction.PROVIDERS_RESTRICTED),
-        ShellRoute("create", "Create", ShellDestination.CREATE, true, ShellRestriction.PROVIDERS_RESTRICTED),
-        ShellRoute("patsy_dms", "Patsy DMs", ShellDestination.DMS, true, ShellRestriction.DMS_RESTRICTED),
+        ShellRoute("camera", "Camera", ShellDestination.CAMERA, true),
+        ShellRoute("patsy_dms", "PATSY DMs", ShellDestination.DMS, true, ShellRestriction.DMS_RESTRICTED),
         ShellRoute("profile", "Profile", ShellDestination.PROFILE, true),
+        ShellRoute("create", "Create", ShellDestination.CREATE, false, ShellRestriction.PROVIDERS_RESTRICTED),
         ShellRoute("chat", "Ask Patsy", ShellDestination.CHAT, false, ShellRestriction.PROVIDERS_RESTRICTED),
         ShellRoute("schedule", "Schedule", ShellDestination.SCHEDULE, false),
+        ShellRoute("account", "Account", ShellDestination.ACCOUNT, false),
+        ShellRoute("about", "About", ShellDestination.ABOUT, false),
+        ShellRoute("settings", "Settings", ShellDestination.SETTINGS, false),
+        ShellRoute("remember_me", "Remember Me", ShellDestination.REMEMBER_ME, false),
         ShellRoute("thynk_templates", "Templates", ShellDestination.THYNK_TEMPLATES, false, ShellRestriction.PROVIDERS_RESTRICTED),
         ShellRoute("thynk_editor", "Editor", ShellDestination.THYNK_EDITOR, false, ShellRestriction.PROVIDERS_RESTRICTED),
         ShellRoute("thynk_ai_image", "AI Image", ShellDestination.THYNK_AI_IMAGE, false, ShellRestriction.PROVIDERS_RESTRICTED),
