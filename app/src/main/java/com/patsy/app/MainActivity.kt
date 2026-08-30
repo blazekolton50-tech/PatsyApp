@@ -26,6 +26,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.patsy.app.auth.*
+import com.patsy.app.account.*
+import com.patsy.app.navigation.*
 import com.patsy.app.security.FailClosedOwnerAuthorizationGate
 import com.patsy.app.security.OwnerAuthorizationDecision
 import com.patsy.app.security.OwnerCapability
@@ -54,7 +56,7 @@ class MainActivity : ComponentActivity() {
             previewRequested = intent.getBooleanExtra(PREVIEW_AUTH_REQUESTED_EXTRA, false),
             productionGateway = PatsyServiceBindings.authGateway,
         )
-        setContent { PatsyApp(authGateway = launchAuthGateway) }
+        setContent { PatsyApp(authGateway = launchAuthGateway, initialDeepLink = intent.dataString) }
     }
 }
 
@@ -65,10 +67,15 @@ data class Profile(
     val mode:String = "16+ Patsy"
 )
 
-enum class Screen { WELCOME, MODE, PROFILE, PASSWORD_SETUP, EMAIL_LINKED, LOGIN, HOME, THYNK, CREATE, DMS, PROFILE_HOME, CHAT, SCHEDULE, MORE, THYNK_TEMPLATES, THYNK_EDITOR, THYNK_AI_IMAGE, THYNK_AI_VIDEO, THYNK_PROJECTS, THYNK_BRAND_KIT, THYNK_INSPIRATION, OWNER_PROFILE, OWNER_TOOLS }
+enum class Screen { WELCOME, MODE, PROFILE, PASSWORD_SETUP, EMAIL_LINKED, LOGIN, HOME, THYNK, CREATE, DMS, PROFILE_HOME, CHAT, SCHEDULE, MORE, THYNK_TEMPLATES, THYNK_EDITOR, THYNK_AI_IMAGE, THYNK_AI_VIDEO, THYNK_PROJECTS, THYNK_BRAND_KIT, THYNK_INSPIRATION, OWNER_PROFILE, OWNER_TOOLS, SAFE_STATE }
 
-@Composable fun PatsyApp(authGateway: AuthGateway = PatsyServiceBindings.authGateway){
+@Composable fun PatsyApp(
+    authGateway: AuthGateway = PatsyServiceBindings.authGateway,
+    accountBootstrapService: AccountBootstrapService = PatsyServiceBindings.accountBootstrapService,
+    initialDeepLink: String? = null,
+){
     val ownerGate = remember { FailClosedOwnerAuthorizationGate(PatsyServiceBindings.ownerAuthorizationService) }
+    val appScope = rememberCoroutineScope()
     var screen by remember { mutableStateOf(Screen.WELCOME) }
     var profile by remember { mutableStateOf<Profile?>(null) }
     var session by remember { mutableStateOf<PublicSession?>(null) }
@@ -77,12 +84,21 @@ enum class Screen { WELCOME, MODE, PROFILE, PASSWORD_SETUP, EMAIL_LINKED, LOGIN,
     var pendingMode by remember { mutableStateOf("16+ Patsy") }
     var registrationAttemptId by remember { mutableStateOf<String?>(null) }
     var confirmationAcknowledgement by remember { mutableStateOf<ConfirmationEmailAcknowledgement?>(null) }
+    var bootstrapResult by remember { mutableStateOf<AccountBootstrapResult?>(null) }
+    var bootstrapLoading by remember { mutableStateOf(false) }
+    suspend fun loadBootstrap(authenticatedSession: PublicSession) {
+        bootstrapLoading = true
+        val result = accountBootstrapService.fetch(authenticatedSession)
+        if (session?.sessionId == authenticatedSession.sessionId) bootstrapResult = result
+        bootstrapLoading = false
+    }
     LaunchedEffect(authGateway){
         when(val restored=authGateway.restoreSession()){
             is SessionState.Authenticated -> {
                 session=restored.session
-                profile=restored.session.toProfile(pendingMode)
+                profile=restored.session.toProfile("Protected Mode")
                 screen=Screen.HOME
+                loadBootstrap(restored.session)
             }
             SessionState.Anonymous,is SessionState.Expired,is SessionState.Unavailable -> Unit
         }
@@ -122,17 +138,23 @@ enum class Screen { WELCOME, MODE, PROFILE, PASSWORD_SETUP, EMAIL_LINKED, LOGIN,
                     authGateway=authGateway,
                     onDone={authenticatedSession ->
                         session=authenticatedSession
-                        profile=authenticatedSession.toProfile(pendingMode)
+                        profile=authenticatedSession.toProfile("Protected Mode")
                         screen=Screen.HOME
+                        appScope.launch { loadBootstrap(authenticatedSession) }
                     },
                     back={screen=Screen.WELCOME},
                 )
                 else -> Workspace(
-                    profile=profile,
+                    profile=(bootstrapResult as? AccountBootstrapResult.Available)?.account?.let { profile?.copy(mode=it.ageState.displayLabel()) } ?: profile,
                     session=session,
+                    bootstrap=(bootstrapResult as? AccountBootstrapResult.Available)?.account,
+                    initialDeepLink=initialDeepLink,
                     authGateway=authGateway,
                     ownerGate=ownerGate,
+                    loadingBootstrap=bootstrapLoading,
+                    bootstrapFailure=(bootstrapResult as? AccountBootstrapResult.FailedClosed)?.reason,
                     onSignedOut={
+                        bootstrapResult=null
                         session=null
                         profile=null
                         screen=Screen.WELCOME
@@ -141,6 +163,13 @@ enum class Screen { WELCOME, MODE, PROFILE, PASSWORD_SETUP, EMAIL_LINKED, LOGIN,
             }
         }
     }
+}
+
+private fun TrustedAgeState.displayLabel():String=when(this){
+    TrustedAgeState.UNKNOWN_UNVERIFIED->"Protected Mode"
+    TrustedAgeState.UNDER_16_PROTECTED->"Under-16 Protected"
+    TrustedAgeState.STANDARD_16_PLUS->"16+"
+    TrustedAgeState.SAFEGUARDING_AUTHORIZED->"Safeguarding authorised"
 }
 
 @Composable fun Header(){ PatsyHeader(modifier=Modifier.padding(top=18.dp)) }
@@ -412,8 +441,12 @@ private fun PublicSession.toProfile(mode:String)=Profile(
 fun Workspace(
     profile:Profile?,
     session:PublicSession?,
+    bootstrap:AccountBootstrap?,
+    initialDeepLink:String?,
     authGateway:AuthGateway,
     ownerGate:FailClosedOwnerAuthorizationGate,
+    loadingBootstrap:Boolean,
+    bootstrapFailure:BootstrapFailure?,
     onSignedOut:()->Unit,
 ){
     var selected by remember{mutableStateOf(Screen.HOME)}
@@ -421,6 +454,15 @@ fun Workspace(
     var ownerToolsGrant by remember{mutableStateOf<OwnerAuthorizationDecision.Allowed?>(null)}
     var ownerAccessChecked by remember{mutableStateOf(false)}
     val scope=rememberCoroutineScope()
+
+    fun navigate(requested:Screen){
+        val account=bootstrap ?: run { selected=Screen.SAFE_STATE; return }
+        val routeId=requested.routeId() ?: run { selected=Screen.SAFE_STATE; return }
+        selected=when(val decision=ShellNavigationGate.resolve(routeId,account)){
+            is NavigationDecision.Allowed->decision.route.destination.toScreen()
+            is NavigationDecision.Denied->Screen.SAFE_STATE
+        }
+    }
 
     suspend fun refreshOwnerAccess(){
         ownerProfileGrant=(ownerGate.verify(session,OwnerCapability.VIEW_OWNER_PROFILE) as? OwnerAuthorizationDecision.Allowed)
@@ -430,15 +472,32 @@ fun Workspace(
         ownerAccessChecked=true
     }
 
-    LaunchedEffect(session?.sessionId){ refreshOwnerAccess() }
+    LaunchedEffect(session?.sessionId,bootstrap?.validUntilEpochMillis){
+        ownerProfileGrant=null
+        ownerToolsGrant=null
+        ownerAccessChecked=false
+        if(bootstrap!=null) refreshOwnerAccess()
+    }
+    LaunchedEffect(initialDeepLink,bootstrap?.validUntilEpochMillis){
+        if(initialDeepLink!=null&&bootstrap!=null){
+            selected=when(val decision=ShellNavigationGate.resolveDeepLink(initialDeepLink,bootstrap)){
+                is NavigationDecision.Allowed->decision.route.destination.toScreen()
+                is NavigationDecision.Denied->Screen.SAFE_STATE
+            }
+        }
+    }
     Column(Modifier.fillMaxSize()){
         Header()
         Box(Modifier.weight(1f).fillMaxWidth()){
-            when(selected){
-                Screen.HOME->HomeFeed(profile){selected=it}
+            when {
+                loadingBootstrap -> AccountShellState("Checking your account securely…","Feature content stays locked until Patsy can verify your account state.")
+                bootstrap==null -> AccountShellState("Protected access only",bootstrapFailure?.name?.lowercase()?.replace('_',' ') ?: "Account bootstrap is unavailable.")
+                bootstrap.onboardingState!=OnboardingState.READY -> AccountShellState("Finish account setup",bootstrap.onboardingState.name.lowercase().replace('_',' '))
+                else -> when(selected){
+                Screen.HOME->HomeFeed(profile){navigate(it)}
                 Screen.CHAT->Chat()
-                Screen.THYNK->ThynkStudioHome{selected=it}
-                Screen.CREATE->CreateNewHome{selected=it}
+                Screen.THYNK->ThynkStudioHome{navigate(it)}
+                Screen.CREATE->CreateNewHome{navigate(it)}
                 Screen.SCHEDULE->Schedule()
                 Screen.PROFILE_HOME,Screen.MORE->More(
                     profile=profile,
@@ -446,9 +505,9 @@ fun Workspace(
                     ownerAccessChecked=ownerAccessChecked,
                     canViewOwnerProfile=ownerProfileGrant!=null,
                     canViewOwnerTools=ownerToolsGrant!=null,
-                    openOwnerProfile={scope.launch{refreshOwnerAccess();if(ownerProfileGrant!=null)selected=Screen.OWNER_PROFILE}},
-                    openOwnerTools={scope.launch{refreshOwnerAccess();if(ownerToolsGrant!=null)selected=Screen.OWNER_TOOLS}},
-                    signOut={scope.launch{authGateway.signOut();onSignedOut()}},
+                    openOwnerProfile={scope.launch{refreshOwnerAccess();if(ownerProfileGrant!=null)navigate(Screen.OWNER_PROFILE)}},
+                    openOwnerTools={scope.launch{refreshOwnerAccess();if(ownerToolsGrant!=null)navigate(Screen.OWNER_TOOLS)}},
+                    signOut={scope.launch{onSignedOut();authGateway.signOut()}},
                 )
                 Screen.DMS->Dms()
                 Screen.THYNK_TEMPLATES->ThynkSectionPage(
@@ -484,13 +543,37 @@ fun Workspace(
                 )
                 Screen.OWNER_PROFILE->if(ownerProfileGrant.isCurrentGrant(OwnerCapability.VIEW_OWNER_PROFILE)) OwnerProfile(profile){selected=Screen.PROFILE_HOME} else OwnerAccessDenied{selected=Screen.PROFILE_HOME}
                 Screen.OWNER_TOOLS->if(ownerToolsGrant.isCurrentGrant(OwnerCapability.VIEW_OWNER_TOOLS)) OwnerTools{selected=Screen.PROFILE_HOME} else OwnerAccessDenied{selected=Screen.PROFILE_HOME}
-                else->HomeFeed(profile){selected=it}
+                Screen.SAFE_STATE->AccountShellState("Access unavailable","This route is not available for the current verified account state.")
+                else->AccountShellState("Access unavailable","The requested route could not be verified.")
+                }
             }
         }
-        if(selected!=Screen.OWNER_PROFILE&&selected!=Screen.OWNER_TOOLS){
-            AppNavigationBar(selected=selected,onNavigate={selected=it})
+        if(bootstrap?.onboardingState==OnboardingState.READY&&selected!=Screen.OWNER_PROFILE&&selected!=Screen.OWNER_TOOLS){
+            AppNavigationBar(selected=selected,onNavigate={navigate(it)})
         }
     }
+}
+
+@Composable private fun AccountShellState(title:String,detail:String){
+    Column(Modifier.fillMaxSize().padding(24.dp),verticalArrangement=Arrangement.Center){
+        Panel{Text(title,fontSize=22.sp,fontWeight=FontWeight.Bold);Text(detail,color=Muted,modifier=Modifier.padding(top=8.dp))}
+    }
+}
+
+private fun Screen.routeId():String?=when(this){
+    Screen.HOME->"home";Screen.THYNK->"thynk";Screen.CREATE->"create";Screen.DMS->"patsy_dms";Screen.PROFILE_HOME,Screen.MORE->"profile"
+    Screen.CHAT->"chat";Screen.SCHEDULE->"schedule";Screen.THYNK_TEMPLATES->"thynk_templates";Screen.THYNK_EDITOR->"thynk_editor"
+    Screen.THYNK_AI_IMAGE->"thynk_ai_image";Screen.THYNK_AI_VIDEO->"thynk_ai_video";Screen.THYNK_PROJECTS->"thynk_projects"
+    Screen.THYNK_BRAND_KIT->"thynk_brand_kit";Screen.THYNK_INSPIRATION->"thynk_inspiration";Screen.OWNER_PROFILE->"owner_profile";Screen.OWNER_TOOLS->"owner_tools"
+    else->null
+}
+
+private fun ShellDestination.toScreen():Screen=when(this){
+    ShellDestination.HOME_FEED->Screen.HOME;ShellDestination.THYNK->Screen.THYNK;ShellDestination.CREATE->Screen.CREATE;ShellDestination.DMS->Screen.DMS;ShellDestination.PROFILE->Screen.PROFILE_HOME
+    ShellDestination.CHAT->Screen.CHAT;ShellDestination.SCHEDULE->Screen.SCHEDULE;ShellDestination.THYNK_TEMPLATES->Screen.THYNK_TEMPLATES;ShellDestination.THYNK_EDITOR->Screen.THYNK_EDITOR
+    ShellDestination.THYNK_AI_IMAGE->Screen.THYNK_AI_IMAGE;ShellDestination.THYNK_AI_VIDEO->Screen.THYNK_AI_VIDEO;ShellDestination.THYNK_PROJECTS->Screen.THYNK_PROJECTS
+    ShellDestination.THYNK_BRAND_KIT->Screen.THYNK_BRAND_KIT;ShellDestination.THYNK_INSPIRATION->Screen.THYNK_INSPIRATION;ShellDestination.OWNER_PROFILE->Screen.OWNER_PROFILE;ShellDestination.OWNER_TOOLS->Screen.OWNER_TOOLS
+    else->Screen.SAFE_STATE
 }
 
 @Composable fun Home(profile:Profile?,nav:(Screen)->Unit){ LazyColumn(Modifier.fillMaxSize().padding(16.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){ item{PatsyMotion("Hi ${profile?.displayName ?: "there"}! 👋",true,PatsyAction.HAPPY)}; item{Text("What would you like to do?",fontSize=20.sp,fontWeight=FontWeight.Bold)}; item{Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){Tile("💡","Get Ideas") {nav(Screen.CHAT)};Tile("🎨","Create") {nav(Screen.CREATE)};Tile("📈","Grow") {}}}; item{Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){Tile("💬","DMs") {nav(Screen.DMS)};Tile("#️⃣","Hashtags") {nav(Screen.CHAT)};Tile("🛠","Tools") {nav(Screen.MORE)}}}; item{Panel{Text("Patsy says…",fontWeight=FontWeight.Bold,fontSize=18.sp);Text("Ask me like you ask your AI. I can help search, plan, create and guide you.",color=Muted);Text("Rainbow active states + charcoal workspace",color=White)}} } }
@@ -566,13 +649,8 @@ fun Workspace(
         Modifier.fillMaxWidth().background(Color(0xFF0A0A0B)).padding(6.dp),
         horizontalArrangement=Arrangement.SpaceEvenly,
     ){
-        listOf(
-            Screen.HOME to "Home",
-            Screen.THYNK to "THyNK",
-            Screen.CREATE to "Create",
-            Screen.DMS to "Patsy DMs",
-            Screen.PROFILE_HOME to "Profile",
-        ).forEach{(s,t)->
+        ShellNavigationContract.primaryRoutes.forEach{route->
+            val s=route.destination.toScreen();val t=route.label
             TextButton(onClick={onNavigate(s)}){
                 Text(t,color=if(selected==s)White else Muted,fontSize=11.sp)
             }

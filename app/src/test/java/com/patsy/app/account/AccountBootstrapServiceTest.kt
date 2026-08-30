@@ -55,4 +55,28 @@ class AccountBootstrapServiceTest {
         val service = ServerAccountBootstrapService(Store(null), Transport(RemoteAccountBootstrapResult.Unavailable), { 2_001L })
         assertIs<AccountBootstrapResult.FailedClosed>(service.fetch(session))
     }
+
+    @Test fun inconsistentReadyBootstrapFailsClosed(): Unit = runBlocking {
+        val inconsistent = AccountBootstrap(
+            "uuid-1", ProfileReadiness.MISSING, OnboardingState.READY,
+            TrustedAgeState.STANDARD_16_PLUS, emptySet(), AccountStatus.ACTIVE,
+            SettingsAvailability.AVAILABLE, emptySet(), 1_900L,
+        )
+        val service = ServerAccountBootstrapService(Store(stored()), Transport(RemoteAccountBootstrapResult.Available(inconsistent)), { 1_000L })
+        val result = assertIs<AccountBootstrapResult.FailedClosed>(service.fetch(session))
+        assertEquals(BootstrapFailure.INCONSISTENT, result.reason)
+        assertEquals(TrustedAgeState.UNKNOWN_UNVERIFIED, result.protectedState.ageState)
+    }
+
+    @Test fun unknownAgeCannotCarryPrivilegedOrAdultAuthority(): Unit = runBlocking {
+        val malformed = AccountBootstrap(
+            "uuid-1", ProfileReadiness.READY, OnboardingState.READY,
+            TrustedAgeState.UNKNOWN_UNVERIFIED, setOf(OwnerCapability.VIEW_OWNER_TOOLS),
+            AccountStatus.ACTIVE, SettingsAvailability.AVAILABLE, emptySet(), 1_900L,
+        )
+        val service = ServerAccountBootstrapService(Store(stored()), Transport(RemoteAccountBootstrapResult.Available(malformed)), { 1_000L })
+        val result = assertIs<AccountBootstrapResult.FailedClosed>(service.fetch(session))
+        assertTrue(result.protectedState.capabilities.isEmpty())
+        assertTrue(result.protectedState.restrictions.contains(ShellRestriction.PROTECTED_CONTENT_ONLY))
+    }
 }

@@ -2,9 +2,13 @@ package com.patsy.app.account
 
 import com.patsy.app.auth.AuthSessionStore
 import com.patsy.app.auth.PublicSession
+import java.util.concurrent.CancellationException
 
 sealed interface RemoteAccountBootstrapResult {
     data class Available(val account: AccountBootstrap) : RemoteAccountBootstrapResult
+    data object Unauthorized : RemoteAccountBootstrapResult
+    data object Forbidden : RemoteAccountBootstrapResult
+    data object Malformed : RemoteAccountBootstrapResult
     data object Unavailable : RemoteAccountBootstrapResult
 }
 
@@ -29,14 +33,22 @@ class ServerAccountBootstrapService(
         if (stored.publicSession.userId != session.userId || stored.publicSession.sessionId != session.sessionId) {
             return failed(BootstrapFailure.SESSION_MISMATCH)
         }
-        return when (val remote = transport.fetch(stored.accessToken)) {
+        return when (val remote = try {
+            transport.fetch(stored.accessToken)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            return failed(BootstrapFailure.BACKEND_UNAVAILABLE)
+        }) {
             RemoteAccountBootstrapResult.Unavailable -> failed(BootstrapFailure.BACKEND_UNAVAILABLE)
+            RemoteAccountBootstrapResult.Unauthorized -> failed(BootstrapFailure.UNAUTHORIZED)
+            RemoteAccountBootstrapResult.Forbidden -> failed(BootstrapFailure.FORBIDDEN)
+            RemoteAccountBootstrapResult.Malformed -> failed(BootstrapFailure.MALFORMED)
             is RemoteAccountBootstrapResult.Available -> {
                 val account = remote.account
                 when {
                     account.canonicalUserId != session.userId -> failed(BootstrapFailure.MALFORMED)
-                    account.validUntilEpochMillis <= now -> failed(BootstrapFailure.EXPIRED)
-                    account.canonicalUserId.isBlank() -> failed(BootstrapFailure.MALFORMED)
+                    account.validationFailure(now) != null -> failed(account.validationFailure(now)!!)
                     else -> AccountBootstrapResult.Available(account)
                 }
             }
