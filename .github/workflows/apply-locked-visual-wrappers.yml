@@ -2,15 +2,13 @@ name: Apply locked visual wrappers
 
 on:
   push:
-    branches:
-      - codex/patsy-rive-ui-foundation
+    branches: ["codex/patsy-rive-ui-foundation"]
 
 permissions:
   contents: write
 
 jobs:
   patch:
-    if: github.event.head_commit.message == 'chore: apply locked visual wrappers'
     runs-on: ubuntu-latest
     steps:
       - name: Check out branch
@@ -19,58 +17,57 @@ jobs:
           ref: codex/patsy-rive-ui-foundation
           fetch-depth: 0
 
-      - name: Patch only the locked wrapper delegation
-        shell: bash
+      - name: Apply exact wrapper migration
         run: |
           set -euo pipefail
-          python - <<'PY'
+          if [ "$(git log -1 --pretty=%s)" != "chore: apply locked visual wrappers v3" ]; then
+            echo "No patch requested for this commit."
+            exit 0
+          fi
+          python3 - <<'PY'
           from pathlib import Path
+          import re
 
-          path = Path('app/src/main/java/com/patsy/app/MainActivity.kt')
-          text = path.read_text(encoding='utf-8')
+          path = Path("app/src/main/java/com/patsy/app/MainActivity.kt")
+          text = path.read_text(encoding="utf-8")
 
-          import_anchor = 'import com.patsy.app.patsy.rig.rive.PatsyRiveRuntimeAdapter\n'
-          import_block = (
-              import_anchor
-              + 'import com.patsy.app.ui.PatsyHeader\n'
-              + 'import com.patsy.app.ui.PatsyPrimaryButton\n'
+          anchor = "import com.patsy.app.patsy.rig.rive.PatsyRiveRuntimeAdapter\n"
+          if text.count(anchor) != 1:
+              raise SystemExit("Unsafe import anchor count")
+          text = text.replace(
+              anchor,
+              anchor + "import com.patsy.app.ui.PatsyHeader\nimport com.patsy.app.ui.PatsyPrimaryButton\n",
+              1,
           )
-          old_header = '@Composable fun Header(){ Column(horizontalAlignment=Alignment.CenterHorizontally,modifier=Modifier.fillMaxWidth().padding(top=18.dp)){ Image(painter=painterResource(R.drawable.patsy_logo_official_white),contentDescription="Patsy",modifier=Modifier.width(190.dp).height(88.dp),contentScale=ContentScale.Fit); Text("YOUR AI. YOUR WORKSPACE. YOUR CONTROL.",fontSize=10.sp,color=Muted,letterSpacing=1.sp) } }'
-          new_header = '@Composable fun Header(){ PatsyHeader(modifier=Modifier.padding(top=18.dp)) }'
-          old_primary = '@Composable fun Primary(text:String,onClick:()->Unit,enabled:Boolean=true){ Button(onClick=onClick,enabled=enabled,modifier=Modifier.fillMaxWidth().height(58.dp),colors=ButtonDefaults.buttonColors(containerColor=White,contentColor=Color.Black),shape=RoundedCornerShape(30.dp)){ Text(text,fontWeight=FontWeight.Bold,fontSize=16.sp) } }'
-          new_primary = '@Composable fun Primary(text:String,onClick:()->Unit,enabled:Boolean=true){ PatsyPrimaryButton(text=text,onClick=onClick,enabled=enabled) }'
 
-          checks = {
-              'Rive import anchor': text.count(import_anchor),
-              'legacy Header wrapper': text.count(old_header),
-              'legacy Primary wrapper': text.count(old_primary),
-          }
-          bad = {name: count for name, count in checks.items() if count != 1}
-          if bad:
-              raise SystemExit(f'Refusing unsafe patch; expected each target exactly once: {bad}')
+          header_pattern = re.compile(r'@Composable fun Header\(\)\{ Column\(horizontalAlignment=Alignment\.CenterHorizontally,modifier=Modifier\.fillMaxWidth\(\)\.padding\(top=18\.dp\)\)\{ Image\(painter=painterResource\(R\.drawable\.patsy_logo_official_white\),contentDescription="Patsy",modifier=Modifier\.width\(190\.dp\)\.height\(88\.dp\),contentScale=ContentScale\.Fit\); Text\("YOUR AI\. YOUR WORKSPACE\. YOUR CONTROL\.",fontSize=10\.sp,color=Muted,letterSpacing=1\.sp\) \} \}')
+          text, header_count = header_pattern.subn(
+              '@Composable fun Header(){ PatsyHeader(modifier=Modifier.padding(top=18.dp)) }',
+              text,
+              count=1,
+          )
+          if header_count != 1:
+              raise SystemExit(f"Unsafe Header match count: {header_count}")
 
-          text = text.replace(import_anchor, import_block, 1)
-          text = text.replace(old_header, new_header, 1)
-          text = text.replace(old_primary, new_primary, 1)
-          path.write_text(text, encoding='utf-8')
+          primary_pattern = re.compile(r'@Composable fun Primary\(text:String,onClick:\(\)->Unit,enabled:Boolean=true\)\{ Button\(onClick=onClick,enabled=enabled,modifier=Modifier\.fillMaxWidth\(\)\.height\(58\.dp\),colors=ButtonDefaults\.buttonColors\(containerColor=White,contentColor=Color\.Black\),shape=RoundedCornerShape\(30\.dp\)\)\{ Text\(text,fontWeight=FontWeight\.Bold,fontSize=16\.sp\) \} \}')
+          text, primary_count = primary_pattern.subn(
+              '@Composable fun Primary(text:String,onClick:()->Unit,enabled:Boolean=true){ PatsyPrimaryButton(text=text,onClick=onClick,enabled=enabled) }',
+              text,
+              count=1,
+          )
+          if primary_count != 1:
+              raise SystemExit(f"Unsafe Primary match count: {primary_count}")
+
+          path.write_text(text, encoding="utf-8")
           PY
 
-      - name: Verify migration scope
-        shell: bash
-        run: |
-          set -euo pipefail
           grep -q 'import com.patsy.app.ui.PatsyHeader' app/src/main/java/com/patsy/app/MainActivity.kt
           grep -q 'import com.patsy.app.ui.PatsyPrimaryButton' app/src/main/java/com/patsy/app/MainActivity.kt
           grep -q '@Composable fun Header(){ PatsyHeader(modifier=Modifier.padding(top=18.dp)) }' app/src/main/java/com/patsy/app/MainActivity.kt
           grep -q '@Composable fun Primary(text:String,onClick:()->Unit,enabled:Boolean=true){ PatsyPrimaryButton(text=text,onClick=onClick,enabled=enabled) }' app/src/main/java/com/patsy/app/MainActivity.kt
           ! grep -q 'YOUR AI. YOUR WORKSPACE. YOUR CONTROL.' app/src/main/java/com/patsy/app/MainActivity.kt
           git diff --check
-          git diff -- app/src/main/java/com/patsy/app/MainActivity.kt
 
-      - name: Commit wrapper migration
-        shell: bash
-        run: |
-          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add app/src/main/java/com/patsy/app/MainActivity.kt
