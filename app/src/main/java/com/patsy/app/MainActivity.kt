@@ -36,6 +36,8 @@ import com.patsy.app.patsy.rig.PatsyRigPose
 import com.patsy.app.patsy.rig.PatsyRigViseme
 import com.patsy.app.patsy.rig.rive.PatsyRiveHost
 import com.patsy.app.patsy.rig.rive.PatsyRiveRuntimeAdapter
+import com.patsy.app.patsy.ui.PatsyAction
+import com.patsy.app.patsy.ui.PatsyMotion
 import com.patsy.app.ui.PatsyHeader
 import com.patsy.app.ui.PatsyPrimaryButton
 import kotlinx.coroutines.delay
@@ -139,127 +141,10 @@ enum class Screen { WELCOME, MODE, PROFILE, PASSWORD_SETUP, EMAIL_LINKED, LOGIN,
 
 @Composable fun Header(){ PatsyHeader(modifier=Modifier.padding(top=18.dp)) }
 
-/**
- * Animated Patsy actor architecture. The production actor must use generated Patsy character
- * assets based on the locked real-photo references. Real photographs are reference-only and must not appear in-app unless explicitly authorised. Motion states are intentionally separated from the UI so the real
- * asset can move, point, jump between controls, talk/lip-sync and react to app events.
- */
-enum class PatsyAction { IDLE, THINKING, TALKING, POINTING, JUMPING, HAPPY, WARNING, SLEEPY, CELEBRATE }
-
-@Composable fun PatsyMotion(label:String="Hi! 🐾", pointing:Boolean=false, action:PatsyAction = if(pointing) PatsyAction.POINTING else PatsyAction.IDLE, modifier:Modifier=Modifier){
-    val riveRuntime = remember { PatsyRiveRuntimeAdapter() }
-    val rigCoordinator = remember(riveRuntime) { PatsyRigCoordinator(riveRuntime) }
-    val transition = rememberInfiniteTransition(label="patsy-motion")
-    val bob by transition.animateFloat(0f, 1f, infiniteRepeatable(tween(900, easing=FastOutSlowInEasing), RepeatMode.Reverse), label="bob")
-    val breathe by transition.animateFloat(0.985f, 1.015f, infiniteRepeatable(tween(1200, easing=FastOutSlowInEasing), RepeatMode.Reverse), label="breathe")
-    val look by transition.animateFloat(-1f, 1f, infiniteRepeatable(tween(2200, easing=FastOutSlowInEasing), RepeatMode.Reverse), label="look")
-    val jump by transition.animateFloat(0f, 1f, infiniteRepeatable(tween(1200, easing=FastOutSlowInEasing), RepeatMode.Reverse), label="jump")
-    val rigMotion = when {
-        action==PatsyAction.JUMPING -> PatsyRigMotion.JUMP
-        action==PatsyAction.POINTING || pointing -> PatsyRigMotion.POINT
-        action==PatsyAction.CELEBRATE -> PatsyRigMotion.WAVE
-        action==PatsyAction.SLEEPY -> PatsyRigMotion.LIE
-        else -> PatsyRigMotion.IDLE
-    }
-    val rigExpression = when(action){
-        PatsyAction.THINKING -> PatsyRigExpression.CURIOUS
-        PatsyAction.TALKING, PatsyAction.IDLE -> PatsyRigExpression.CHEEKY
-        PatsyAction.POINTING -> PatsyRigExpression.PROUD
-        PatsyAction.JUMPING, PatsyAction.HAPPY, PatsyAction.CELEBRATE -> PatsyRigExpression.EXCITED
-        PatsyAction.WARNING -> PatsyRigExpression.CONCERNED
-        PatsyAction.SLEEPY -> PatsyRigExpression.SLEEPY
-    }
-    val talking = action==PatsyAction.TALKING
-    SideEffect {
-        rigCoordinator.render(
-            PatsyRigPose(
-                motion=rigMotion,
-                motionSpeed=when(rigMotion){
-                    PatsyRigMotion.JUMP -> 0.85f
-                    PatsyRigMotion.WAVE, PatsyRigMotion.POINT -> 0.45f
-                    else -> 0.12f
-                },
-                pointX=if(pointing || action==PatsyAction.POINTING) 0.88f else 0.5f,
-                pointY=if(pointing || action==PatsyAction.POINTING) 0.55f else 0.5f,
-                lookX=look,
-                lookY=(bob-0.5f)*0.12f,
-                headTilt=-look*0.18f,
-                leftEarDrive=(look*0.32f+(bob-0.5f)*0.08f).coerceIn(-1f,1f),
-                rightEarDrive=(-look*0.22f+(bob-0.5f)*0.12f).coerceIn(-1f,1f),
-                earPhysicsEnabled=true,
-                tailDrive=look*0.2f,
-                tailEnergy=when(action){
-                    PatsyAction.HAPPY, PatsyAction.CELEBRATE, PatsyAction.JUMPING -> 0.85f
-                    PatsyAction.SLEEPY, PatsyAction.WARNING -> 0.18f
-                    else -> 0.38f
-                },
-                expression=rigExpression,
-                expressionIntensity=when(action){
-                    PatsyAction.IDLE -> 0.45f
-                    PatsyAction.SLEEPY -> 0.65f
-                    else -> 0.82f
-                },
-                talking=talking,
-                viseme=if(talking) PatsyRigViseme.A else PatsyRigViseme.REST,
-                visemeIntensity=if(talking) 0.25f+(bob*0.5f) else 0f,
-                speechEnergy=if(talking) 0.2f+(bob*0.35f) else 0f,
-            )
-        )
-    }
-    LaunchedEffect(action,pointing){
-        when(rigMotion){
-            PatsyRigMotion.JUMP, PatsyRigMotion.WAVE, PatsyRigMotion.POINT -> rigCoordinator.retriggerAction(rigMotion)
-            else -> Unit
-        }
-    }
-    DisposableEffect(riveRuntime){ onDispose { riveRuntime.close() } }
-    val x = when(action){
-        PatsyAction.JUMPING -> ((jump * 210f) - 105f).dp
-        PatsyAction.POINTING -> 18.dp
-        else -> 0.dp
-    }
-    val y = when(action){
-        PatsyAction.JUMPING -> (-32f * kotlin.math.sin(jump * Math.PI)).toFloat().dp
-        else -> (12f * bob).dp
-    }
-    Box(modifier.fillMaxWidth().height(210.dp)){
-        Text(label,color=White,modifier=Modifier.align(Alignment.TopEnd).background(Charcoal2,RoundedCornerShape(22.dp)).padding(12.dp))
-        Box(
-            modifier=Modifier
-                .size(155.dp)
-                .align(Alignment.Center)
-                .offset(x=x,y=y)
-                .graphicsLayer(
-                    scaleX=breathe,
-                    scaleY=breathe,
-                    rotationY=look*7f,
-                    rotationZ=look*1.8f,
-                    translationX=look*3f
-                )
-        ){
-            PatsyRiveHost(
-                runtime=riveRuntime,
-                modifier=Modifier.fillMaxSize(),
-                fallback={
-                    // Generated Patsy only in-app. Real photos remain reference-only.
-                    Image(
-                        painter=painterResource(R.drawable.patsy_generated_main),
-                        contentDescription="Patsy AI — moving generated fallback; validated Rive rig activates automatically when present",
-                        contentScale=ContentScale.Fit,
-                        modifier=Modifier.fillMaxSize()
-                    )
-                }
-            )
-        }
-        if(action==PatsyAction.POINTING || pointing) Text("🐾",fontSize=32.sp,modifier=Modifier.align(Alignment.CenterEnd).offset(x=(-52).dp,y=20.dp))
-        if(action==PatsyAction.JUMPING) Text("↗",style=TextStyle(brush=Rainbow,fontSize=40.sp),modifier=Modifier.align(Alignment.CenterEnd).offset(x=(-34).dp,y=(-28).dp))
-    }
-}
-
 @Composable fun Panel(content:@Composable ColumnScope.()->Unit){ Column(content=content,modifier=Modifier.fillMaxWidth().background(Charcoal,RoundedCornerShape(28.dp)).padding(20.dp)) }
 @Composable fun Primary(text:String,onClick:()->Unit,enabled:Boolean=true){ PatsyPrimaryButton(text=text,onClick=onClick,enabled=enabled) }
 
-@Composable fun Welcome(start:()->Unit,login:()->Unit){ Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),horizontalAlignment=Alignment.CenterHorizontally){ Header(); PatsyMotion("Hey there! 🐾",action=PatsyAction.HAPPY); Text("Let’s get you",fontSize=28.sp,color=White,fontWeight=FontWeight.Bold); Text("all set up…",style=TextStyle(brush=Rainbow,fontSize=30.sp,fontWeight=FontWeight.ExtraBold)); Spacer(Modifier.height(18.dp)); Primary("Get Started  →",start); Spacer(Modifier.height(10.dp)); OutlinedButton(login,Modifier.fillMaxWidth().height(54.dp),shape=RoundedCornerShape(28.dp),colors=ButtonDefaults.outlinedButtonColors(contentColor=White)){Text("I already have an account")}; Spacer(Modifier.height(18.dp)); Text("Patsy’s ready when you are! 🐾",color=Muted) } }
+@Composable fun Welcome(start:()->Unit,login:()->Unit){ Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),horizontalAlignment=Alignment.CenterHorizontally){ Header(); PatsyMotion("Hey! Incase you can’t tell, I’m Patsy.",action=PatsyAction.HAPPY); Text("I'm Patsy. Your personal AI PetPal. Log in and I'll show you what I can do!",fontSize=24.sp,color=White,fontWeight=FontWeight.Bold); Spacer(Modifier.height(18.dp)); Primary("Get Started  →",start); Spacer(Modifier.height(10.dp)); OutlinedButton(login,Modifier.fillMaxWidth().height(54.dp),shape=RoundedCornerShape(28.dp),colors=ButtonDefaults.outlinedButtonColors(contentColor=White)){Text("I already have an account")}; Spacer(Modifier.height(18.dp)); Text("Patsy’s ready when you are!",color=Muted) } }
 
 @Composable
 fun ModeScreen(next:(String)->Unit,back:()->Unit){
