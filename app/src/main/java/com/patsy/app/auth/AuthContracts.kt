@@ -17,6 +17,9 @@ interface AuthGateway {
     suspend fun signOut(): SignOutResult
 }
 
+/** Intent marker only. Source-set policy decides whether a requested preview can be honored. */
+internal const val PREVIEW_AUTH_REQUESTED_EXTRA = "com.patsy.app.extra.PREVIEW_AUTH_REQUESTED"
+
 data class StartRegistrationRequest(
     val username: String,
     val email: String,
@@ -54,12 +57,10 @@ sealed interface RegistrationResult {
     data class Unavailable(val failure: ServiceFailure) : RegistrationResult
 }
 
-/**
- * The UI may say an email was queued/sent only for [Confirmed]. All other states must remain honest.
- */
+/** Provider/backend evidence only. A queued request is never represented as sent or delivered. */
 sealed interface ConfirmationEmailAcknowledgement {
-    data class Confirmed(
-        val deliveryState: ConfirmedEmailDeliveryState,
+    data class Status(
+        val deliveryState: EmailDeliveryState,
         val maskedEmail: String,
         val providerReceiptId: String? = null,
     ) : ConfirmationEmailAcknowledgement
@@ -70,7 +71,7 @@ sealed interface ConfirmationEmailAcknowledgement {
     ) : ConfirmationEmailAcknowledgement
 }
 
-enum class ConfirmedEmailDeliveryState { QUEUED, SENT }
+enum class EmailDeliveryState { QUEUED, SENT, FAILED, UNKNOWN }
 
 enum class EmailDeliveryFailure {
     PROVIDER_NOT_CONFIGURED,
@@ -157,6 +158,15 @@ class SecretChars private constructor(private val chars: CharArray) : AutoClosea
     val length: Int get() = chars.size
 
     fun <T> useCopy(block: (CharArray) -> T): T {
+        val copy = chars.copyOf()
+        return try {
+            block(copy)
+        } finally {
+            Arrays.fill(copy, '\u0000')
+        }
+    }
+
+    suspend fun <T> useCopySuspending(block: suspend (CharArray) -> T): T {
         val copy = chars.copyOf()
         return try {
             block(copy)
