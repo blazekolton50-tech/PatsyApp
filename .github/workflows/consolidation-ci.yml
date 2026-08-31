@@ -9,6 +9,9 @@ on:
     branches:
       - feat/final-login-password-home-design-lock
 
+permissions:
+  contents: write
+
 jobs:
   android:
     runs-on: ubuntu-latest
@@ -21,6 +24,18 @@ jobs:
           cache: gradle
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
+      - name: Apply locked THyNK integration
+        run: python3 scripts/apply_thynk_music_integration.py
+      - name: Persist integration on source branch
+        if: github.event_name == 'push' && github.ref == 'refs/heads/chatgpt/thynk-music-apk-2026-08-31'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/src/main/java/com/patsy/app/FinalMainActivity.kt app/src/main/java/com/patsy/app/ui/finaldesign/FinalVisualContract.kt app/src/main/java/com/patsy/app/ui/finaldesign/FinalPrimaryNavigationBar.kt app/src/main/java/com/patsy/app/ui/finaldesign/FinalHomeScreen.kt
+          if ! git diff --cached --quiet; then
+            git commit -m "feat: wire THyNK Music and Camera into secure shell"
+            git push origin HEAD:chatgpt/thynk-music-apk-2026-08-31
+          fi
       - name: Unit tests
         run: ./gradlew testDebugUnitTest --stacktrace
       - name: Build debug APK
@@ -30,13 +45,13 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: patsy-consolidation-debug-apk
+          name: patsy-thynk-music-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
       - name: Create Android Studio project ZIP
-        run: git archive --format=zip --output=PatsyApp-AndroidStudio-current.zip HEAD
+        run: zip -rq PatsyApp-AndroidStudio-THyNK-Music.zip . -x '.git/*' '.gradle/*' 'app/build/*' 'PatsyApp-AndroidStudio-THyNK-Music.zip'
       - name: Upload Android Studio project ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: PatsyApp-AndroidStudio-project
-          path: PatsyApp-AndroidStudio-current.zip
+          name: PatsyApp-AndroidStudio-THyNK-Music
+          path: PatsyApp-AndroidStudio-THyNK-Music.zip
           compression-level: 0
