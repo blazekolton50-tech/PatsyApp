@@ -24,6 +24,8 @@ import com.patsy.app.auth.PatsyServiceBindings
 import com.patsy.app.auth.PublicSession
 import com.patsy.app.auth.SessionState
 import com.patsy.app.auth.debug.DebugTestAccessFactory
+import com.patsy.app.auth.ui.DataStoreRememberMePreferenceStore
+import com.patsy.app.auth.ui.RememberMeCoordinator
 import com.patsy.app.ui.finaldesign.FinalCharcoal
 import com.patsy.app.ui.finaldesign.FinalDebugSetPasswordRoute
 import com.patsy.app.ui.finaldesign.FinalHomeDestination
@@ -53,6 +55,8 @@ private fun FinalPatsyApp() {
     val context = LocalContext.current.applicationContext
     val authGateway = remember { PatsyServiceBindings.authGateway }
     val debugTestAccess = remember(context) { DebugTestAccessFactory.create(context) }
+    val rememberMeStore = remember(context) { DataStoreRememberMePreferenceStore(context) }
+    val rememberMeCoordinator = remember(rememberMeStore) { RememberMeCoordinator(rememberMeStore) }
     var page by remember { mutableStateOf(FinalAppPage.LOGIN) }
     var session by remember { mutableStateOf<PublicSession?>(null) }
     var pendingKeepSignedIn by remember { mutableStateOf(true) }
@@ -65,7 +69,7 @@ private fun FinalPatsyApp() {
             page = FinalAppPage.HOME
             return@LaunchedEffect
         }
-        when (val restored = authGateway.restoreSession()) {
+        when (val restored = rememberMeCoordinator.restoreSession(authGateway)) {
             is SessionState.Authenticated -> {
                 session = restored.session
                 page = FinalAppPage.HOME
@@ -88,6 +92,7 @@ private fun FinalPatsyApp() {
                 FinalAppPage.LOGIN -> FinalLoginRoute(
                     authGateway = authGateway,
                     debugTestAccess = debugTestAccess,
+                    rememberMeCoordinator = rememberMeCoordinator,
                     onAuthenticated = {
                         session = it
                         page = FinalAppPage.HOME
@@ -140,7 +145,7 @@ private fun FinalPatsyApp() {
                                     signOut = {
                                         scope.launch {
                                             debugTestAccess.logout()
-                                            authGateway.signOut()
+                                            rememberMeCoordinator.signOut(authGateway)
                                             session = null
                                             page = FinalAppPage.LOGIN
                                         }
