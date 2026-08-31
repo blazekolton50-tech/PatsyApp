@@ -39,6 +39,10 @@ import com.patsy.app.navigation.FinalShellNavigation
 import com.patsy.app.navigation.NavigationDecision
 import com.patsy.app.navigation.ShellDestination
 import com.patsy.app.navigation.ShellNavigationGate
+import com.patsy.app.security.FailClosedOwnerAuthorizationGate
+import com.patsy.app.security.FinalOwnerAccessPolicy
+import com.patsy.app.security.OwnerAuthorizationDecision
+import com.patsy.app.security.OwnerCapability
 import com.patsy.app.ui.finaldesign.FinalCharcoal
 import com.patsy.app.ui.finaldesign.FinalDebugSetPasswordRoute
 import com.patsy.app.ui.finaldesign.FinalHomeDestination
@@ -46,6 +50,7 @@ import com.patsy.app.ui.finaldesign.FinalHomeScreen
 import com.patsy.app.ui.finaldesign.FinalLoginRoute
 import com.patsy.app.ui.finaldesign.FinalPrimaryNavigationBar
 import com.patsy.app.ui.finaldesign.FinalWhite
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -69,6 +74,8 @@ private enum class FinalAppPage {
     CREATE,
     DMS,
     PROFILE,
+    OWNER_PROFILE,
+    OWNER_TOOLS,
     PROTECTED,
 }
 
@@ -77,6 +84,9 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
     val context = LocalContext.current.applicationContext
     val authGateway = remember { PatsyServiceBindings.authGateway }
     val accountBootstrapService = remember { PatsyServiceBindings.accountBootstrapService }
+    val ownerGate = remember {
+        FailClosedOwnerAuthorizationGate(PatsyServiceBindings.ownerAuthorizationService)
+    }
     val debugTestAccess = remember(context) { DebugTestAccessFactory.create(context) }
     val rememberMeStore = remember(context) { DataStoreRememberMePreferenceStore(context) }
     val rememberMeCoordinator = remember(rememberMeStore) { RememberMeCoordinator(rememberMeStore) }
@@ -86,7 +96,46 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
     var bootstrapLoading by remember { mutableStateOf(false) }
     var debugPreview by remember { mutableStateOf(false) }
     var pendingKeepSignedIn by remember { mutableStateOf(true) }
+    var ownerProfileGrant by remember { mutableStateOf<OwnerAuthorizationDecision.Allowed?>(null) }
+    var ownerToolsGrant by remember { mutableStateOf<OwnerAuthorizationDecision.Allowed?>(null) }
+    var ownerAccessChecked by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+
+    fun clearOwnerAccess(checked: Boolean) {
+        ownerProfileGrant = null
+        ownerToolsGrant = null
+        ownerAccessChecked = checked
+    }
+
+    suspend fun refreshOwnerAccess(): Pair<OwnerAuthorizationDecision.Allowed?, OwnerAuthorizationDecision.Allowed?> {
+        val activeSession = session
+        if (activeSession == null || debugPreview) {
+            clearOwnerAccess(checked = true)
+            return null to null
+        }
+
+        ownerAccessChecked = false
+        val profileGrant = (ownerGate.verify(activeSession, OwnerCapability.VIEW_OWNER_PROFILE)
+            as? OwnerAuthorizationDecision.Allowed)
+            ?.takeIf {
+                FinalOwnerAccessPolicy.canOpen(it, OwnerCapability.VIEW_OWNER_PROFILE)
+            }
+        val toolsGrant = (ownerGate.verify(activeSession, OwnerCapability.VIEW_OWNER_TOOLS)
+            as? OwnerAuthorizationDecision.Allowed)
+            ?.takeIf {
+                FinalOwnerAccessPolicy.canOpen(it, OwnerCapability.VIEW_OWNER_TOOLS)
+            }
+
+        if (session?.sessionId == activeSession.sessionId && !debugPreview) {
+            ownerProfileGrant = profileGrant
+            ownerToolsGrant = toolsGrant
+            ownerAccessChecked = true
+            return profileGrant to toolsGrant
+        }
+
+        clearOwnerAccess(checked = true)
+        return null to null
+    }
 
     fun acceptSession(authenticated: PublicSession) {
         val isDebugPreview = BuildConfig.DEBUG &&
@@ -96,6 +145,7 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
         debugPreview = isDebugPreview
         bootstrapResult = null
         bootstrapLoading = !isDebugPreview
+        clearOwnerAccess(checked = isDebugPreview)
         page = FinalAppPage.HOME
     }
 
@@ -107,6 +157,7 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
             bootstrapResult = null
             bootstrapLoading = false
             debugPreview = false
+            clearOwnerAccess(checked = false)
             page = FinalAppPage.LOGIN
         }
     }
@@ -149,11 +200,13 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
         val activeSession = session ?: run {
             bootstrapResult = null
             bootstrapLoading = false
+            clearOwnerAccess(checked = false)
             return@LaunchedEffect
         }
         if (debugPreview) {
             bootstrapResult = null
             bootstrapLoading = false
+            clearOwnerAccess(checked = true)
             return@LaunchedEffect
         }
 
@@ -165,6 +218,28 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
         }
     }
 
+    LaunchedEffect(session?.sessionId, bootstrapResult, debugPreview) {
+        if (debugPreview) {
+            clearOwnerAccess(checked = true)
+            return@LaunchedEffect
+        }
+
+        val account = (bootstrapResult as? AccountBootstrapResult.Available)?.account
+        if (account == null) {
+            clearOwnerAccess(checked = bootstrapResult != null)
+            return@LaunchedEffect
+        }
+
+        val mayViewOwnerProfile = OwnerCapability.VIEW_OWNER_PROFILE in account.capabilities
+        val mayViewOwnerTools = OwnerCapability.VIEW_OWNER_TOOLS in account.capabilities
+        if (!mayViewOwnerProfile && !mayViewOwnerTools) {
+            clearOwnerAccess(checked = true)
+            return@LaunchedEffect
+        }
+
+        refreshOwnerAccess()
+    }
+
     LaunchedEffect(initialDeepLink, bootstrapResult, debugPreview) {
         if (initialDeepLink.isNullOrBlank() || debugPreview) return@LaunchedEffect
         val account = (bootstrapResult as? AccountBootstrapResult.Available)?.account
@@ -173,6 +248,28 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
             is NavigationDecision.Allowed -> decision.route.destination.toFinalPage() ?: FinalAppPage.PROTECTED
             is NavigationDecision.Denied -> FinalAppPage.PROTECTED
         }
+    }
+
+    LaunchedEffect(page, ownerProfileGrant?.authorizationId, ownerToolsGrant?.authorizationId) {
+        val activeGrant = when (page) {
+            FinalAppPage.OWNER_PROFILE -> ownerProfileGrant
+            FinalAppPage.OWNER_TOOLS -> ownerToolsGrant
+            else -> null
+        } ?: return@LaunchedEffect
+        val waitMillis = activeGrant.expiresAtEpochMillis - System.currentTimeMillis()
+        if (waitMillis > 0L) delay(waitMillis)
+        val stillCurrent = when (page) {
+            FinalAppPage.OWNER_PROFILE -> FinalOwnerAccessPolicy.canOpen(
+                ownerProfileGrant,
+                OwnerCapability.VIEW_OWNER_PROFILE,
+            )
+            FinalAppPage.OWNER_TOOLS -> FinalOwnerAccessPolicy.canOpen(
+                ownerToolsGrant,
+                OwnerCapability.VIEW_OWNER_TOOLS,
+            )
+            else -> true
+        }
+        if (!stillCurrent) page = FinalAppPage.PROFILE
     }
 
     MaterialTheme(
@@ -255,11 +352,41 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
                                             )
                                         },
                                         emailVerified = session?.emailVerified == true,
-                                        ownerAccessChecked = true,
-                                        canViewOwnerProfile = false,
-                                        canViewOwnerTools = false,
-                                        openOwnerProfile = {},
-                                        openOwnerTools = {},
+                                        ownerAccessChecked = ownerAccessChecked,
+                                        canViewOwnerProfile = FinalOwnerAccessPolicy.canOpen(
+                                            ownerProfileGrant,
+                                            OwnerCapability.VIEW_OWNER_PROFILE,
+                                        ),
+                                        canViewOwnerTools = FinalOwnerAccessPolicy.canOpen(
+                                            ownerToolsGrant,
+                                            OwnerCapability.VIEW_OWNER_TOOLS,
+                                        ),
+                                        openOwnerProfile = {
+                                            scope.launch {
+                                                val refreshed = refreshOwnerAccess().first
+                                                if (
+                                                    FinalOwnerAccessPolicy.canOpen(
+                                                        refreshed,
+                                                        OwnerCapability.VIEW_OWNER_PROFILE,
+                                                    )
+                                                ) {
+                                                    page = FinalAppPage.OWNER_PROFILE
+                                                }
+                                            }
+                                        },
+                                        openOwnerTools = {
+                                            scope.launch {
+                                                val refreshed = refreshOwnerAccess().second
+                                                if (
+                                                    FinalOwnerAccessPolicy.canOpen(
+                                                        refreshed,
+                                                        OwnerCapability.VIEW_OWNER_TOOLS,
+                                                    )
+                                                ) {
+                                                    page = FinalAppPage.OWNER_TOOLS
+                                                }
+                                            }
+                                        },
                                         signOut = ::signOut,
                                     )
                                     else -> Unit
@@ -270,6 +397,41 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
                                 onNavigate = ::navigate,
                             )
                         }
+                    }
+                }
+
+                FinalAppPage.OWNER_PROFILE -> {
+                    if (
+                        FinalOwnerAccessPolicy.canOpen(
+                            ownerProfileGrant,
+                            OwnerCapability.VIEW_OWNER_PROFILE,
+                        )
+                    ) {
+                        OwnerProfile(
+                            profile = session?.let {
+                                Profile(
+                                    displayName = it.username,
+                                    username = it.username,
+                                    email = it.maskedEmail,
+                                )
+                            },
+                            back = { page = FinalAppPage.PROFILE },
+                        )
+                    } else {
+                        OwnerAccessDenied { page = FinalAppPage.PROFILE }
+                    }
+                }
+
+                FinalAppPage.OWNER_TOOLS -> {
+                    if (
+                        FinalOwnerAccessPolicy.canOpen(
+                            ownerToolsGrant,
+                            OwnerCapability.VIEW_OWNER_TOOLS,
+                        )
+                    ) {
+                        OwnerTools { page = FinalAppPage.PROFILE }
+                    } else {
+                        OwnerAccessDenied { page = FinalAppPage.PROFILE }
                     }
                 }
 
@@ -326,7 +488,9 @@ private fun FinalAppPage.toDestination(): FinalHomeDestination = when (this) {
     FinalAppPage.THYNK -> FinalHomeDestination.THYNK
     FinalAppPage.CREATE -> FinalHomeDestination.CREATE
     FinalAppPage.DMS -> FinalHomeDestination.PATSY_DMS
-    FinalAppPage.PROFILE -> FinalHomeDestination.PROFILE
+    FinalAppPage.PROFILE,
+    FinalAppPage.OWNER_PROFILE,
+    FinalAppPage.OWNER_TOOLS -> FinalHomeDestination.PROFILE
     FinalAppPage.LOGIN,
     FinalAppPage.DEBUG_SET_PASSWORD,
     FinalAppPage.PROTECTED -> FinalHomeDestination.HOME
