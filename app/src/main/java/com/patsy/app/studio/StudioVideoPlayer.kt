@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
@@ -63,9 +64,17 @@ fun StudioVideoPlayer(
                 if (playbackState == Player.STATE_READY) {
                     val duration = player.duration
                     if (duration != C.TIME_UNSET && duration in 1..Int.MAX_VALUE.toLong()) {
-                        currentOnAction(StudioAction.SetDuration(duration.toInt()))
+                        currentOnAction(StudioAction.MediaReady(duration.toInt()))
                     }
                 }
+            }
+
+            override fun onPlayerError(error: PlaybackException) {
+                currentOnAction(
+                    StudioAction.MediaFailed(
+                        error.message ?: "Unable to load video",
+                    ),
+                )
             }
 
             override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -82,16 +91,17 @@ fun StudioVideoPlayer(
     LaunchedEffect(sourceUri) {
         player.stop()
         player.clearMediaItems()
-        currentOnAction(StudioAction.SetPlaying(false))
-        currentOnAction(StudioAction.SeekTo(0))
-        if (!sourceUri.isNullOrBlank()) {
+        if (sourceUri.isNullOrBlank()) {
+            currentOnAction(StudioAction.ClearMedia)
+        } else {
+            currentOnAction(StudioAction.LoadMedia(sourceUri))
             player.setMediaItem(MediaItem.fromUri(sourceUri))
             player.prepare()
         }
     }
 
-    LaunchedEffect(state.isPlaying, sourceUri) {
-        if (sourceUri.isNullOrBlank()) {
+    LaunchedEffect(state.isPlaying, state.canPlay, sourceUri) {
+        if (sourceUri.isNullOrBlank() || !state.canPlay) {
             player.pause()
         } else if (state.isPlaying) {
             player.play()
@@ -113,7 +123,7 @@ fun StudioVideoPlayer(
     }
 
     LaunchedEffect(state.playheadMs, sourceUri) {
-        if (!sourceUri.isNullOrBlank() && abs(player.currentPosition - state.playheadMs) > 350L) {
+        if (!sourceUri.isNullOrBlank() && state.canPlay && abs(player.currentPosition - state.playheadMs) > 350L) {
             player.seekTo(state.playheadMs.toLong())
         }
     }
@@ -156,6 +166,10 @@ fun StudioVideoPlayer(
             )
             if (sourceUri.isNullOrBlank()) {
                 Text("Add a video clip to preview", color = StudioMuted)
+            } else if (state.mediaStatus == StudioMediaStatus.LOADING) {
+                Text("Loading clip…", color = StudioMuted)
+            } else if (state.mediaStatus == StudioMediaStatus.FAILED) {
+                Text(state.mediaError ?: "Unable to load clip", color = StudioMuted)
             }
         }
 
@@ -170,6 +184,7 @@ fun StudioVideoPlayer(
                     ),
                 )
             },
+            enabled = state.canPlay,
             modifier = Modifier.fillMaxWidth(),
         )
 
@@ -178,11 +193,15 @@ fun StudioVideoPlayer(
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TextButton(onClick = { currentOnAction(StudioAction.StepBy(-1_000)) }) {
+            TextButton(
+                onClick = { currentOnAction(StudioAction.StepBy(-1_000)) },
+                enabled = state.canPlay,
+            ) {
                 Text("−1s", color = StudioText)
             }
             Button(
                 onClick = { currentOnAction(StudioAction.TogglePlayPause) },
+                enabled = state.canPlay,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = StudioText,
                     contentColor = Color.Black,
@@ -190,7 +209,10 @@ fun StudioVideoPlayer(
             ) {
                 Text(if (state.isPlaying) "Pause" else "Play")
             }
-            TextButton(onClick = { currentOnAction(StudioAction.StepBy(1_000)) }) {
+            TextButton(
+                onClick = { currentOnAction(StudioAction.StepBy(1_000)) },
+                enabled = state.canPlay,
+            ) {
                 Text("+1s", color = StudioText)
             }
             Spacer(Modifier.weight(1f))
