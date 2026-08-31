@@ -6,6 +6,23 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class StudioEditorStateTest {
+    private fun readyVideo(
+        durationMs: Int = 10_000,
+        playheadMs: Int = 0,
+        isPlaying: Boolean = false,
+    ): StudioEditorState {
+        var state = reduceStudioState(
+            StudioEditorState.video(durationMs = 0),
+            StudioAction.LoadMedia("content://patsy-test/clip"),
+        )
+        state = reduceStudioState(state, StudioAction.MediaReady(durationMs))
+        state = reduceStudioState(state, StudioAction.SeekTo(playheadMs))
+        if (isPlaying) {
+            state = reduceStudioState(state, StudioAction.SetPlaying(true))
+        }
+        return state
+    }
+
     @Test
     fun seekClampsInsideProjectDuration() {
         val state = StudioEditorState.video(durationMs = 10_000)
@@ -34,7 +51,7 @@ class StudioEditorStateTest {
 
     @Test
     fun playPauseLoopAndMuteAreIndependentControls() {
-        val state = StudioEditorState.video(durationMs = 10_000)
+        val state = readyVideo()
         val playing = reduceStudioState(state, StudioAction.TogglePlayPause)
         val looping = reduceStudioState(playing, StudioAction.ToggleLoop)
         val muted = reduceStudioState(looping, StudioAction.ToggleMute)
@@ -47,7 +64,7 @@ class StudioEditorStateTest {
 
     @Test
     fun playerCallbacksSetPlaybackStateInsteadOfBlindlyTogglingIt() {
-        val paused = StudioEditorState.video(durationMs = 10_000)
+        val paused = readyVideo()
         val playing = reduceStudioState(paused, StudioAction.SetPlaying(true))
         val stillPlaying = reduceStudioState(playing, StudioAction.SetPlaying(true))
         val pausedAgain = reduceStudioState(stillPlaying, StudioAction.SetPlaying(false))
@@ -68,7 +85,7 @@ class StudioEditorStateTest {
 
     @Test
     fun selectingAToolDoesNotMutatePlayback() {
-        val state = StudioEditorState.video(durationMs = 10_000, playheadMs = 2_000, isPlaying = true)
+        val state = readyVideo(playheadMs = 2_000, isPlaying = true)
         val edited = reduceStudioState(state, StudioAction.SelectTool(StudioTool.EFFECTS))
 
         assertEquals(StudioTool.EFFECTS, edited.selectedTool)
