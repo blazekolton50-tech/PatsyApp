@@ -51,11 +51,15 @@ import com.patsy.app.ui.finaldesign.FinalCharcoal
 import com.patsy.app.ui.finaldesign.FinalMuted
 import com.patsy.app.ui.finaldesign.FinalRainbow
 import com.patsy.app.ui.finaldesign.FinalWhite
+import com.patsy.app.studio.StudioEditorState
+import com.patsy.app.studio.StudioVideoPlayer
+import com.patsy.app.studio.reduceStudioState
 
 private sealed interface ThynkRoute {
     data object Hub : ThynkRoute
     data class Category(val category: ThynkCategory) : ThynkRoute
     data class Music(val pageId: String) : ThynkRoute
+    data class Editor(val pageId: String) : ThynkRoute
 }
 
 @Composable
@@ -67,6 +71,7 @@ fun ThynkStudioScreen() {
             onBack = {
                 route = when (route) {
                     is ThynkRoute.Music -> ThynkRoute.Category(ThynkStudioCatalog.categories.first { it.id == "music" })
+                    is ThynkRoute.Editor -> ThynkRoute.Category(ThynkStudioCatalog.categories.first { it.id == "video" })
                     is ThynkRoute.Category -> ThynkRoute.Hub
                     ThynkRoute.Hub -> ThynkRoute.Hub
                 }
@@ -80,12 +85,17 @@ fun ThynkStudioScreen() {
                 is ThynkRoute.Category -> ThynkCategoryScreen(current.category) { item ->
                     if (current.category.id == "music") {
                         route = ThynkRoute.Music(musicPageForItem(item))
+                    } else {
+                        editorPageForThynkItem(item)?.let { editorPage ->
+                            route = ThynkRoute.Editor(editorPage)
+                        }
                     }
                 }
                 is ThynkRoute.Music -> ThynkMusicScreen(
                     pageId = current.pageId,
                     onOpenPage = { route = ThynkRoute.Music(it) },
                 )
+                is ThynkRoute.Editor -> ThynkVideoEditorScreen()
             }
         }
     }
@@ -182,6 +192,32 @@ private fun ThynkCategoryScreen(category: ThynkCategory, onItem: (String) -> Uni
             }
         }
         item { Spacer(Modifier.height(18.dp)) }
+    }
+}
+
+@Composable
+private fun ThynkVideoEditorScreen() {
+    var editorState by remember { mutableStateOf(StudioEditorState.video(durationMs = 0)) }
+    Column(
+        Modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text("VIDEO EDITOR", color = FinalWhite, fontSize = 25.sp, fontWeight = FontWeight.Black)
+        Text(
+            "Preview and edit a real selected video clip. No sample media is substituted.",
+            color = FinalMuted,
+            fontSize = 12.sp,
+        )
+        StudioVideoPlayer(
+            sourceUri = editorState.sourceUri,
+            state = editorState,
+            onAction = { action -> editorState = reduceStudioState(editorState, action) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        InfoPanel(
+            "MEDIA",
+            "No video is loaded yet. Android media picking is the next verified slice; this editor remains truthfully EMPTY until a real URI is selected.",
+        )
     }
 }
 
