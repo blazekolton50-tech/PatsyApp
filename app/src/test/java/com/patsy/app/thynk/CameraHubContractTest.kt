@@ -6,6 +6,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
+// Intentional RED contract for the native Camera foundation.
 class CameraHubContractTest {
     @Test
     fun `camera hub exposes real native capture and import actions without fake AI completion`() {
