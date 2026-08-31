@@ -11,7 +11,7 @@
                 android:name="app.rive.runtime.kotlin.RiveInitializer"
                 android:value="androidx.startup" />
         </provider>
-        <activity android:name=".MainActivity" android:exported="true">
+        <activity android:name=".FinalMainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
