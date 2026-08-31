@@ -34,9 +34,10 @@ import androidx.compose.ui.unit.sp
  */
 @Composable
 fun FinalPrimaryNavigationBar(
-    selected: FinalHomeDestination,
+    selected: FinalHomeDestination?,
     onNavigate: (FinalHomeDestination) -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     Column(modifier = modifier.fillMaxWidth().background(Color(0xFF0D0D10))) {
         FinalBottomWave(showFooterCopy = false)
@@ -45,12 +46,12 @@ fun FinalPrimaryNavigationBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround,
         ) {
-            FinalNavItem("⌂", "Home", selected == FinalHomeDestination.HOME) {
+            FinalNavItem("⌂", "Home", selected == FinalHomeDestination.HOME, enabled) {
                 onNavigate(FinalHomeDestination.HOME)
             }
 
             // The approved THyNK mark stands alone. Do not add a second white THyNK caption.
-            FinalNavItem("THyNK", "", selected == FinalHomeDestination.THYNK) {
+            FinalNavItem("THyNK", "", selected == FinalHomeDestination.THYNK, enabled) {
                 onNavigate(FinalHomeDestination.THYNK)
             }
 
@@ -64,17 +65,17 @@ fun FinalPrimaryNavigationBar(
                         .padding(4.dp)
                         .clip(CircleShape)
                         .background(Color.White)
-                        .clickable { onNavigate(FinalHomeDestination.CREATE) },
+                        .clickable(enabled = enabled) { onNavigate(FinalHomeDestination.CREATE) },
                     contentAlignment = Alignment.Center,
                 ) {
                     Text("+", color = Color.Black, fontSize = 34.sp, fontWeight = FontWeight.Black)
                 }
             }
 
-            FinalNavItem("◌", "PDMs", selected == FinalHomeDestination.PATSY_DMS) {
+            FinalNavItem("◌", "PDMs", selected == FinalHomeDestination.PATSY_DMS, enabled) {
                 onNavigate(FinalHomeDestination.PATSY_DMS)
             }
-            FinalNavItem("♙", "Profile", selected == FinalHomeDestination.PROFILE) {
+            FinalNavItem("♙", "Profile", selected == FinalHomeDestination.PROFILE, enabled) {
                 onNavigate(FinalHomeDestination.PROFILE)
             }
         }
@@ -82,9 +83,15 @@ fun FinalPrimaryNavigationBar(
 }
 
 @Composable
-private fun FinalNavItem(icon: String, label: String, active: Boolean, onClick: () -> Unit) {
+private fun FinalNavItem(
+    icon: String,
+    label: String,
+    active: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
     Column(
-        modifier = Modifier.width(68.dp).clickable(onClick = onClick),
+        modifier = Modifier.width(68.dp).clickable(enabled = enabled, onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
