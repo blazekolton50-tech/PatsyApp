@@ -28,6 +28,7 @@ import com.patsy.app.auth.AuthGateway
 import com.patsy.app.auth.AuthValidation
 import com.patsy.app.auth.LoginRequest
 import com.patsy.app.auth.LoginResult
+import com.patsy.app.auth.ui.RememberMeCoordinator
 import com.patsy.app.auth.PasswordResetRequest
 import com.patsy.app.auth.PasswordResetResult
 import com.patsy.app.auth.PublicSession
@@ -40,6 +41,7 @@ import kotlinx.coroutines.launch
 fun FinalLoginRoute(
     authGateway: AuthGateway,
     debugTestAccess: DebugTestAccess,
+    rememberMeCoordinator: RememberMeCoordinator,
     onAuthenticated: (PublicSession) -> Unit,
     onNeedDebugPasswordSetup: (Boolean) -> Unit,
 ) {
@@ -105,12 +107,21 @@ fun FinalLoginRoute(
                             } else {
                                 val secret = SecretChars.copyOf(entered.toCharArray())
                                 val result = try {
-                                    authGateway.login(LoginRequest(identifierValidation.identifier, secret))
+                                    authGateway.login(
+                                        LoginRequest(
+                                            identifier = identifierValidation.identifier,
+                                            password = secret,
+                                            sessionRetention = rememberMeCoordinator.retentionFor(keepSignedIn),
+                                        ),
+                                    )
                                 } finally {
                                     secret.close()
                                 }
                                 when (result) {
-                                    is LoginResult.Authenticated -> onAuthenticated(result.session)
+                                    is LoginResult.Authenticated -> {
+                                        rememberMeCoordinator.recordSuccessfulLogin(keepSignedIn)
+                                        onAuthenticated(result.session)
+                                    }
                                     is LoginResult.Rejected -> error = "The username/email or password is incorrect."
                                     is LoginResult.Unavailable -> error = "Secure login is currently unavailable."
                                 }
