@@ -8,6 +8,7 @@
 - PR #35 is the secured consolidation ancestor, not the current working branch.
 - Read first:
   - `docs/PATSY_DESIGN_PRESERVATION_MASTER_2026-08-31.md`
+  - `docs/NAVIGATION_LOCK_2026-08-31.md`
   - `docs/codex/PATSY_CURRENT_BUILD_STATUS_2026-08-31.md`
   - `docs/superpowers/plans/2026-08-31-thynk-video-player-integration.md`
   - `docs/superpowers/plans/2026-08-31-global-navigation-every-authenticated-page.md`
@@ -45,6 +46,9 @@ Do **not** redo this work:
 - Profile remains `Profile`
 - semantic destinations still remain HOME / THyNK / CAMERA / PATSY DMS / PROFILE
 
+Binding visual spec:
+`docs/NAVIGATION_LOCK_2026-08-31.md`
+
 The integration script was also repaired so CI no longer tries to reintroduce the old nav presentation.
 
 ### THyNK editor-state foundation ported with TDD
@@ -81,7 +85,7 @@ Do not port PR #23's obsolete `app/src/main/java/com/patsy/app/studio/ThynkStudi
 Semantic destinations:
 `HOME · THyNK · CAMERA · PATSY DMS · PROFILE`
 
-Visible navigation must match the newest image:
+Visible navigation must match `docs/NAVIGATION_LOCK_2026-08-31.md`:
 `Home · [coloured THyNK wordmark only] · [large + only] · PDMs · Profile`
 
 Rules:
