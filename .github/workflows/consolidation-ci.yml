@@ -26,6 +26,8 @@ jobs:
         run: chmod +x ./gradlew
       - name: Apply locked THyNK integration
         run: python3 scripts/apply_thynk_music_integration.py
+      - name: Apply native Camera integration
+        run: python3 scripts/apply_camera_native_integration.py
       - name: Persist integration on source branch
         if: github.event_name == 'push' && github.ref == 'refs/heads/chatgpt/thynk-music-apk-2026-08-31'
         run: |
