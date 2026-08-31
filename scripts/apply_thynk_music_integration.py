@@ -123,6 +123,108 @@ replace_if_present(
     'NavItem("◌", "PDMs", false)',
 )
 
+# Route the current VIDEO & CAMERA category to the shared Media3 editor without
+# importing the obsolete PR #23 THyNK screen or inventing sample media.
+thynk_screen = "app/src/main/java/com/patsy/app/thynk/ThynkStudioScreen.kt"
+replace_once(
+    thynk_screen,
+    "import com.patsy.app.ui.finaldesign.FinalWhite\n",
+    "import com.patsy.app.ui.finaldesign.FinalWhite\nimport com.patsy.app.studio.StudioEditorState\nimport com.patsy.app.studio.StudioVideoPlayer\nimport com.patsy.app.studio.reduceStudioState\n",
+)
+replace_once(
+    thynk_screen,
+    '''private sealed interface ThynkRoute {
+    data object Hub : ThynkRoute
+    data class Category(val category: ThynkCategory) : ThynkRoute
+    data class Music(val pageId: String) : ThynkRoute
+}
+''',
+    '''private sealed interface ThynkRoute {
+    data object Hub : ThynkRoute
+    data class Category(val category: ThynkCategory) : ThynkRoute
+    data class Music(val pageId: String) : ThynkRoute
+    data class Editor(val pageId: String) : ThynkRoute
+}
+''',
+)
+replace_once(
+    thynk_screen,
+    '''                route = when (route) {
+                    is ThynkRoute.Music -> ThynkRoute.Category(ThynkStudioCatalog.categories.first { it.id == "music" })
+                    is ThynkRoute.Category -> ThynkRoute.Hub
+                    ThynkRoute.Hub -> ThynkRoute.Hub
+                }
+''',
+    '''                route = when (route) {
+                    is ThynkRoute.Music -> ThynkRoute.Category(ThynkStudioCatalog.categories.first { it.id == "music" })
+                    is ThynkRoute.Editor -> ThynkRoute.Category(ThynkStudioCatalog.categories.first { it.id == "video" })
+                    is ThynkRoute.Category -> ThynkRoute.Hub
+                    ThynkRoute.Hub -> ThynkRoute.Hub
+                }
+''',
+)
+replace_once(
+    thynk_screen,
+    '''                is ThynkRoute.Category -> ThynkCategoryScreen(current.category) { item ->
+                    if (current.category.id == "music") {
+                        route = ThynkRoute.Music(musicPageForItem(item))
+                    }
+                }
+                is ThynkRoute.Music -> ThynkMusicScreen(
+                    pageId = current.pageId,
+                    onOpenPage = { route = ThynkRoute.Music(it) },
+                )
+''',
+    '''                is ThynkRoute.Category -> ThynkCategoryScreen(current.category) { item ->
+                    if (current.category.id == "music") {
+                        route = ThynkRoute.Music(musicPageForItem(item))
+                    } else {
+                        editorPageForThynkItem(item)?.let { editorPage ->
+                            route = ThynkRoute.Editor(editorPage)
+                        }
+                    }
+                }
+                is ThynkRoute.Music -> ThynkMusicScreen(
+                    pageId = current.pageId,
+                    onOpenPage = { route = ThynkRoute.Music(it) },
+                )
+                is ThynkRoute.Editor -> ThynkVideoEditorScreen()
+''',
+)
+replace_once(
+    thynk_screen,
+    '''private fun musicPageForItem(item: String): String = when (item) {
+''',
+    '''@Composable
+private fun ThynkVideoEditorScreen() {
+    var editorState by remember { mutableStateOf(StudioEditorState.video(durationMs = 0)) }
+    Column(
+        Modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text("VIDEO EDITOR", color = FinalWhite, fontSize = 25.sp, fontWeight = FontWeight.Black)
+        Text(
+            "Preview and edit a real selected video clip. No sample media is substituted.",
+            color = FinalMuted,
+            fontSize = 12.sp,
+        )
+        StudioVideoPlayer(
+            sourceUri = editorState.sourceUri,
+            state = editorState,
+            onAction = { action -> editorState = reduceStudioState(editorState, action) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        InfoPanel(
+            "MEDIA",
+            "No video is loaded yet. Android media picking is the next verified slice; this editor remains truthfully EMPTY until a real URI is selected.",
+        )
+    }
+}
+
+private fun musicPageForItem(item: String): String = when (item) {
+''',
+)
+
 # SAVE MAIN APP / LOCK IN SAVE: the same navigation system is visible on ALL pages.
 # Primary pages already own the bar. Add the same bar to account/Owner/protected pages without
 # weakening auth or capability gates. Logged-out auth pages show it disabled.
