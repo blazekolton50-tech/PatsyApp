@@ -1,6 +1,5 @@
 package com.patsy.app.auth.debug
 
-import android.content.Context
 import com.patsy.app.auth.PublicSession
 
 /**
@@ -22,9 +21,4 @@ sealed interface DebugLoginResult {
     data object NeedsPasswordSetup : DebugLoginResult
     data class Authenticated(val session: PublicSession) : DebugLoginResult
     data class Rejected(val message: String) : DebugLoginResult
-}
-
-/** Variant-specific factory: src/debug has the real test implementation; src/release returns no-op. */
-expect object DebugTestAccessFactory {
-    fun create(context: Context): DebugTestAccess
 }
