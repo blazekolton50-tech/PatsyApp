@@ -23,7 +23,7 @@ class FinalVisualContractTest {
     @Test
     fun `primary navigation remains locked`() {
         assertEquals(
-            listOf("HOME", "THyNK", "CREATE", "PATSY DMS", "PROFILE"),
+            listOf("HOME", "THyNK", "CAMERA", "PATSY DMS", "PROFILE"),
             FinalVisualContract.primaryNavigation,
         )
     }
