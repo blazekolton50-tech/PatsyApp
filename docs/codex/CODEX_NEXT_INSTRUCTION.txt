@@ -1,91 +1,123 @@
 PATSY APP — CODEX NEXT EXECUTION INSTRUCTION
-THyNK EDITOR / VIDEO TIMELINE REPAIR
+PR #38 — VIDEO EDITOR + PERMANENT GLOBAL NAV
 
-Work ONLY in repository: blazekolton50-tech/PatsyApp
-Work ONLY from branch: codex/consolidate-final3-auth-rive-2026-08-31
-Active PR: #35 — keep it DRAFT. DO NOT MERGE TO MAIN.
+Work ONLY in repository:
+blazekolton50-tech/PatsyApp
 
-Read first:
-- docs/codex/CODEX_HANDOFF_2026-08-31.md
-- docs/superpowers/plans/2026-08-31-patsy-consolidation-to-device-apk.md
+Work ONLY from branch:
+chatgpt/thynk-music-apk-2026-08-31
 
-Your task is to repair/integrate the useful THyNK Studio editor and video-timeline foundation from draft PR #23 into the current PR #35 branch WITHOUT importing PR #23's obsolete Studio home/navigation design.
+Active PR:
+#38 — Draft: integrate THyNK Studio, THyNK Music and locked Camera shell
 
-SOURCE PR #23:
-- branch: chatgpt/thynk-studio-foundation
-- head: e7359df926bba378da531f5c2705f24c57619eef
+KEEP PR #38 DRAFT.
+DO NOT MERGE TO MAIN.
+DO NOT RETURN TO PR #35 AS THE WORKING BRANCH.
 
-PORT/ADAPT THESE FIRST, USING TDD:
-- app/src/main/java/com/patsy/app/studio/StudioEditorState.kt
-- app/src/main/java/com/patsy/app/studio/StudioToolCatalog.kt
-- app/src/main/java/com/patsy/app/studio/StudioVideoPlayer.kt
-- app/src/test/java/com/patsy/app/studio/StudioEditorStateTest.kt
-- app/src/test/java/com/patsy/app/studio/StudioSingleClipStateTest.kt
-- app/src/test/java/com/patsy/app/studio/StudioToolCatalogTest.kt
-- reconcile Media3 dependencies from PR #23 with current app/build.gradle.kts; do not overwrite newer auth/Rive/Supabase configuration.
+READ FIRST:
+1. docs/PATSY_DESIGN_PRESERVATION_MASTER_2026-08-31.md
+2. docs/codex/PATSY_CURRENT_BUILD_STATUS_2026-08-31.md
+3. docs/codex/CODEX_HANDOFF_2026-08-31.md
+4. docs/superpowers/plans/2026-08-31-thynk-video-player-integration.md
+5. docs/superpowers/plans/2026-08-31-global-navigation-every-authenticated-page.md
 
-DO NOT WHOLESALE PORT:
-- app/src/main/java/com/patsy/app/studio/ThynkStudioScreen.kt
-- .github/workflows/studio-foundation-ci.yml
+DO NOT REDO WORK ALREADY COMPLETED:
+- StudioEditorState.kt is already ported.
+- StudioToolCatalog.kt is already ported.
+- StudioEditorStateTest.kt is already ported.
+- StudioSingleClipStateTest.kt is already ported.
+- StudioToolCatalogTest.kt is already ported.
+- The current shared navigation bar already removed the duplicate small white THyNK subtitle.
+- The current shared navigation bar already removed the visible CAMERA caption and uses PDMs as the short visible DM label.
 
-WHY: the old ThynkStudioScreen predates the locked current THyNK architecture and would reintroduce the wrong home/navigation structure.
+TDD EVIDENCE ALREADY RECORDED:
+RED head: 7b1a3b42a0b15a219f78aa5d11ffb2d1ca90b9b1
+RED CI: 33418034706 / run #134
+GREEN code head: 46cf3a0665a56ad7dcd1e7ff8f8e1c225954c05e
+GREEN CI: 33418288521 / run #138
+Run #138: unit tests PASS, debug PASS, release PASS, APK upload PASS, Android Studio ZIP PASS.
 
-LOCKED THyNK MAIN CATEGORIES:
-1. Design & Templates
-2. Social & Content
-3. Photo & Image
-4. Video & Camera
-5. Documents & Business
-6. Homework & Study
-7. Presentations & Planning
-8. Collage & Creative
-9. Music & Audio
-10. AI & My Studio
+CURRENT LOCKED NAVIGATION:
+Semantic routes:
+HOME · THyNK · CAMERA · PATSY DMS · PROFILE
 
-LOCKED PRIMARY BOTTOM NAV — MUST REMAIN VISIBLE ON THyNK AND EDITOR PAGES:
-HOME · THyNK · + CAMERA · PATSY DMs · PROFILE
+Visible bar:
+Home · [coloured THyNK only] · [large + only] · PDMs · Profile
+
+ABSOLUTE VISUAL RULES:
+- NO second small white THyNK text underneath the coloured THyNK wordmark.
+- NO CAMERA text underneath the centre +.
+- Visible DM label = PDMs.
+- Keep the large white + with rainbow ring.
+- Keep black/charcoal background and thin rainbow wave/glow.
+- This bar stays on every authenticated page, including nested THyNK/editor screens, Owner Profile, Owner Tools and authenticated protected states.
+- Home must stop owning a duplicate private bottom bar.
+- Login/Set Password must not expose functional authenticated routes before a session exists.
+
+EXECUTION JOB 1 — DO THIS FIRST:
+Execute the plan exactly:
+docs/superpowers/plans/2026-08-31-thynk-video-player-integration.md
+
+This means:
+- tests first
+- add pure player-sync logic contract
+- add Media3 1.8.1 dependencies only
+- port reusable StudioVideoPlayer from PR #23
+- DO NOT port PR #23 ThynkStudioScreen.kt
+- add one nested video-editor route to the CURRENT THyNK screen
+- route VIDEO & CAMERA items to that shared editor
+- keep empty/failed media truthful
+- do not fake imported/sample video as production media
+- keep outer permanent nav visible
+- unit tests + debug + release + CI
+
+EXECUTION JOB 2 — ONLY AFTER JOB 1 IS GREEN:
+Execute the plan exactly:
+docs/superpowers/plans/2026-08-31-global-navigation-every-authenticated-page.md
+
+This means:
+- add visible-label contract test first
+- keep semantic route list unchanged
+- make FinalPrimaryNavigationBar the single canonical primary bar
+- remove FinalHomeBottomNavigation duplicate from FinalHomeScreen
+- create one authenticated shell wrapper in FinalMainActivity
+- use it for Home, THyNK, Camera, DMs, Profile, Owner Profile, Owner Tools and authenticated protected/denied states
+- do not weaken any auth/age/Owner route gate
+- test + debug + release + final CI
 
 DO NOT:
-- redesign Login, Set Password, Home or the locked visual system
-- replace/hide the primary bottom nav with editor-only controls
-- create duplicate THyNK homes or abandoned preview routes
+- redesign Login, Set Password or Home content
+- create another THyNK home
+- replace the 10-category THyNK architecture
+- hide navigation in an editor
+- make Schedule/Calendar primary tabs
 - weaken Supabase RLS
-- expose service-role secrets in Android
-- fake AI/provider completion
-- claim production Patsy .riv animation is complete
-- grant Owner authority from debug/local state
+- expose service-role/provider secrets in Android
+- grant Owner from username/email/debug/local state
+- fake AI/music/export/provider success
+- fake production Rive
+- merge PR #38
 
-IMPLEMENTATION ORDER:
-1. Inspect current PR #35 studio files and dependencies.
-2. Port the PR #23 tests first; run them and record intentional RED only for missing editor/timeline contracts.
-3. Add minimal StudioEditorState/reducer implementation to GREEN.
-4. Add StudioToolCatalog and mode-aware tool tests to GREEN.
-5. Add/reconcile Media3 dependencies without disturbing current Gradle/auth/Rive configuration.
-6. Add StudioVideoPlayer behind the current THyNK editor shell; do not recreate old PR #23 home UI.
-7. Preserve provider-backed actions as explicit incomplete boundaries.
-8. Verify the five-button shell remains visible and route-gated.
-9. Run ./gradlew testDebugUnitTest --stacktrace
-10. Run ./gradlew assembleDebug --stacktrace
-11. Run ./gradlew assembleRelease --stacktrace
-12. Inspect exact CI result on the final head.
+CURRENT BACKEND TRUTH:
+- Supabase active/healthy
+- 37 public tables; RLS enabled on all 37
+- 10 private tables
+- 119 policies
+- 4 private storage buckets
+- 0 current Auth users
+- Security Advisor: 0 current security lints
+- issue #36 resolved
+- real-user/device auth still unverified
 
-ACCEPTANCE:
-- playhead/trim values clamp safely
-- video cannot play without READY media
-- clear/load/fail states are safe
-- tool catalog is mode-aware
-- current 10-category THyNK architecture is preserved
-- locked global navigation is preserved
-- no provider feature is falsely marked complete
-- no visual redesign
-- PR #35 remains Draft
-
-At completion report:
-- exact head SHA
+AT COMPLETION REPORT:
+- exact starting SHA
+- exact ending SHA
 - exact changed files
 - RED tests observed
 - GREEN unit tests
 - debug build result
 - release build result
-- CI run/result
-- anything still requiring Supabase provider/device/Rive verification
+- final CI run/result
+- artifact ids/digests
+- device/media-picker/auth/Rive items still unverified
+- confirm PR #38 remains Draft
