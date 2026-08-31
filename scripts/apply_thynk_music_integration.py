@@ -19,6 +19,14 @@ def replace_if_present(path: str, old: str, new: str) -> None:
     file.write_text(text.replace(old, new, 1), encoding="utf-8")
 
 
+def remove_from_marker(path: str, marker: str) -> None:
+    file = Path(path)
+    text = file.read_text(encoding="utf-8")
+    if marker not in text:
+        return
+    file.write_text(text.split(marker, 1)[0].rstrip() + "\n", encoding="utf-8")
+
+
 # Preserve the secure FinalMainActivity shell; only swap the destination surfaces.
 final_main = "app/src/main/java/com/patsy/app/FinalMainActivity.kt"
 replace_once(
@@ -103,7 +111,7 @@ replace_if_present(
     'FinalNavItem("◌", "PDMs", selected == FinalHomeDestination.PATSY_DMS)',
 )
 
-# Home keeps the approved same navigation visual.
+# Home keeps the approved content, but no longer owns a private bottom-navigation copy.
 home = "app/src/main/java/com/patsy/app/ui/finaldesign/FinalHomeScreen.kt"
 replace_once(
     home,
@@ -122,6 +130,16 @@ replace_if_present(
     'NavItem("◌", "PATSY DMS", false)',
     'NavItem("◌", "PDMs", false)',
 )
+replace_if_present(
+    home,
+    '''        FinalHomeBottomNavigation(
+            modifier = Modifier.align(Alignment.BottomCenter),
+            onNavigate = onNavigate,
+        )
+''',
+    '',
+)
+remove_from_marker(home, "\n@Composable\nprivate fun FinalHomeBottomNavigation(")
 
 # Route the current VIDEO & CAMERA category to the shared Media3 editor without
 # importing the obsolete PR #23 THyNK screen or inventing sample media.
@@ -225,9 +243,8 @@ private fun musicPageForItem(item: String): String = when (item) {
 ''',
 )
 
-# SAVE MAIN APP / LOCK IN SAVE: the same navigation system is visible on ALL pages.
-# Primary pages already own the bar. Add the same bar to account/Owner/protected pages without
-# weakening auth or capability gates. Logged-out auth pages show it disabled.
+# SAVE MAIN APP / LOCK IN SAVE: one canonical primary bar is owned by the outer authenticated
+# shell. Login / Set Password remain pre-auth and never expose functional authenticated routes.
 global_shell_open_old = '''        Surface(Modifier.fillMaxSize(), color = FinalCharcoal) {
             when (page) {
 '''
@@ -256,29 +273,24 @@ global_shell_close_new = '''                FinalAppPage.PROTECTED -> FinalProte
 
                 if (
                     FinalVisualContract.navigationVisibleOnAllPages &&
-                    page !in listOf(
-                        FinalAppPage.HOME,
-                        FinalAppPage.THYNK,
-                        FinalAppPage.CREATE,
-                        FinalAppPage.DMS,
-                        FinalAppPage.PROFILE,
-                    )
+                    page !in listOf(FinalAppPage.LOGIN, FinalAppPage.DEBUG_SET_PASSWORD) &&
+                    (session != null || debugPreview)
                 ) {
                     val selectedDestination = when (page) {
+                        FinalAppPage.HOME -> FinalHomeDestination.HOME
+                        FinalAppPage.THYNK -> FinalHomeDestination.THYNK
+                        FinalAppPage.CREATE -> FinalHomeDestination.CREATE
+                        FinalAppPage.DMS -> FinalHomeDestination.PATSY_DMS
+                        FinalAppPage.PROFILE,
                         FinalAppPage.OWNER_PROFILE,
                         FinalAppPage.OWNER_TOOLS -> FinalHomeDestination.PROFILE
-                        else -> null
+                        FinalAppPage.PROTECTED -> null
+                        FinalAppPage.LOGIN,
+                        FinalAppPage.DEBUG_SET_PASSWORD -> null
                     }
                     FinalPrimaryNavigationBar(
                         selected = selectedDestination,
-                        onNavigate = { destination ->
-                            if (session == null && !debugPreview) {
-                                page = FinalAppPage.LOGIN
-                            } else {
-                                navigate(destination)
-                            }
-                        },
-                        enabled = session != null || debugPreview,
+                        onNavigate = ::navigate,
                     )
                 }
             }
@@ -288,4 +300,83 @@ global_shell_close_new = '''                FinalAppPage.PROTECTED -> FinalProte
 '''
 replace_if_present(final_main, global_shell_close_old, global_shell_close_new)
 
-print("THyNK Studio / THyNK Music / Camera / global navigation integration applied")
+# Upgrade branches that already had the earlier outer-shell version so every authenticated
+# primary destination is included in that one shell instead of owning another copy.
+replace_if_present(
+    final_main,
+    '''                    page !in listOf(
+                        FinalAppPage.HOME,
+                        FinalAppPage.THYNK,
+                        FinalAppPage.CREATE,
+                        FinalAppPage.DMS,
+                        FinalAppPage.PROFILE,
+                    )
+''',
+    '''                    page !in listOf(FinalAppPage.LOGIN, FinalAppPage.DEBUG_SET_PASSWORD) &&
+                    (session != null || debugPreview)
+''',
+)
+replace_if_present(
+    final_main,
+    '''                    val selectedDestination = when (page) {
+                        FinalAppPage.OWNER_PROFILE,
+                        FinalAppPage.OWNER_TOOLS -> FinalHomeDestination.PROFILE
+                        else -> null
+                    }
+''',
+    '''                    val selectedDestination = when (page) {
+                        FinalAppPage.HOME -> FinalHomeDestination.HOME
+                        FinalAppPage.THYNK -> FinalHomeDestination.THYNK
+                        FinalAppPage.CREATE -> FinalHomeDestination.CREATE
+                        FinalAppPage.DMS -> FinalHomeDestination.PATSY_DMS
+                        FinalAppPage.PROFILE,
+                        FinalAppPage.OWNER_PROFILE,
+                        FinalAppPage.OWNER_TOOLS -> FinalHomeDestination.PROFILE
+                        else -> null
+                    }
+''',
+)
+replace_if_present(
+    final_main,
+    '''                        onNavigate = { destination ->
+                            if (session == null && !debugPreview) {
+                                page = FinalAppPage.LOGIN
+                            } else {
+                                navigate(destination)
+                            }
+                        },
+                        enabled = session != null || debugPreview,
+''',
+    '''                        onNavigate = ::navigate,
+''',
+)
+
+# Remove the primary-page inner copy; authorization and Owner gates around the content stay intact.
+replace_if_present(
+    final_main,
+    '''                    } else {
+                        Column(Modifier.fillMaxSize().background(FinalCharcoal)) {
+                            Box(Modifier.weight(1f).fillMaxWidth()) {
+                                when (page) {
+''',
+    '''                    } else {
+                        when (page) {
+''',
+)
+replace_if_present(
+    final_main,
+    '''                                    else -> Unit
+                                }
+                            }
+                            FinalPrimaryNavigationBar(
+                                selected = selectedDestination,
+                                onNavigate = ::navigate,
+                            )
+                        }
+''',
+    '''                            else -> Unit
+                        }
+''',
+)
+
+print("THyNK Studio / THyNK Music / Camera / single-owner global navigation integration applied")
