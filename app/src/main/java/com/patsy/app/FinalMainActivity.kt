@@ -456,14 +456,7 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
                     }
                     FinalPrimaryNavigationBar(
                         selected = selectedDestination,
-                        onNavigate = { destination ->
-                            if (session == null && !debugPreview) {
-                                page = FinalAppPage.LOGIN
-                            } else {
-                                navigate(destination)
-                            }
-                        },
-                        enabled = session != null || debugPreview,
+                        onNavigate = ::navigate,
                     )
                 }
             }

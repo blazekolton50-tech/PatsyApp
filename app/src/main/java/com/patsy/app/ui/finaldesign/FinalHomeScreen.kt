@@ -99,10 +99,6 @@ fun FinalHomeScreen(
             item { SocialFeedPreview() }
             item { Spacer(Modifier.height(18.dp)) }
         }
-        FinalHomeBottomNavigation(
-            modifier = Modifier.align(Alignment.BottomCenter),
-            onNavigate = onNavigate,
-        )
     }
 }
 
