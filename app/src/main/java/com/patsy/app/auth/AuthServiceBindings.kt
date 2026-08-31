@@ -1,5 +1,9 @@
 package com.patsy.app.auth
 
+import com.patsy.app.account.AccountBootstrapResult
+import com.patsy.app.account.AccountBootstrapService
+import com.patsy.app.account.BootstrapFailure
+import com.patsy.app.account.protectedBootstrap
 import com.patsy.app.security.OwnerAuthorizationDecision
 import com.patsy.app.security.OwnerAuthorizationService
 import com.patsy.app.security.OwnerCapability
@@ -11,6 +15,7 @@ import com.patsy.app.security.OwnerCapability
 object PatsyServiceBindings {
     var authGateway: AuthGateway = UnconfiguredAuthGateway
     var ownerAuthorizationService: OwnerAuthorizationService = UnconfiguredOwnerAuthorizationService
+    var accountBootstrapService: AccountBootstrapService = UnconfiguredAccountBootstrapService
 }
 
 private object UnconfiguredAuthGateway : AuthGateway {
@@ -39,4 +44,12 @@ private object UnconfiguredOwnerAuthorizationService : OwnerAuthorizationService
         capability: OwnerCapability,
     ): OwnerAuthorizationDecision =
         OwnerAuthorizationDecision.Unavailable(ServiceFailure.NotConfigured)
+}
+
+private object UnconfiguredAccountBootstrapService : AccountBootstrapService {
+    override suspend fun fetch(session: PublicSession): AccountBootstrapResult =
+        AccountBootstrapResult.FailedClosed(
+            reason = BootstrapFailure.BACKEND_UNAVAILABLE,
+            protectedState = protectedBootstrap(session.userId),
+        )
 }
