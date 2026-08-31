@@ -14,7 +14,7 @@ def replace_once(path: str, old: str, new: str) -> None:
 def replace_if_present(path: str, old: str, new: str) -> None:
     file = Path(path)
     text = file.read_text(encoding="utf-8")
-    if new in text or old not in text:
+    if (new and new in text) or old not in text:
         return
     file.write_text(text.replace(old, new, 1), encoding="utf-8")
 
