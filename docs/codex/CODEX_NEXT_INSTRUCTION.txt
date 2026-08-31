@@ -1,0 +1,91 @@
+PATSY APP — CODEX NEXT EXECUTION INSTRUCTION
+THyNK EDITOR / VIDEO TIMELINE REPAIR
+
+Work ONLY in repository: blazekolton50-tech/PatsyApp
+Work ONLY from branch: codex/consolidate-final3-auth-rive-2026-08-31
+Active PR: #35 — keep it DRAFT. DO NOT MERGE TO MAIN.
+
+Read first:
+- docs/codex/CODEX_HANDOFF_2026-08-31.md
+- docs/superpowers/plans/2026-08-31-patsy-consolidation-to-device-apk.md
+
+Your task is to repair/integrate the useful THyNK Studio editor and video-timeline foundation from draft PR #23 into the current PR #35 branch WITHOUT importing PR #23's obsolete Studio home/navigation design.
+
+SOURCE PR #23:
+- branch: chatgpt/thynk-studio-foundation
+- head: e7359df926bba378da531f5c2705f24c57619eef
+
+PORT/ADAPT THESE FIRST, USING TDD:
+- app/src/main/java/com/patsy/app/studio/StudioEditorState.kt
+- app/src/main/java/com/patsy/app/studio/StudioToolCatalog.kt
+- app/src/main/java/com/patsy/app/studio/StudioVideoPlayer.kt
+- app/src/test/java/com/patsy/app/studio/StudioEditorStateTest.kt
+- app/src/test/java/com/patsy/app/studio/StudioSingleClipStateTest.kt
+- app/src/test/java/com/patsy/app/studio/StudioToolCatalogTest.kt
+- reconcile Media3 dependencies from PR #23 with current app/build.gradle.kts; do not overwrite newer auth/Rive/Supabase configuration.
+
+DO NOT WHOLESALE PORT:
+- app/src/main/java/com/patsy/app/studio/ThynkStudioScreen.kt
+- .github/workflows/studio-foundation-ci.yml
+
+WHY: the old ThynkStudioScreen predates the locked current THyNK architecture and would reintroduce the wrong home/navigation structure.
+
+LOCKED THyNK MAIN CATEGORIES:
+1. Design & Templates
+2. Social & Content
+3. Photo & Image
+4. Video & Camera
+5. Documents & Business
+6. Homework & Study
+7. Presentations & Planning
+8. Collage & Creative
+9. Music & Audio
+10. AI & My Studio
+
+LOCKED PRIMARY BOTTOM NAV — MUST REMAIN VISIBLE ON THyNK AND EDITOR PAGES:
+HOME · THyNK · + CAMERA · PATSY DMs · PROFILE
+
+DO NOT:
+- redesign Login, Set Password, Home or the locked visual system
+- replace/hide the primary bottom nav with editor-only controls
+- create duplicate THyNK homes or abandoned preview routes
+- weaken Supabase RLS
+- expose service-role secrets in Android
+- fake AI/provider completion
+- claim production Patsy .riv animation is complete
+- grant Owner authority from debug/local state
+
+IMPLEMENTATION ORDER:
+1. Inspect current PR #35 studio files and dependencies.
+2. Port the PR #23 tests first; run them and record intentional RED only for missing editor/timeline contracts.
+3. Add minimal StudioEditorState/reducer implementation to GREEN.
+4. Add StudioToolCatalog and mode-aware tool tests to GREEN.
+5. Add/reconcile Media3 dependencies without disturbing current Gradle/auth/Rive configuration.
+6. Add StudioVideoPlayer behind the current THyNK editor shell; do not recreate old PR #23 home UI.
+7. Preserve provider-backed actions as explicit incomplete boundaries.
+8. Verify the five-button shell remains visible and route-gated.
+9. Run ./gradlew testDebugUnitTest --stacktrace
+10. Run ./gradlew assembleDebug --stacktrace
+11. Run ./gradlew assembleRelease --stacktrace
+12. Inspect exact CI result on the final head.
+
+ACCEPTANCE:
+- playhead/trim values clamp safely
+- video cannot play without READY media
+- clear/load/fail states are safe
+- tool catalog is mode-aware
+- current 10-category THyNK architecture is preserved
+- locked global navigation is preserved
+- no provider feature is falsely marked complete
+- no visual redesign
+- PR #35 remains Draft
+
+At completion report:
+- exact head SHA
+- exact changed files
+- RED tests observed
+- GREEN unit tests
+- debug build result
+- release build result
+- CI run/result
+- anything still requiring Supabase provider/device/Rive verification
