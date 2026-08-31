@@ -49,6 +49,7 @@ import com.patsy.app.ui.finaldesign.FinalHomeDestination
 import com.patsy.app.ui.finaldesign.FinalHomeScreen
 import com.patsy.app.ui.finaldesign.FinalLoginRoute
 import com.patsy.app.ui.finaldesign.FinalPrimaryNavigationBar
+import com.patsy.app.ui.finaldesign.FinalVisualContract
 import com.patsy.app.ui.finaldesign.FinalWhite
 import com.patsy.app.thynk.LockedCameraHub
 import com.patsy.app.thynk.ThynkStudioScreen
@@ -282,7 +283,9 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
         ),
     ) {
         Surface(Modifier.fillMaxSize(), color = FinalCharcoal) {
-            when (page) {
+            Column(Modifier.fillMaxSize().background(FinalCharcoal)) {
+                Box(Modifier.weight(1f).fillMaxWidth()) {
+                    when (page) {
                 FinalAppPage.LOGIN -> FinalLoginRoute(
                     authGateway = authGateway,
                     debugTestAccess = debugTestAccess,
@@ -441,6 +444,36 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
                     message = "This area isn't available until secure account access is verified.",
                     onSignOut = ::signOut,
                 )
+                    }
+                }
+
+                if (
+                    FinalVisualContract.navigationVisibleOnAllPages &&
+                    page !in listOf(
+                        FinalAppPage.HOME,
+                        FinalAppPage.THYNK,
+                        FinalAppPage.CREATE,
+                        FinalAppPage.DMS,
+                        FinalAppPage.PROFILE,
+                    )
+                ) {
+                    val selectedDestination = when (page) {
+                        FinalAppPage.OWNER_PROFILE,
+                        FinalAppPage.OWNER_TOOLS -> FinalHomeDestination.PROFILE
+                        else -> null
+                    }
+                    FinalPrimaryNavigationBar(
+                        selected = selectedDestination,
+                        onNavigate = { destination ->
+                            if (session == null && !debugPreview) {
+                                page = FinalAppPage.LOGIN
+                            } else {
+                                navigate(destination)
+                            }
+                        },
+                        enabled = session != null || debugPreview,
+                    )
+                }
             }
         }
     }

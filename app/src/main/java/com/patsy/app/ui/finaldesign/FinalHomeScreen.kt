@@ -404,7 +404,7 @@ private fun FinalHomeBottomNavigation(
             horizontalArrangement = Arrangement.SpaceAround,
         ) {
             NavItem("⌂", "Home", true) { onNavigate(FinalHomeDestination.HOME) }
-            NavItem("THyNK", "THyNK", false) { onNavigate(FinalHomeDestination.THYNK) }
+            NavItem("THyNK", "", false) { onNavigate(FinalHomeDestination.THYNK) }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Box(
                     Modifier
@@ -418,9 +418,8 @@ private fun FinalHomeBottomNavigation(
                 ) {
                     Text("+", color = Color.Black, fontSize = 34.sp, fontWeight = FontWeight.Black)
                 }
-                Text("CAMERA", color = if (false) Color(0xFFFF56AB) else FinalMuted, fontSize = 8.sp, maxLines = 1)
             }
-            NavItem("◌", "PATSY DMS", false) { onNavigate(FinalHomeDestination.PATSY_DMS) }
+            NavItem("◌", "PDMs", false) { onNavigate(FinalHomeDestination.PATSY_DMS) }
             NavItem("♙", "Profile", false) { onNavigate(FinalHomeDestination.PROFILE) }
         }
     }
