@@ -268,23 +268,36 @@ Only the explicitly approved master should ship; the rest are provenance/compari
 
 # 4. CURRENT PRIMARY APP SHELL — LATEST LOCK
 
-The newest primary navigation is:
+The semantic primary navigation remains:
 
-**HOME • THyNK • large + CAMERA • PATSY DMS • PROFILE**
+**HOME • THyNK • CAMERA • PATSY DMS • PROFILE**
+
+The newest supplied navigation strip is now the binding direct visual reference. Exact visible rendering and all-page coverage are locked in:
+
+`docs/NAVIGATION_LOCK_2026-08-31.md`
+
+That newest lock requires:
+- visible `Home`;
+- one coloured THyNK wordmark only, with no duplicate small white THyNK subtitle;
+- the large centre `+` only, with no CAMERA caption beneath it;
+- visible `PDMs` for the messaging destination while the semantic route remains PATSY DMS;
+- visible `Profile`;
+- black/charcoal base and the approved thin rainbow wave/glow;
+- one permanent canonical primary bar throughout the authenticated app, including nested THyNK/editor, Owner and authenticated protected pages.
 
 Rules:
-- permanent bottom homebar remains visible on every main authenticated page;
-- it remains visible on THyNK subpages/editors;
 - THyNK work autosaves before/as the user navigates away and restores on return;
 - no editor-only nav may replace the homebar;
 - Account/More remains secondary/top-right;
 - Schedule/calendar remain secondary, not primary bottom destinations;
 - back/deep links must route through the same security/navigation gate;
-- no duplicate abandoned preview routes.
+- no duplicate abandoned preview routes;
+- pre-auth Login/Set Password must not expose a functional authenticated-route bypass.
 
 ### Superseded nav variants — preserve but DO NOT restore
 - HOME • CHAT • CREATE • SOCIAL • MORE
-- HOME • THyNK • CREATE • PATSY DMS • PROFILE (the predecessor before the centre action was explicitly locked to Camera)
+- HOME • THyNK • CREATE • PATSY DMS • PROFILE
+- earlier rendered HOME • THyNK • CAMERA • PATSY DMS • PROFILE bars that showed duplicate THyNK/CAMERA captions
 - Home / Design Studio / + / Profile
 - Home / Studio / + / Projects / Profile
 - other old More/Social primary-tab variants
@@ -573,7 +586,7 @@ Rules:
 
 # 12. PATSY DMS DESIGN FAMILY
 
-Primary bottom destination remains **PATSY DMS**.
+Primary semantic bottom destination remains **PATSY DMS**. The newest locked compact navigation strip displays the short label **PDMs**.
 
 Required page/state designs include:
 - Inbox;
@@ -764,10 +777,13 @@ Use these only insofar as they match the MASTER APP PATSY identity. Real-photo/m
 - `image-1788126794476.jpg`
 - `image-1788126833484.jpg`
 - `image-1788129303817.jpg`
-- `image-1788192228278.jpg`
 - UUID-named PNG references including `4a85dae6-2533-4334-bf0b-a812b1862eb8.png` and `ff4c20b5-0df9-42f3-a29e-daf0b6b0b3f1.png`
 
 These remain preserved. Their authority is determined by the surrounding SAVE/LOCK context, not by filename alone.
+
+## 17.4 Permanent navigation reference
+- newest user-supplied Patsy navigation strip — direct visual reference;
+- exact rendering/coverage contract: `docs/NAVIGATION_LOCK_2026-08-31.md`.
 
 ---
 
@@ -876,6 +892,7 @@ High authority:
 - `MASTER_APP_PATSY_RIVE_SPEC.txt`
 - `PATSY_APP_MASTER_UI_RIVE_PACK.docx`
 - `PATSY_FULLY_ANIMATED_CHARACTER_LOCKED_SPEC.md`
+- `docs/NAVIGATION_LOCK_2026-08-31.md`
 - relevant pasted instruction files containing Codex execution/UI reconciliation contracts
 - Rive recovery docs listed above
 - Google AI Studio resource: `Patsy Creation Studio Core Implementation`
@@ -932,14 +949,17 @@ Any separate “Redlit” material that exists outside accessible connectors rem
 
 # 23. CURRENT VERSION-CONTROL ANCHOR
 
-Latest integration draft at the time of this preservation pass:
+Current integration draft:
 - GitHub PR #38
 - branch `chatgpt/thynk-music-apk-2026-08-31`
-- scope: FINAL screens + secured auth/protected shell + THyNK Studio + THyNK Music + locked Camera shell
+- scope: FINAL screens + secured auth/protected shell + THyNK Studio + THyNK Music + locked Camera shell + repaired editor-state/tool-catalog foundation
 - must remain Draft/unmerged until owner approval and physical-device QA.
 
-Current FINAL Android contract identifies primary navigation as:
-**HOME / THyNK / CAMERA / PATSY DMS / PROFILE**.
+Latest fully verified code milestone during the 31 August integration pass:
+- head `46cf3a0665a56ad7dcd1e7ff8f8e1c225954c05e`
+- GitHub Actions run `33418288521` / #138 — tests/debug/release/artifacts successful.
+
+Newer documentation commits may exist after that code milestone. Final branch CI must be rechecked before a completion/merge claim.
 
 This GitHub branch is the current implementation anchor; this document is the design-preservation anchor.
 
@@ -958,7 +978,11 @@ Never lose or silently change:
 - restrained rainbow glow;
 - green Save / red destructive;
 - permanent homebar;
-- latest HOME • THyNK • CAMERA • PATSY DMS • PROFILE;
+- semantic HOME • THyNK • CAMERA • PATSY DMS • PROFILE;
+- visible Home • coloured THyNK-only • large +-only • PDMs • Profile navigation;
+- no duplicate small white THyNK subtitle;
+- no visible Camera caption beneath the centre +;
+- same canonical bar throughout authenticated nested/editor/Owner/protected pages;
 - centered branding rules;
 - FINAL Login / Set Password / Home images;
 - THyNK 10-category architecture;
@@ -980,4 +1004,4 @@ Never lose or silently change:
 
 ## Final preservation statement
 
-**Patsy must remain Patsy.** The app companion is the approved MASTER APP PATSY, judged against the master pose sheet and real Patsy photo identity. The visual system remains premium black/charcoal, white and restrained rainbow-neon. The latest locked app shell remains HOME • THyNK • CAMERA • PATSY DMS • PROFILE with the permanent homebar. All older images, boards, ZIPs and documents remain preserved as provenance/recovery material, but none may override newer SAVE MAIN APP / LOCK IN decisions.
+**Patsy must remain Patsy.** The app companion is the approved MASTER APP PATSY, judged against the master pose sheet and real Patsy photo identity. The visual system remains premium black/charcoal, white and restrained rainbow-neon. The semantic app shell remains HOME • THyNK • CAMERA • PATSY DMS • PROFILE, with exact visible rendering governed by `docs/NAVIGATION_LOCK_2026-08-31.md`. All older images, boards, ZIPs and documents remain preserved as provenance/recovery material, but none may override newer SAVE MAIN APP / LOCK IN decisions.
