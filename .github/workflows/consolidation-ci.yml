@@ -31,3 +31,11 @@ jobs:
         with:
           name: patsy-consolidation-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+      - name: Create Android Studio project ZIP
+        run: git archive --format=zip --output=PatsyApp-AndroidStudio-current.zip HEAD
+      - name: Upload Android Studio project ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: PatsyApp-AndroidStudio-project
+          path: PatsyApp-AndroidStudio-current.zip
+          compression-level: 0
