@@ -3,6 +3,7 @@ package com.patsy.app.ui.finaldesign
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class FinalVisualContractTest {
     @Test
@@ -26,6 +27,17 @@ class FinalVisualContractTest {
             listOf("HOME", "THyNK", "CAMERA", "PATSY DMS", "PROFILE"),
             FinalVisualContract.primaryNavigation,
         )
+    }
+
+    @Test
+    fun `global navigation visual matches approved reference on every page`() {
+        assertTrue(FinalVisualContract.navigationVisibleOnAllPages)
+        assertEquals(
+            listOf("Home", "", "", "PDMs", "Profile"),
+            FinalVisualContract.primaryNavigationDisplayLabels,
+        )
+        assertFalse(FinalVisualContract.showThynkSecondaryLabel)
+        assertFalse(FinalVisualContract.showCenterActionSecondaryLabel)
     }
 
     @Test
