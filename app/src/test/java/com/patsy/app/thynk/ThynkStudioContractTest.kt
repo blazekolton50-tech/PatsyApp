@@ -44,4 +44,11 @@ class ThynkStudioContractTest {
         )
         assertTrue(ThynkMusicCatalog.pages.all { it.providerState != "FAKE_COMPLETE" })
     }
+
+    @Test
+    fun `video editor items map to the shared video editor route`() {
+        assertEquals("video-editor", editorPageForThynkItem("VIDEO EDITOR"))
+        assertEquals("video-editor", editorPageForThynkItem("TRIM & CUT"))
+        assertEquals(null, editorPageForThynkItem("POSTERS"))
+    }
 }
