@@ -2,24 +2,8 @@ import { createClient } from 'npm:@supabase/supabase-js@2.112.4'
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status,
-  headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' },
+  headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
 })
-
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-
-type Bootstrap = {
-  canonical_user_id?: unknown
-  onboarding_state?: unknown
-  account_status?: unknown
-  restrictions?: unknown
-}
-
-function canUseDms(account: Bootstrap | null, expectedUserId: string): boolean {
-  if (!account || account.canonical_user_id !== expectedUserId) return false
-  if (account.onboarding_state !== 'READY' || account.account_status !== 'ACTIVE') return false
-  if (!Array.isArray(account.restrictions)) return false
-  return !account.restrictions.includes('DMS_RESTRICTED')
-}
 
 Deno.serve(async (req: Request) => {
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
@@ -27,9 +11,9 @@ Deno.serve(async (req: Request) => {
   const authHeader = req.headers.get('Authorization')
   if (!authHeader?.startsWith('Bearer ')) return json({ error: 'Unauthorized' }, 401)
 
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')
-  const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
-  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   if (!supabaseUrl || !anonKey || !serviceKey) return json({ error: 'Service unavailable' }, 503)
 
   const userClient = createClient(supabaseUrl, anonKey, {
@@ -47,19 +31,17 @@ Deno.serve(async (req: Request) => {
   let payload: { target_user_id?: string }
   try { payload = await req.json() } catch { return json({ error: 'Invalid JSON' }, 400) }
   const target = payload.target_user_id
-  if (!target || !uuidPattern.test(target)) return json({ error: 'Invalid target user' }, 400)
+  if (!target || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(target)) {
+    return json({ error: 'Invalid target user' }, 400)
+  }
   if (target === user.id) return json({ error: 'Cannot message yourself' }, 400)
 
-  const [senderBootstrap, targetBootstrap] = await Promise.all([
-    admin.rpc('internal_account_bootstrap', { p_user_id: user.id }),
-    admin.rpc('internal_account_bootstrap', { p_user_id: target }),
-  ])
-  if (senderBootstrap.error || targetBootstrap.error) {
-    console.error('create-dm-thread bootstrap check failed', senderBootstrap.error?.code, targetBootstrap.error?.code)
-    return json({ error: 'Could not verify messaging eligibility' }, 503)
-  }
-  if (!canUseDms(senderBootstrap.data as Bootstrap | null, user.id) ||
-      !canUseDms(targetBootstrap.data as Bootstrap | null, target)) {
+  const { data: capabilities, error: capabilityError } = await admin
+    .from('account_capabilities')
+    .select('user_id,verified_age_tier,can_use_dms')
+    .in('user_id', [user.id, target])
+  if (capabilityError) return json({ error: 'Could not verify messaging access' }, 500)
+  if (!capabilities || capabilities.length !== 2 || capabilities.some((c) => c.can_use_dms !== true || c.verified_age_tier !== '16_plus')) {
     return json({ error: 'Messaging is unavailable for this account' }, 403)
   }
 
