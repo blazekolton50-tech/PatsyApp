@@ -342,9 +342,7 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
                             onSignOut = ::signOut,
                         )
                     } else {
-                        Column(Modifier.fillMaxSize().background(FinalCharcoal)) {
-                            Box(Modifier.weight(1f).fillMaxWidth()) {
-                                when (page) {
+                        when (page) {
                                     FinalAppPage.THYNK -> ThynkStudioScreen()
                                     FinalAppPage.CREATE -> LockedCameraHub()
                                     FinalAppPage.DMS -> Dms()
@@ -394,13 +392,7 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
                                         },
                                         signOut = ::signOut,
                                     )
-                                    else -> Unit
-                                }
-                            }
-                            FinalPrimaryNavigationBar(
-                                selected = selectedDestination,
-                                onNavigate = ::navigate,
-                            )
+                            else -> Unit
                         }
                     }
                 }
@@ -449,15 +441,15 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
 
                 if (
                     FinalVisualContract.navigationVisibleOnAllPages &&
-                    page !in listOf(
-                        FinalAppPage.HOME,
-                        FinalAppPage.THYNK,
-                        FinalAppPage.CREATE,
-                        FinalAppPage.DMS,
-                        FinalAppPage.PROFILE,
-                    )
+                    page !in listOf(FinalAppPage.LOGIN, FinalAppPage.DEBUG_SET_PASSWORD) &&
+                    (session != null || debugPreview)
                 ) {
                     val selectedDestination = when (page) {
+                        FinalAppPage.HOME -> FinalHomeDestination.HOME
+                        FinalAppPage.THYNK -> FinalHomeDestination.THYNK
+                        FinalAppPage.CREATE -> FinalHomeDestination.CREATE
+                        FinalAppPage.DMS -> FinalHomeDestination.PATSY_DMS
+                        FinalAppPage.PROFILE,
                         FinalAppPage.OWNER_PROFILE,
                         FinalAppPage.OWNER_TOOLS -> FinalHomeDestination.PROFILE
                         else -> null
