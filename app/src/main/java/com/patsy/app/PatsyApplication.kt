@@ -9,6 +9,8 @@ import com.patsy.app.auth.SupabaseAuthGateway
 import com.patsy.app.auth.SupabaseHttpAuthTransport
 import com.patsy.app.auth.SupabaseHttpRecoveryTransport
 import com.patsy.app.auth.SupabaseHttpRegistrationTransport
+import com.patsy.app.security.SupabaseOwnerAuthorizationService
+import com.patsy.app.security.SupabaseOwnerAuthorizationTransport
 
 class PatsyApplication : Application() {
     override fun onCreate() {
@@ -32,6 +34,13 @@ class PatsyApplication : Application() {
         PatsyServiceBindings.accountBootstrapService = ServerAccountBootstrapService(
             sessionStore = sessionStore,
             transport = SupabaseAccountBootstrapTransport(
+                baseUrl = BuildConfig.SUPABASE_URL,
+                publishableKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
+            ),
+        )
+        PatsyServiceBindings.ownerAuthorizationService = SupabaseOwnerAuthorizationService(
+            sessionStore = sessionStore,
+            transport = SupabaseOwnerAuthorizationTransport(
                 baseUrl = BuildConfig.SUPABASE_URL,
                 publishableKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
             ),
