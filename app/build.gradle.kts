@@ -34,4 +34,5 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     testImplementation(kotlin("test"))
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
 }
