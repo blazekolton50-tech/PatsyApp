@@ -23,12 +23,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-/** Locked primary navigation: HOME • THyNK • CREATE • PATSY DMS • PROFILE. */
+/**
+ * SAVE MAIN APP / LOCK IN SAVE.
+ *
+ * Exact approved primary navigation visual:
+ * Home • THyNK mark only • large centre + • PDMs • Profile.
+ *
+ * The semantic routes remain HOME • THyNK • CAMERA • PATSY DMS • PROFILE underneath.
+ * This navigation is the single app-wide navigation system and must be retained on every page.
+ */
 @Composable
 fun FinalPrimaryNavigationBar(
-    selected: FinalHomeDestination,
+    selected: FinalHomeDestination?,
     onNavigate: (FinalHomeDestination) -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     Column(modifier = modifier.fillMaxWidth().background(Color(0xFF0D0D10))) {
         FinalBottomWave(showFooterCopy = false)
@@ -37,46 +46,74 @@ fun FinalPrimaryNavigationBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround,
         ) {
-            FinalNavItem("⌂", "Home", selected == FinalHomeDestination.HOME) { onNavigate(FinalHomeDestination.HOME) }
-            FinalNavItem("THyNK", "THyNK", selected == FinalHomeDestination.THYNK) { onNavigate(FinalHomeDestination.THYNK) }
-            Box(
-                Modifier
-                    .size(66.dp)
-                    .background(FinalRainbow, CircleShape)
-                    .padding(4.dp)
-                    .clip(CircleShape)
-                    .background(Color.White)
-                    .clickable { onNavigate(FinalHomeDestination.CREATE) },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text("+", color = Color.Black, fontSize = 38.sp, fontWeight = FontWeight.Black)
+            FinalNavItem("⌂", "Home", selected == FinalHomeDestination.HOME, enabled) {
+                onNavigate(FinalHomeDestination.HOME)
             }
-            FinalNavItem("◌", "PATSY DMS", selected == FinalHomeDestination.PATSY_DMS) { onNavigate(FinalHomeDestination.PATSY_DMS) }
-            FinalNavItem("♙", "Profile", selected == FinalHomeDestination.PROFILE) { onNavigate(FinalHomeDestination.PROFILE) }
+
+            // The approved THyNK mark stands alone. Do not add a second white THyNK caption.
+            FinalNavItem("THyNK", "", selected == FinalHomeDestination.THYNK, enabled) {
+                onNavigate(FinalHomeDestination.THYNK)
+            }
+
+            // The approved centre action is the large + only. CAMERA remains the semantic route,
+            // not a visible secondary caption underneath this control.
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(
+                    Modifier
+                        .size(60.dp)
+                        .background(FinalRainbow, CircleShape)
+                        .padding(4.dp)
+                        .clip(CircleShape)
+                        .background(Color.White)
+                        .clickable(enabled = enabled) { onNavigate(FinalHomeDestination.CREATE) },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("+", color = Color.Black, fontSize = 34.sp, fontWeight = FontWeight.Black)
+                }
+            }
+
+            FinalNavItem("◌", "PDMs", selected == FinalHomeDestination.PATSY_DMS, enabled) {
+                onNavigate(FinalHomeDestination.PATSY_DMS)
+            }
+            FinalNavItem("♙", "Profile", selected == FinalHomeDestination.PROFILE, enabled) {
+                onNavigate(FinalHomeDestination.PROFILE)
+            }
         }
     }
 }
 
 @Composable
-private fun FinalNavItem(icon: String, label: String, active: Boolean, onClick: () -> Unit) {
+private fun FinalNavItem(
+    icon: String,
+    label: String,
+    active: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
     Column(
-        modifier = Modifier.width(68.dp).clickable(onClick = onClick),
+        modifier = Modifier.width(68.dp).clickable(enabled = enabled, onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             icon,
             style = if (active || icon == "THyNK") {
-                TextStyle(brush = FinalRainbow, fontSize = if (icon == "THyNK") 16.sp else 22.sp, fontWeight = FontWeight.Black)
+                TextStyle(
+                    brush = FinalRainbow,
+                    fontSize = if (icon == "THyNK") 16.sp else 22.sp,
+                    fontWeight = FontWeight.Black,
+                )
             } else {
                 TextStyle(color = FinalMuted, fontSize = 22.sp)
             },
             maxLines = 1,
         )
-        Text(
-            label,
-            color = if (active) Color(0xFFFF56AB) else FinalMuted,
-            fontSize = if (label == "PATSY DMS") 8.sp else 9.sp,
-            maxLines = 1,
-        )
+        if (label.isNotEmpty()) {
+            Text(
+                label,
+                color = if (active) Color(0xFFFF56AB) else FinalMuted,
+                fontSize = 9.sp,
+                maxLines = 1,
+            )
+        }
     }
 }

@@ -92,17 +92,13 @@ fun FinalHomeScreen(
                     modifier = Modifier.padding(horizontal = 28.dp),
                 )
             }
-            item { ContinueDesignsSection(onNewDesign = { onNavigate(FinalHomeDestination.CREATE) }) }
+            item { ContinueDesignsSection(onNewDesign = { onNavigate(FinalHomeDestination.THYNK) }) }
             item { TodaySection() }
             item { CreatePostSection(onCreatePost) }
             item { FeedTabs() }
             item { SocialFeedPreview() }
             item { Spacer(Modifier.height(18.dp)) }
         }
-        FinalHomeBottomNavigation(
-            modifier = Modifier.align(Alignment.BottomCenter),
-            onNavigate = onNavigate,
-        )
     }
 }
 
@@ -388,53 +384,5 @@ private fun SocialFeedPreview() {
             action = FinalPatsyAction.IDLE,
             modifier = Modifier.align(Alignment.BottomEnd).size(142.dp),
         )
-    }
-}
-
-@Composable
-private fun FinalHomeBottomNavigation(
-    modifier: Modifier = Modifier,
-    onNavigate: (FinalHomeDestination) -> Unit,
-) {
-    Column(modifier = modifier.fillMaxWidth().background(Color(0xFF0D0D10))) {
-        FinalBottomWave(showFooterCopy = false)
-        Row(
-            Modifier.fillMaxWidth().height(75.dp).padding(horizontal = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceAround,
-        ) {
-            NavItem("⌂", "Home", true) { onNavigate(FinalHomeDestination.HOME) }
-            NavItem("THyNK", "THyNK", false) { onNavigate(FinalHomeDestination.THYNK) }
-            Box(
-                Modifier
-                    .size(66.dp)
-                    .background(FinalRainbow, CircleShape)
-                    .padding(4.dp)
-                    .clip(CircleShape)
-                    .background(Color.White)
-                    .clickable { onNavigate(FinalHomeDestination.CREATE) },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text("+", color = Color.Black, fontSize = 38.sp, fontWeight = FontWeight.Black)
-            }
-            NavItem("◌", "PATSY DMS", false) { onNavigate(FinalHomeDestination.PATSY_DMS) }
-            NavItem("♙", "Profile", false) { onNavigate(FinalHomeDestination.PROFILE) }
-        }
-    }
-}
-
-@Composable
-private fun NavItem(icon: String, label: String, active: Boolean, onClick: () -> Unit) {
-    Column(
-        modifier = Modifier.width(68.dp).clickable(onClick = onClick),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            icon,
-            style = if (active || icon == "THyNK") TextStyle(brush = FinalRainbow, fontSize = if (icon == "THyNK") 16.sp else 22.sp, fontWeight = FontWeight.Black)
-            else TextStyle(color = FinalMuted, fontSize = 22.sp),
-            maxLines = 1,
-        )
-        Text(label, color = if (active) Color(0xFFFF56AB) else FinalMuted, fontSize = if (label == "PATSY DMS") 8.sp else 9.sp, maxLines = 1)
     }
 }

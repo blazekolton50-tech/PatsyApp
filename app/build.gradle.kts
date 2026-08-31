@@ -4,18 +4,39 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-android { namespace = "com.patsy.app"; compileSdk = 35
-    compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
+android {
+    namespace = "com.patsy.app"
+    compileSdk = 35
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
     kotlinOptions { jvmTarget = "17" }
-    defaultConfig { applicationId = "com.patsy.app"; minSdk = 26; targetSdk = 35; versionCode = 338; versionName = "3.3.8-patsy1" }
-    buildTypes { debug { applicationIdSuffix = ".debug"; versionNameSuffix = "-debug" } }
+    buildFeatures { buildConfig = true }
+
+    defaultConfig {
+        applicationId = "com.patsy.app"
+        minSdk = 26
+        targetSdk = 35
+        versionCode = 338
+        versionName = "3.3.8-patsy1"
+
+        // Client-safe public Supabase configuration only. Never ship service-role/provider secrets.
+        buildConfigField("String", "SUPABASE_URL", "\"https://tvtknwqcqbkecszvppub.supabase.co\"")
+        buildConfigField("String", "SUPABASE_PUBLISHABLE_KEY", "\"sb_publishable_YF3M02GBd_F3yBxCII33JA_NJtkHq5Y\"")
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+        }
+    }
 }
 
 dependencies {
     // Official Rive Android runtime. The authored patsy_assistant.riv is supplied separately.
     implementation("app.rive:rive-android:11.9.2") {
-        // Keep Patsy's verified compileSdk 35 / Compose 1.7 toolchain. These runtime libraries
-        // are already provided by the app; Rive's newer transitive matrix targets SDK 36.
         exclude(group = "androidx.compose", module = "compose-bom")
         exclude(group = "androidx.core", module = "core-ktx")
         exclude(group = "androidx.lifecycle", module = "lifecycle-runtime-compose")
@@ -31,6 +52,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
+    implementation("androidx.media3:media3-exoplayer:1.8.1")
+    implementation("androidx.media3:media3-ui:1.8.1")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     testImplementation(kotlin("test"))

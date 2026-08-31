@@ -1,0 +1,233 @@
+PATSY APP — CODEX NEXT EXECUTION INSTRUCTION
+PR #38 — APPROVED THyNK CONSOLIDATION QUEUE
+
+Work ONLY in repository:
+blazekolton50-tech/PatsyApp
+
+Work ONLY from branch:
+chatgpt/thynk-music-apk-2026-08-31
+
+Active PR:
+#38 — Draft: integrate THyNK Studio, THyNK Music and locked Camera shell
+
+KEEP PR #38 DRAFT.
+DO NOT MERGE TO MAIN.
+DO NOT RETURN TO PR #35 AS THE WORKING BRANCH.
+
+OWNER APPROVAL:
+The 2026-08-31 THyNK donor consolidation design has been explicitly approved by the owner.
+Approval authorizes execution of the plans below in order. It does NOT authorize a merge to main and does NOT waive physical-device QA.
+
+READ FIRST:
+1. docs/PATSY_DESIGN_PRESERVATION_MASTER_2026-08-31.md
+2. docs/NAVIGATION_LOCK_2026-08-31.md
+3. docs/codex/PATSY_CURRENT_BUILD_STATUS_2026-08-31.md
+4. docs/codex/CODEX_HANDOFF_2026-08-31.md
+5. docs/superpowers/specs/2026-08-31-thynk-donor-consolidation-design.md
+
+SOURCE PRECEDENCE:
+1. Current PR #38 code and checked-in locked contracts.
+2. Design preservation + navigation locks.
+3. Live Supabase security/auth/storage truth.
+4. Owner-supplied current visual references, especially the 10-screen THyNK Music sheet.
+5. Google AI Studio / Gemini / Drive / Replit / uploaded ZIP donor material.
+6. Older archive/prototype behavior only when it does not conflict with 1-5.
+
+DONOR MATERIAL RULE:
+Use donor BEHAVIOURS and visual references only after native port/test/review.
+Do not paste React/Tailwind, Node/Express, browser Canvas/WebAudio, Expo/React Native or stale Android ZIP architecture over the native Kotlin/Compose app.
+Do not treat archive/wrapper names as verified production assets.
+
+DO NOT REDO WORK ALREADY COMPLETED:
+- StudioEditorState.kt is already ported.
+- StudioToolCatalog.kt is already ported.
+- StudioEditorStateTest.kt is already ported.
+- StudioSingleClipStateTest.kt is already ported.
+- StudioToolCatalogTest.kt is already ported.
+- Current THyNK has the locked 10-category architecture.
+- Current THyNK Music already has ten stable page IDs.
+- Shared nav already removed duplicate small white THyNK subtitle.
+- Shared nav already removed visible CAMERA caption and uses PDMs as short visible DM label.
+
+CURRENT LOCKED NAVIGATION:
+Semantic routes:
+HOME · THyNK · CAMERA · PATSY DMS · PROFILE
+
+Visible bar:
+Home · [coloured THyNK only] · [large + only] · PDMs · Profile
+
+ABSOLUTE VISUAL RULES:
+- NO second small white THyNK text underneath the coloured THyNK wordmark.
+- NO CAMERA text underneath the centre +.
+- Visible DM label = PDMs.
+- Keep the large white + with rainbow ring.
+- Keep black/charcoal background and thin rainbow wave/glow.
+- The bar stays on every authenticated page including nested THyNK/editor/Music screens, Owner Profile, Owner Tools and authenticated protected states.
+- Login/Set Password must not expose authenticated routes before a session exists.
+
+EXECUTION ORDER — DO NOT PARALLELIZE DEPENDENT JOBS
+
+JOB 1 — MEDIA3 VIDEO PLAYER
+Execute exactly:
+docs/superpowers/plans/2026-08-31-thynk-video-player-integration.md
+
+Requirements:
+- tests first
+- pure player-sync contract
+- Media3 1.8.1 dependencies only
+- reuse StudioVideoPlayer from PR #23 where compatible
+- DO NOT port PR #23 ThynkStudioScreen.kt wholesale
+- nested video-editor route in CURRENT THyNK
+- VIDEO & CAMERA items route to shared editor
+- truthful EMPTY/LOADING/READY/FAILED media state
+- no fake sample/imported production media
+- permanent outer nav visible
+- unit + debug + release + CI GREEN before Job 2
+
+JOB 2 — ONE GLOBAL AUTHENTICATED PRIMARY NAV
+Execute exactly:
+docs/superpowers/plans/2026-08-31-global-navigation-every-authenticated-page.md
+
+Requirements:
+- visible-label contract test first
+- semantic routes unchanged
+- FinalPrimaryNavigationBar becomes single canonical primary bar
+- remove FinalHomeBottomNavigation duplicate
+- one authenticated shell wrapper in FinalMainActivity
+- Home, THyNK, Camera, DMs, Profile, Owner Profile, Owner Tools and protected/denied authenticated states use it
+- do not weaken auth/age/Owner gates
+- unit + debug + release + CI GREEN before Job 3
+
+JOB 3 — VERIFIED DONOR ASSET INTAKE FOUNDATION
+Execute exactly:
+docs/superpowers/plans/2026-08-31-thynk-donor-asset-intake.md
+
+Requirements:
+- manifest/truth model first under TDD
+- known Drive/AI Studio/Replit/uploaded ZIP sources start REFERENCE_ONLY
+- fail closed on license/origin/bytes/checksum/duplicate verification
+- no archive dump into APK
+- do not surface REFERENCE_ONLY as production content
+- unit + debug + release + CI GREEN before Job 4
+
+JOB 4 — GENERIC THyNK CANVAS + IMAGE IMPORT + REAL PNG EXPORT
+Execute exactly:
+docs/superpowers/plans/2026-08-31-thynk-canvas-import-png-export.md
+
+Requirements:
+- central presets + custom size validation
+- deterministic layer reducer
+- explicit resize handles
+- move/resize/rotate/flip/duplicate/delete/reorder
+- bounded undo/redo
+- Android OpenDocument image import with fail-closed validation
+- PNG export from LOGICAL canvas dimensions, not viewport screenshot
+- export success only after real bytes written
+- editable project remains separate from export result
+- permanent outer nav visible
+- do not duplicate Media3 video path
+- unit + debug + release + CI GREEN before Job 5
+
+JOB 5 — THyNK MUSIC TEN-SCREEN REFINEMENT
+Execute exactly:
+docs/superpowers/plans/2026-08-31-thynk-music-ten-screen-refinement.md
+
+Reference screens, in order:
+1. Music Home
+2. Create Music
+3. AI Music Generator
+4. Track Editor
+5. Mixer
+6. Equalizer
+7. Effects
+8. Lyrics & Vocals
+9. Mastering
+10. Export
+
+Stable route IDs MUST remain:
+music-home
+create-music
+ai-music-generator
+track-editor
+mixer
+equalizer
+effects
+lyrics-vocals
+mastering
+export
+
+Music truth rules:
+- black/charcoal, white text, restrained purple/rainbow, compact DAW-like hierarchy
+- local controls may edit configuration state
+- do not fabricate audio waveforms when no audio data exists
+- do not simulate AI generation progress
+- generation/mastering/vocal processing/DSP/audio export remain NOT_CONFIGURED until genuinely wired
+- export format selection is not export success
+- no fake mastered track or stems
+- permanent Patsy outer navigation remains visible
+
+JOB 6 — FINAL CONSOLIDATED VERIFICATION
+Only after Jobs 1-5 are GREEN on exact branch head:
+
+Run:
+./gradlew testDebugUnitTest --stacktrace
+./gradlew assembleDebug --stacktrace
+./gradlew assembleRelease --stacktrace
+
+Then wait for final Patsy Consolidation CI.
+
+PHYSICAL DEVICE QA IS STILL REQUIRED BEFORE MERGE:
+- real Login / Set Password / session restore
+- Home
+- all 10 THyNK categories
+- nested video editor + real media picker
+- generic image canvas + real image import
+- resize handles / transforms / undo-redo
+- real PNG export + readable file + logical output dimensions
+- all 10 THyNK Music screens
+- Camera
+- PDMs
+- Profile
+- Owner Profile / Owner Tools gates
+- permanent global nav
+- production Rive only if actual authored .riv exists and is verified
+
+DO NOT:
+- redesign Login, Set Password or Home content
+- create another THyNK home
+- replace the 10-category architecture
+- hide navigation in an editor
+- make Schedule/Calendar primary tabs
+- weaken Supabase RLS
+- expose service-role/provider secrets in Android
+- grant Owner from username/email/debug/local state
+- fake AI/music/export/provider success
+- fake production Rive
+- promote unknown donor assets
+- merge PR #38
+
+CURRENT BACKEND TRUTH FROM LATEST AUDIT:
+- Supabase active/healthy
+- 37 public tables; RLS enabled on all 37
+- 10 private tables; RLS enabled on all 10
+- 119 policies
+- 4 private storage buckets
+- Security Advisor: 0 current security lints
+- 0 current Auth users at audit time
+- real-user/device auth still unverified
+
+AT EACH JOB BOUNDARY REPORT:
+- exact starting SHA
+- exact ending SHA
+- exact changed files
+- RED tests observed
+- GREEN unit tests
+- debug build result
+- release build result when required
+- CI run/result
+- artifact ids/digests when generated
+- device/provider/auth/Rive items still unverified
+- confirm PR #38 remains Draft
+
+STOP ON FAILURE.
+Do not start the next dependent job until the current job is genuinely GREEN with fresh verification evidence.
