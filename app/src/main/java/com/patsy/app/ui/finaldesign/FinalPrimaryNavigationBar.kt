@@ -23,7 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-/** Locked primary navigation: HOME • THyNK • CREATE • PATSY DMS • PROFILE. */
+/** Locked primary navigation: HOME • THyNK • + CAMERA • PATSY DMS • PROFILE. */
 @Composable
 fun FinalPrimaryNavigationBar(
     selected: FinalHomeDestination,
@@ -39,17 +39,20 @@ fun FinalPrimaryNavigationBar(
         ) {
             FinalNavItem("⌂", "Home", selected == FinalHomeDestination.HOME) { onNavigate(FinalHomeDestination.HOME) }
             FinalNavItem("THyNK", "THyNK", selected == FinalHomeDestination.THYNK) { onNavigate(FinalHomeDestination.THYNK) }
-            Box(
-                Modifier
-                    .size(66.dp)
-                    .background(FinalRainbow, CircleShape)
-                    .padding(4.dp)
-                    .clip(CircleShape)
-                    .background(Color.White)
-                    .clickable { onNavigate(FinalHomeDestination.CREATE) },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text("+", color = Color.Black, fontSize = 38.sp, fontWeight = FontWeight.Black)
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(
+                    Modifier
+                        .size(60.dp)
+                        .background(FinalRainbow, CircleShape)
+                        .padding(4.dp)
+                        .clip(CircleShape)
+                        .background(Color.White)
+                        .clickable { onNavigate(FinalHomeDestination.CREATE) },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("+", color = Color.Black, fontSize = 34.sp, fontWeight = FontWeight.Black)
+                }
+                Text("CAMERA", color = if (selected == FinalHomeDestination.CREATE) Color(0xFFFF56AB) else FinalMuted, fontSize = 8.sp, maxLines = 1)
             }
             FinalNavItem("◌", "PATSY DMS", selected == FinalHomeDestination.PATSY_DMS) { onNavigate(FinalHomeDestination.PATSY_DMS) }
             FinalNavItem("♙", "Profile", selected == FinalHomeDestination.PROFILE) { onNavigate(FinalHomeDestination.PROFILE) }

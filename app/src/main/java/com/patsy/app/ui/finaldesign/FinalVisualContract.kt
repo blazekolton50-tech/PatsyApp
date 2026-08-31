@@ -21,7 +21,7 @@ object FinalVisualContract {
     const val loginPersistenceSemanticName = "keepSignedIn"
     const val loginPersistenceIsSavedContentMemory = false
 
-    val primaryNavigation = listOf("HOME", "THyNK", "CREATE", "PATSY DMS", "PROFILE")
+    val primaryNavigation = listOf("HOME", "THyNK", "CAMERA", "PATSY DMS", "PROFILE")
 
     const val debugUsername = "patsytest"
     const val debugTemporaryPassword = "PatsyTest!2026"

@@ -50,6 +50,8 @@ import com.patsy.app.ui.finaldesign.FinalHomeScreen
 import com.patsy.app.ui.finaldesign.FinalLoginRoute
 import com.patsy.app.ui.finaldesign.FinalPrimaryNavigationBar
 import com.patsy.app.ui.finaldesign.FinalWhite
+import com.patsy.app.thynk.LockedCameraHub
+import com.patsy.app.thynk.ThynkStudioScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -340,8 +342,8 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
                         Column(Modifier.fillMaxSize().background(FinalCharcoal)) {
                             Box(Modifier.weight(1f).fillMaxWidth()) {
                                 when (page) {
-                                    FinalAppPage.THYNK -> Chat()
-                                    FinalAppPage.CREATE -> CreateStudio()
+                                    FinalAppPage.THYNK -> ThynkStudioScreen()
+                                    FinalAppPage.CREATE -> LockedCameraHub()
                                     FinalAppPage.DMS -> Dms()
                                     FinalAppPage.PROFILE -> More(
                                         profile = session?.let {

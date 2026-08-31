@@ -92,7 +92,7 @@ fun FinalHomeScreen(
                     modifier = Modifier.padding(horizontal = 28.dp),
                 )
             }
-            item { ContinueDesignsSection(onNewDesign = { onNavigate(FinalHomeDestination.CREATE) }) }
+            item { ContinueDesignsSection(onNewDesign = { onNavigate(FinalHomeDestination.THYNK) }) }
             item { TodaySection() }
             item { CreatePostSection(onCreatePost) }
             item { FeedTabs() }
@@ -405,17 +405,20 @@ private fun FinalHomeBottomNavigation(
         ) {
             NavItem("⌂", "Home", true) { onNavigate(FinalHomeDestination.HOME) }
             NavItem("THyNK", "THyNK", false) { onNavigate(FinalHomeDestination.THYNK) }
-            Box(
-                Modifier
-                    .size(66.dp)
-                    .background(FinalRainbow, CircleShape)
-                    .padding(4.dp)
-                    .clip(CircleShape)
-                    .background(Color.White)
-                    .clickable { onNavigate(FinalHomeDestination.CREATE) },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text("+", color = Color.Black, fontSize = 38.sp, fontWeight = FontWeight.Black)
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(
+                    Modifier
+                        .size(60.dp)
+                        .background(FinalRainbow, CircleShape)
+                        .padding(4.dp)
+                        .clip(CircleShape)
+                        .background(Color.White)
+                        .clickable { onNavigate(FinalHomeDestination.CREATE) },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("+", color = Color.Black, fontSize = 34.sp, fontWeight = FontWeight.Black)
+                }
+                Text("CAMERA", color = if (false) Color(0xFFFF56AB) else FinalMuted, fontSize = 8.sp, maxLines = 1)
             }
             NavItem("◌", "PATSY DMS", false) { onNavigate(FinalHomeDestination.PATSY_DMS) }
             NavItem("♙", "Profile", false) { onNavigate(FinalHomeDestination.PROFILE) }
