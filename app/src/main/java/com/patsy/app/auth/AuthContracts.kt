@@ -172,6 +172,15 @@ class SecretChars private constructor(private val chars: CharArray) : AutoClosea
         }
     }
 
+    suspend fun <T> useCopySuspending(block: suspend (CharArray) -> T): T {
+        val copy = chars.copyOf()
+        return try {
+            block(copy)
+        } finally {
+            Arrays.fill(copy, '\u0000')
+        }
+    }
+
     override fun close() {
         Arrays.fill(chars, '\u0000')
     }
