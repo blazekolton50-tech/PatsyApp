@@ -51,21 +51,26 @@ private class DebugTestAccessImpl(context: Context) : DebugTestAccess {
         newPassword: CharArray,
         confirmPassword: CharArray,
         keepSignedIn: Boolean,
-    ): PublicSession? = try {
-        if (newPassword.size < 8 || !newPassword.contentEquals(confirmPassword)) return null
-        val salt = ByteArray(16).also { SecureRandom().nextBytes(it) }
-        val verifier = derive(newPassword, salt)
-        prefs.edit()
-            .putString(KEY_SALT, Base64.encodeToString(salt, Base64.NO_WRAP))
-            .putString(KEY_VERIFIER, Base64.encodeToString(verifier, Base64.NO_WRAP))
-            .putBoolean(KEY_HAS_CUSTOM, true)
-            .putBoolean(KEY_SESSION_ACTIVE, true)
-            .putBoolean(KEY_KEEP_SIGNED_IN, keepSignedIn)
-            .apply()
-        createSession()
-    } finally {
-        Arrays.fill(newPassword, '\u0000')
-        Arrays.fill(confirmPassword, '\u0000')
+    ): PublicSession? {
+        return try {
+            if (newPassword.size < 8 || !newPassword.contentEquals(confirmPassword)) {
+                null
+            } else {
+                val salt = ByteArray(16).also { SecureRandom().nextBytes(it) }
+                val verifier = derive(newPassword, salt)
+                prefs.edit()
+                    .putString(KEY_SALT, Base64.encodeToString(salt, Base64.NO_WRAP))
+                    .putString(KEY_VERIFIER, Base64.encodeToString(verifier, Base64.NO_WRAP))
+                    .putBoolean(KEY_HAS_CUSTOM, true)
+                    .putBoolean(KEY_SESSION_ACTIVE, true)
+                    .putBoolean(KEY_KEEP_SIGNED_IN, keepSignedIn)
+                    .apply()
+                createSession()
+            }
+        } finally {
+            Arrays.fill(newPassword, '\u0000')
+            Arrays.fill(confirmPassword, '\u0000')
+        }
     }
 
     override suspend fun restoreSessionIfRemembered(): PublicSession? {
