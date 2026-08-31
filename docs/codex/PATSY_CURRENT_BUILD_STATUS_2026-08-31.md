@@ -44,6 +44,9 @@ PR #33 / the locked SAVE MAIN APP references remain the visual source of truth f
 Do not redesign those screens while integrating deeper app functionality.
 
 ## Permanent primary navigation — newest lock
+Binding visual contract:
+`docs/NAVIGATION_LOCK_2026-08-31.md`
+
 Semantic destinations remain:
 `HOME · THyNK · CAMERA · PATSY DMS · PROFILE`
 
