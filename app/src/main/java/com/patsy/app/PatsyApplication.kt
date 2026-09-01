@@ -20,6 +20,9 @@ import com.patsy.app.security.SupabaseOwnerAuthorizationTransport
 import com.patsy.app.storage.ServerStorageDataService
 import com.patsy.app.storage.StorageServiceBindings
 import com.patsy.app.storage.SupabaseStorageDataTransport
+import com.patsy.app.studio.ServerStudioPersistenceService
+import com.patsy.app.studio.StudioPersistenceBindings
+import com.patsy.app.studio.SupabaseStudioPersistenceTransport
 
 class PatsyApplication : Application() {
     override fun onCreate() {
@@ -71,6 +74,13 @@ class PatsyApplication : Application() {
         StorageServiceBindings.storageDataService = ServerStorageDataService(
             sessionStore = sessionStore,
             transport = SupabaseStorageDataTransport(
+                baseUrl = BuildConfig.SUPABASE_URL,
+                publishableKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
+            ),
+        )
+        StudioPersistenceBindings.service = ServerStudioPersistenceService(
+            sessionStore = sessionStore,
+            transport = SupabaseStudioPersistenceTransport(
                 baseUrl = BuildConfig.SUPABASE_URL,
                 publishableKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
             ),
