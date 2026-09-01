@@ -19,6 +19,23 @@ def replace_if_present(path: str, old: str, new: str) -> None:
     file.write_text(text.replace(old, new, 1), encoding="utf-8")
 
 
+def ensure_import(path: str, anchor_import: str, import_line: str) -> None:
+    """Insert one Kotlin import only when that exact import is absent.
+
+    Integration runs on branches whose imports may be reordered by native feature work, so checking
+    for a multi-import adjacent block is not idempotent. Exact-line presence is the authority.
+    """
+    file = Path(path)
+    text = file.read_text(encoding="utf-8")
+    exact = import_line.rstrip("\n") + "\n"
+    if exact in text:
+        return
+    anchor = anchor_import.rstrip("\n") + "\n"
+    if anchor not in text:
+        raise SystemExit(f"Expected import anchor missing in {path}: {anchor_import!r}")
+    file.write_text(text.replace(anchor, anchor + exact, 1), encoding="utf-8")
+
+
 def remove_from_marker(path: str, marker: str) -> None:
     file = Path(path)
     text = file.read_text(encoding="utf-8")
@@ -29,17 +46,22 @@ def remove_from_marker(path: str, marker: str) -> None:
 
 # Preserve the secure FinalMainActivity shell; only swap the destination surfaces.
 final_main = "app/src/main/java/com/patsy/app/FinalMainActivity.kt"
-replace_once(
+ensure_import(
     final_main,
-    "import com.patsy.app.ui.finaldesign.FinalWhite\n",
-    "import com.patsy.app.ui.finaldesign.FinalWhite\nimport com.patsy.app.thynk.LockedCameraHub\nimport com.patsy.app.thynk.ThynkStudioScreen\n",
+    "import com.patsy.app.ui.finaldesign.FinalWhite",
+    "import com.patsy.app.thynk.LockedCameraHub",
+)
+ensure_import(
+    final_main,
+    "import com.patsy.app.thynk.LockedCameraHub",
+    "import com.patsy.app.thynk.ThynkStudioScreen",
 )
 replace_once(final_main, "FinalAppPage.THYNK -> Chat()", "FinalAppPage.THYNK -> ThynkStudioScreen()")
 replace_once(final_main, "FinalAppPage.CREATE -> CreateStudio()", "FinalAppPage.CREATE -> LockedCameraHub()")
-replace_if_present(
+ensure_import(
     final_main,
-    "import com.patsy.app.ui.finaldesign.FinalPrimaryNavigationBar\n",
-    "import com.patsy.app.ui.finaldesign.FinalPrimaryNavigationBar\nimport com.patsy.app.ui.finaldesign.FinalVisualContract\n",
+    "import com.patsy.app.ui.finaldesign.FinalPrimaryNavigationBar",
+    "import com.patsy.app.ui.finaldesign.FinalVisualContract",
 )
 
 # Latest SAVE MAIN APP semantic navigation keeps Camera in the centre.
