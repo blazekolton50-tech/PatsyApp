@@ -2,6 +2,11 @@ package com.patsy.app.dms
 
 import com.patsy.app.auth.AuthSessionStore
 import com.patsy.app.auth.PublicSession
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
 
 sealed interface DmMemberStateResult {
     data object Updated : DmMemberStateResult
@@ -14,6 +19,12 @@ fun dmMemberStateResultForStatus(status: Int): DmMemberStateResult = when {
     status == 401 || status == 403 -> DmMemberStateResult.Unauthorized
     else -> DmMemberStateResult.Unavailable
 }
+
+fun dmMemberStatePayload(threadId: String, archived: Boolean?): String = JSONObject()
+    .put("thread_id", threadId)
+    .put("action", if (archived == null) "mark_read" else "set_archived")
+    .apply { if (archived != null) put("archived", archived) }
+    .toString()
 
 interface DmMemberStateTransport {
     suspend fun markRead(accessToken: String, threadId: String): DmMemberStateResult
@@ -50,4 +61,45 @@ class ServerDmMemberStateService(
             it.publicSession.userId == session.userId &&
             it.accessToken.isNotBlank()
     }
+}
+
+class SupabaseDmMemberStateTransport(
+    baseUrl: String,
+    private val publishableKey: String,
+) : DmMemberStateTransport {
+    private val endpoint = "${baseUrl.trimEnd('/')}/functions/v1/pdm-member-state"
+
+    override suspend fun markRead(accessToken: String, threadId: String): DmMemberStateResult =
+        post(accessToken, dmMemberStatePayload(threadId, archived = null))
+
+    override suspend fun setArchived(
+        accessToken: String,
+        threadId: String,
+        archived: Boolean,
+    ): DmMemberStateResult = post(accessToken, dmMemberStatePayload(threadId, archived))
+
+    private suspend fun post(accessToken: String, payload: String): DmMemberStateResult =
+        withContext(Dispatchers.IO) {
+            try {
+                val connection = (URL(endpoint).openConnection() as HttpURLConnection).apply {
+                    requestMethod = "POST"
+                    connectTimeout = 15_000
+                    readTimeout = 20_000
+                    useCaches = false
+                    doOutput = true
+                    setRequestProperty("Accept", "application/json")
+                    setRequestProperty("Content-Type", "application/json")
+                    setRequestProperty("apikey", publishableKey)
+                    setRequestProperty("Authorization", "Bearer $accessToken")
+                }
+                try {
+                    connection.outputStream.bufferedWriter(Charsets.UTF_8).use { it.write(payload) }
+                    dmMemberStateResultForStatus(connection.responseCode)
+                } finally {
+                    connection.disconnect()
+                }
+            } catch (_: Exception) {
+                DmMemberStateResult.Unavailable
+            }
+        }
 }
