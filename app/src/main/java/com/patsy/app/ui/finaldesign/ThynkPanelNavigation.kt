@@ -10,7 +10,7 @@ package com.patsy.app.ui.finaldesign
 enum class ThynkPanelDestination(val visibleLabel: String) {
     ME("THyNK-ME"),
     CHATS("THyNK Chats"),
-    IN("THyNK-IN!"),
+    IN("THyNK-IN"),
     MUSIC("THyNK Music"),
     IT("THyNK-IT"),
 }
