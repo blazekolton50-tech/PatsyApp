@@ -60,6 +60,16 @@ class DmMemberStateServiceTest {
         assertEquals(null, transport.lastReadThreadId)
         assertEquals(null, transport.lastArchiveThreadId)
     }
+
+    @Test
+    fun httpStatusMappingNeverTreatsFailureAsUpdated() {
+        assertIs<DmMemberStateResult.Updated>(dmMemberStateResultForStatus(200))
+        assertIs<DmMemberStateResult.Updated>(dmMemberStateResultForStatus(204))
+        assertIs<DmMemberStateResult.Unauthorized>(dmMemberStateResultForStatus(401))
+        assertIs<DmMemberStateResult.Unauthorized>(dmMemberStateResultForStatus(403))
+        assertIs<DmMemberStateResult.Unavailable>(dmMemberStateResultForStatus(400))
+        assertIs<DmMemberStateResult.Unavailable>(dmMemberStateResultForStatus(500))
+    }
 }
 
 private class FakeDmMemberStateSessionStore(session: PublicSession) : AuthSessionStore {
