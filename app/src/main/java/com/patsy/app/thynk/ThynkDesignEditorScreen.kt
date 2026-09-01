@@ -43,6 +43,7 @@ import com.patsy.app.studio.StudioLayerType
 import com.patsy.app.studio.StudioMode
 import com.patsy.app.studio.StudioToolCatalog
 import com.patsy.app.studio.reduceStudioCanvasState
+import com.patsy.app.studio.studioCanvasAlignmentControls
 import com.patsy.app.ui.finaldesign.FinalCard
 import com.patsy.app.ui.finaldesign.FinalCharcoal
 import com.patsy.app.ui.finaldesign.FinalMuted
@@ -428,6 +429,21 @@ private fun DesignContextPanel(
                         color = FinalWhite,
                         fontSize = 9.sp,
                     )
+                    if (selected.locked) {
+                        Text("Unlock this layer to align it.", color = FinalMuted, fontSize = 8.sp, modifier = Modifier.padding(top = 6.dp))
+                    } else {
+                        Text("ALIGN TO CANVAS", color = FinalMuted, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
+                        Row(
+                            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(top = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            studioCanvasAlignmentControls(selected).forEach { control ->
+                                DesignMiniAction(control.label) {
+                                    onStateChange(reduceStudioCanvasState(state, control.action))
+                                }
+                            }
+                        }
+                    }
                 }
             }
             else -> Text(panelCopy(panelId), color = FinalMuted, fontSize = 9.sp)
