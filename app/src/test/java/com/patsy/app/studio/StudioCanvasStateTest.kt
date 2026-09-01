@@ -2,8 +2,30 @@ package com.patsy.app.studio
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class StudioCanvasStateTest {
+    private fun canvasObject(
+        id: String,
+        x: Float = 10f,
+        y: Float = 20f,
+        width: Float = 100f,
+        height: Float = 80f,
+        locked: Boolean = false,
+        visible: Boolean = true,
+    ) = StudioCanvasObject(
+        id = id,
+        type = StudioLayerType.IMAGE,
+        label = id,
+        xPx = x,
+        yPx = y,
+        widthPx = width,
+        heightPx = height,
+        locked = locked,
+        visible = visible,
+    )
+
     @Test
     fun selectingExistingObjectPreservesItsEditableTransformProperties() {
         val textObject = StudioCanvasObject(
@@ -34,30 +56,9 @@ class StudioCanvasStateTest {
 
     @Test
     fun movementAppliesToUnlockedObjectsAndIsRejectedByLockedObjects() {
-        val free = StudioCanvasObject(
-            id = "free",
-            type = StudioLayerType.SHAPE,
-            label = "Free shape",
-            xPx = 10f,
-            yPx = 20f,
-            widthPx = 100f,
-            heightPx = 80f,
-        )
-        val locked = StudioCanvasObject(
-            id = "locked",
-            type = StudioLayerType.IMAGE,
-            label = "Locked image",
-            xPx = 30f,
-            yPx = 40f,
-            widthPx = 120f,
-            heightPx = 90f,
-            locked = true,
-        )
-        val state = StudioCanvasState(
-            widthPx = 1080,
-            heightPx = 1350,
-            objects = listOf(free, locked),
-        )
+        val free = canvasObject("free")
+        val locked = canvasObject("locked", x = 30f, y = 40f, width = 120f, height = 90f, locked = true)
+        val state = StudioCanvasState(1080, 1350, listOf(free, locked))
 
         val movedFree = reduceStudioCanvasState(
             state,
@@ -72,5 +73,84 @@ class StudioCanvasStateTest {
         assertEquals(27f, attemptedLockedMove.objects.first { it.id == "free" }.yPx)
         assertEquals(30f, attemptedLockedMove.objects.first { it.id == "locked" }.xPx)
         assertEquals(40f, attemptedLockedMove.objects.first { it.id == "locked" }.yPx)
+    }
+
+    @Test
+    fun resizeRotateAndOpacityUseTheSharedCanvasObjectModel() {
+        val state = StudioCanvasState(1080, 1350, listOf(canvasObject("dog")))
+
+        val resized = reduceStudioCanvasState(state, StudioCanvasAction.Resize("dog", 320f, 240f))
+        val rotated = reduceStudioCanvasState(resized, StudioCanvasAction.Rotate("dog", 25f))
+        val faded = reduceStudioCanvasState(rotated, StudioCanvasAction.SetOpacity("dog", 0.55f))
+
+        val dog = faded.objects.single()
+        assertEquals(320f, dog.widthPx)
+        assertEquals(240f, dog.heightPx)
+        assertEquals(25f, dog.rotationDegrees)
+        assertEquals(0.55f, dog.opacity)
+    }
+
+    @Test
+    fun lockedObjectsRejectResizeRotateOpacityAndDelete() {
+        val locked = canvasObject("locked", locked = true)
+        val state = StudioCanvasState(1080, 1350, listOf(locked), selectedObjectId = "locked")
+
+        val resized = reduceStudioCanvasState(state, StudioCanvasAction.Resize("locked", 500f, 500f))
+        val rotated = reduceStudioCanvasState(resized, StudioCanvasAction.Rotate("locked", 90f))
+        val faded = reduceStudioCanvasState(rotated, StudioCanvasAction.SetOpacity("locked", 0.1f))
+        val deleted = reduceStudioCanvasState(faded, StudioCanvasAction.Delete("locked"))
+
+        assertEquals(listOf(locked), deleted.objects)
+        assertEquals("locked", deleted.selectedObjectId)
+    }
+
+    @Test
+    fun visibilityLockAndOneStepReorderPreserveStableIdentity() {
+        val state = StudioCanvasState(
+            1080,
+            1350,
+            listOf(
+                canvasObject("background"),
+                canvasObject("text"),
+                canvasObject("photo"),
+            ),
+        )
+
+        val hidden = reduceStudioCanvasState(state, StudioCanvasAction.SetVisible("text", false))
+        val locked = reduceStudioCanvasState(hidden, StudioCanvasAction.SetLocked("photo", true))
+        val raised = reduceStudioCanvasState(locked, StudioCanvasAction.BringForward("background"))
+
+        assertFalse(raised.objects.first { it.id == "text" }.visible)
+        assertTrue(raised.objects.first { it.id == "photo" }.locked)
+        assertEquals(listOf("text", "background", "photo"), raised.objects.map { it.id })
+    }
+
+    @Test
+    fun sizeAndOpacityInputsAreNormalizedInsteadOfCreatingInvalidCanvasState() {
+        val state = StudioCanvasState(0, -1, listOf(canvasObject("dog")))
+        val transparent = reduceStudioCanvasState(state, StudioCanvasAction.SetOpacity("dog", -4f))
+        val opaque = reduceStudioCanvasState(transparent, StudioCanvasAction.SetOpacity("dog", 4f))
+        val tiny = reduceStudioCanvasState(opaque, StudioCanvasAction.Resize("dog", 0f, -10f))
+
+        assertEquals(1, tiny.widthPx)
+        assertEquals(1, tiny.heightPx)
+        assertEquals(1f, tiny.objects.single().opacity)
+        assertEquals(1f, tiny.objects.single().widthPx)
+        assertEquals(1f, tiny.objects.single().heightPx)
+    }
+
+    @Test
+    fun deletingSelectedUnlockedObjectClearsSelection() {
+        val state = StudioCanvasState(
+            1080,
+            1350,
+            listOf(canvasObject("dog")),
+            selectedObjectId = "dog",
+        )
+
+        val deleted = reduceStudioCanvasState(state, StudioCanvasAction.Delete("dog"))
+
+        assertTrue(deleted.objects.isEmpty())
+        assertEquals(null, deleted.selectedObjectId)
     }
 }
