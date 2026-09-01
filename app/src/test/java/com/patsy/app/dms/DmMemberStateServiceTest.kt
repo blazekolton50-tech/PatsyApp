@@ -5,7 +5,9 @@ import com.patsy.app.auth.PublicSession
 import com.patsy.app.auth.StoredAuthSession
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 
 class DmMemberStateServiceTest {
@@ -69,6 +71,13 @@ class DmMemberStateServiceTest {
         assertIs<DmMemberStateResult.Unauthorized>(dmMemberStateResultForStatus(403))
         assertIs<DmMemberStateResult.Unavailable>(dmMemberStateResultForStatus(400))
         assertIs<DmMemberStateResult.Unavailable>(dmMemberStateResultForStatus(500))
+    }
+
+    @Test
+    fun onlyServerAcceptedMemberStateMayRefreshInboxTruth() {
+        assertTrue(shouldRefreshInboxAfterMemberState(DmMemberStateResult.Updated))
+        assertFalse(shouldRefreshInboxAfterMemberState(DmMemberStateResult.Unauthorized))
+        assertFalse(shouldRefreshInboxAfterMemberState(DmMemberStateResult.Unavailable))
     }
 
     @Test
