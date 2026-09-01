@@ -38,7 +38,6 @@ begin
     raise exception 'unauthorized' using errcode = '42501';
   end if;
 
-  -- Protected/unknown/restricted accounts cannot use DMs. This mirrors the existing hard DM gate.
   if not exists (
     select 1
       from public.account_capabilities c
@@ -66,15 +65,13 @@ begin
       join public.dm_members m on m.thread_id = ct.id
      group by ct.id, ct.updated_at
   ),
-  -- A thread becomes invisible rather than leaking identity if any participant is no longer an
-  -- active, DM-capable 16+ account. Existing message history stays protected by the base RLS.
   safe_threads as (
     select mr.*
       from member_rollup mr
      where not exists (
        select 1
-         from unnest(mr.member_ids) participant_id
-         left join public.account_capabilities pc on pc.user_id = participant_id
+         from unnest(mr.member_ids) as participant(participant_id)
+         left join public.account_capabilities pc on pc.user_id = participant.participant_id
         where pc.user_id is null
            or pc.verified_age_tier <> '16_plus'
            or pc.can_use_dms <> true
@@ -116,17 +113,17 @@ begin
   from visible_threads vt
   left join lateral (
     select p.username, p.display_name, p.avatar_path
-      from unnest(vt.member_ids) member_id
-      join public.profiles p on p.user_id = member_id
-     where member_id <> caller
+      from unnest(vt.member_ids) as member(member_id)
+      join public.profiles p on p.user_id = member.member_id
+     where member.member_id <> caller
      order by p.display_name nulls last, p.username
      limit 1
   ) other_profile on true
   left join lateral (
     select string_agg(coalesce(p.display_name, p.username), ', ' order by coalesce(p.display_name, p.username)) as title
-      from unnest(vt.member_ids) member_id
-      join public.profiles p on p.user_id = member_id
-     where member_id <> caller
+      from unnest(vt.member_ids) as member(member_id)
+      join public.profiles p on p.user_id = member.member_id
+     where member.member_id <> caller
   ) group_names on true
   left join lateral (
     select m.id, m.body, m.sender_id, m.created_at, m.expires_at
