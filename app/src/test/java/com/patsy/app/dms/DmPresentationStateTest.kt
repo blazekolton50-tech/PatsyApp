@@ -58,4 +58,11 @@ class DmPresentationStateTest {
         assertEquals("a", selected.selectedThreadId)
         assertTrue(selected.locallyAcknowledgedThreadIds.isEmpty())
     }
+
+    @Test
+    fun archiveActionUsesOnlyKnownServerArchiveState() {
+        assertEquals("Archive", dmArchiveActionLabel(false))
+        assertEquals("Unarchive", dmArchiveActionLabel(true))
+        assertEquals(null, dmArchiveActionLabel(null))
+    }
 }
