@@ -5,9 +5,11 @@ on:
     branches:
       - codex/consolidate-final3-auth-rive-2026-08-31
       - chatgpt/thynk-music-apk-2026-08-31
+      - chatgpt/codex-ready-brand-ui-lock-2026-09-01
   pull_request:
     branches:
       - feat/final-login-password-home-design-lock
+      - chatgpt/camera-native-foundation-2026-08-31
 
 permissions:
   contents: write
