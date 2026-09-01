@@ -51,6 +51,7 @@ import com.patsy.app.ui.finaldesign.FinalHomeDestination
 import com.patsy.app.ui.finaldesign.FinalHomeScreen
 import com.patsy.app.ui.finaldesign.FinalLoginRoute
 import com.patsy.app.ui.finaldesign.FinalPatsyDmScreen
+import com.patsy.app.ui.finaldesign.FinalPatsyDmLiveRoute
 import com.patsy.app.ui.finaldesign.FinalPrimaryNavigationBar
 import com.patsy.app.ui.finaldesign.FinalProfileScreen
 import com.patsy.app.ui.finaldesign.FinalProfileLiveRoute
@@ -346,9 +347,20 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
                                 when (page) {
                                     FinalAppPage.THYNK -> ThynkStudioScreen()
                                     FinalAppPage.CREATE -> NativeCameraHub(onOpenThynk = { navigate(FinalHomeDestination.THYNK) })
-                                    FinalAppPage.DMS -> FinalPatsyDmScreen(
-                                        state = finalDmScreenState(),
-                                    )
+                                    FinalAppPage.DMS -> {
+                                        val activeSession = session
+                                        if (activeSession == null) {
+                                            FinalProtectedAccessState(
+                                                message = "Patsy DMs require a verified signed-in session.",
+                                                onSignOut = ::signOut,
+                                            )
+                                        } else {
+                                            FinalPatsyDmLiveRoute(
+                                                session = activeSession,
+                                                onUnauthorized = { page = FinalAppPage.PROTECTED },
+                                            )
+                                        }
+                                    }
                                     FinalAppPage.PROFILE -> {
                                         val activeSession = session
                                         if (activeSession == null) {

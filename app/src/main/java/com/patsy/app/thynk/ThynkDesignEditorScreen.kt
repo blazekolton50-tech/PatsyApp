@@ -133,6 +133,16 @@ fun ThynkDesignEditorScreen() {
                                 nextObjectSequence += 1
                             }
                         },
+                        onDuplicateObject = { objectId ->
+                            canvasState = reduceStudioCanvasState(
+                                canvasState,
+                                StudioCanvasAction.Duplicate(
+                                    objectId = objectId,
+                                    newObjectId = "copy-${nextObjectSequence}",
+                                ),
+                            )
+                            nextObjectSequence += 1
+                        },
                         modifier = Modifier.widthIn(min = 260.dp, max = 310.dp).fillMaxHeight(),
                     )
                 }
@@ -162,6 +172,16 @@ fun ThynkDesignEditorScreen() {
                                 )
                                 nextObjectSequence += 1
                             }
+                        },
+                        onDuplicateObject = { objectId ->
+                            canvasState = reduceStudioCanvasState(
+                                canvasState,
+                                StudioCanvasAction.Duplicate(
+                                    objectId = objectId,
+                                    newObjectId = "copy-${nextObjectSequence}",
+                                ),
+                            )
+                            nextObjectSequence += 1
                         },
                         modifier = Modifier.fillMaxWidth().height(116.dp),
                     )
@@ -323,6 +343,7 @@ private fun DesignContextPanel(
     state: StudioCanvasState,
     onStateChange: (StudioCanvasState) -> Unit,
     onAddToolObject: (String) -> Unit,
+    onDuplicateObject: (String) -> Unit,
     modifier: Modifier,
 ) {
     val selected = state.objects.firstOrNull { it.id == state.selectedObjectId }
@@ -335,15 +356,46 @@ private fun DesignContextPanel(
                     Text("No layers yet", color = FinalMuted, fontSize = 10.sp)
                 } else {
                     state.objects.asReversed().take(5).forEach { layer ->
-                        Row(
-                            Modifier.fillMaxWidth().clickable {
-                                onStateChange(reduceStudioCanvasState(state, StudioCanvasAction.Select(layer.id)))
-                            }.padding(vertical = 5.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(layer.label, color = FinalWhite, fontSize = 10.sp, modifier = Modifier.weight(1f))
-                            Text(if (layer.visible) "SHOW" else "HIDE", color = FinalMuted, fontSize = 8.sp)
-                            Text(if (layer.locked) "  LOCK" else "  OPEN", color = FinalMuted, fontSize = 8.sp)
+                        Column(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                            Row(
+                                Modifier.fillMaxWidth().clickable {
+                                    onStateChange(reduceStudioCanvasState(state, StudioCanvasAction.Select(layer.id)))
+                                },
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(layer.label, color = FinalWhite, fontSize = 10.sp, modifier = Modifier.weight(1f))
+                                Text(if (layer.visible) "VISIBLE" else "HIDDEN", color = FinalMuted, fontSize = 8.sp)
+                                Text(if (layer.locked) "  LOCKED" else "  EDIT", color = FinalMuted, fontSize = 8.sp)
+                            }
+                            if (layer.type != StudioLayerType.BACKGROUND) {
+                                Row(
+                                    Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(top = 4.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                ) {
+                                    DesignMiniAction(if (layer.visible) "HIDE" else "SHOW") {
+                                        onStateChange(reduceStudioCanvasState(state, StudioCanvasAction.SetVisible(layer.id, !layer.visible)))
+                                    }
+                                    DesignMiniAction(if (layer.locked) "UNLOCK" else "LOCK") {
+                                        onStateChange(reduceStudioCanvasState(state, StudioCanvasAction.SetLocked(layer.id, !layer.locked)))
+                                    }
+                                    DesignMiniAction("FORWARD") {
+                                        onStateChange(reduceStudioCanvasState(state, StudioCanvasAction.BringForward(layer.id)))
+                                    }
+                                    DesignMiniAction("BACK") {
+                                        onStateChange(reduceStudioCanvasState(state, StudioCanvasAction.SendBackward(layer.id)))
+                                    }
+                                    DesignMiniAction("FRONT") {
+                                        onStateChange(reduceStudioCanvasState(state, StudioCanvasAction.BringToFront(layer.id)))
+                                    }
+                                    DesignMiniAction("BACKMOST") {
+                                        onStateChange(reduceStudioCanvasState(state, StudioCanvasAction.SendToBack(layer.id)))
+                                    }
+                                    DesignMiniAction("DUPLICATE") { onDuplicateObject(layer.id) }
+                                    DesignMiniAction("DELETE") {
+                                        onStateChange(reduceStudioCanvasState(state, StudioCanvasAction.Delete(layer.id)))
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -380,6 +432,18 @@ private fun DesignContextPanel(
             }
             else -> Text(panelCopy(panelId), color = FinalMuted, fontSize = 9.sp)
         }
+    }
+}
+
+@Composable
+private fun DesignMiniAction(label: String, onClick: () -> Unit) {
+    Box(
+        Modifier.border(1.dp, DesignBorder, RoundedCornerShape(7.dp))
+            .clip(RoundedCornerShape(7.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 7.dp, vertical = 5.dp),
+    ) {
+        Text(label, color = FinalMuted, fontSize = 7.sp, fontWeight = FontWeight.Bold)
     }
 }
 

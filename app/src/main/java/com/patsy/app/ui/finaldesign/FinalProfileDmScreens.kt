@@ -224,7 +224,11 @@ fun FinalProfileScreen(
 }
 
 @Composable
-fun FinalPatsyDmScreen(state: FinalDmScreenState) {
+fun FinalPatsyDmScreen(
+    state: FinalDmScreenState,
+    onThreadSelected: (String) -> Unit = {},
+    onSendMessage: (String, String) -> Unit = { _, _ -> },
+) {
     var search by remember { mutableStateOf(state.presentation.searchQuery) }
     var filter by remember { mutableStateOf(state.presentation.filter) }
     var selectedThreadId by remember { mutableStateOf(state.presentation.selectedThreadId) }
@@ -240,13 +244,17 @@ fun FinalPatsyDmScreen(state: FinalDmScreenState) {
                     onSearch = { search = it },
                     filter = filter,
                     onFilter = { filter = it },
-                    onThread = { selectedThreadId = it },
+                    onThread = {
+                        selectedThreadId = it
+                        onThreadSelected(it)
+                    },
                     modifier = Modifier.fillMaxHeight().weight(0.42f),
                 )
                 Box(Modifier.width(1.dp).fillMaxHeight().background(Color(0xFF333338)))
                 DmConversationPane(
                     selectedThreadId = selectedThreadId,
                     state = state,
+                    onSendMessage = onSendMessage,
                     modifier = Modifier.fillMaxHeight().weight(0.58f),
                 )
             }
@@ -257,13 +265,21 @@ fun FinalPatsyDmScreen(state: FinalDmScreenState) {
                 onSearch = { search = it },
                 filter = filter,
                 onFilter = { filter = it },
-                onThread = { selectedThreadId = it },
+                onThread = {
+                        selectedThreadId = it
+                        onThreadSelected(it)
+                    },
                 modifier = Modifier.fillMaxSize(),
             )
         } else {
             Column(Modifier.fillMaxSize()) {
                 TextButton(onClick = { selectedThreadId = null }) { Text("‹ Conversations", color = FinalWhite) }
-                DmConversationPane(selectedThreadId, state, Modifier.weight(1f).fillMaxWidth())
+                DmConversationPane(
+                    selectedThreadId = selectedThreadId,
+                    state = state,
+                    onSendMessage = onSendMessage,
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                )
             }
         }
     }
@@ -330,6 +346,7 @@ private fun DmInboxPane(
 private fun DmConversationPane(
     selectedThreadId: String?,
     state: FinalDmScreenState,
+    onSendMessage: (String, String) -> Unit,
     modifier: Modifier,
 ) {
     Column(modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -362,7 +379,30 @@ private fun DmConversationPane(
                 }
             }
         }
-        Text("Sending is unavailable until the real message repository is wired to this screen.", color = FinalMuted, fontSize = 10.sp)
+        var draft by remember(selectedThreadId) { mutableStateOf("") }
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            OutlinedTextField(
+                value = draft,
+                onValueChange = { draft = it },
+                singleLine = true,
+                placeholder = { Text("Message", color = FinalMuted) },
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(
+                onClick = {
+                    val message = draft.trim()
+                    if (message.isNotEmpty()) {
+                        onSendMessage(selectedThreadId, message)
+                        draft = ""
+                    }
+                },
+            ) { Text("Send", color = FinalWhite) }
+        }
+        Text(
+            "Sent here means the server accepted the message row. Delivered/read receipts are not claimed.",
+            color = FinalMuted,
+            fontSize = 10.sp,
+        )
     }
 }
 
