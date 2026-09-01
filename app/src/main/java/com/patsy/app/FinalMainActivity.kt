@@ -56,6 +56,7 @@ import com.patsy.app.ui.finaldesign.FinalProfileScreen
 import com.patsy.app.ui.finaldesign.FinalProfileLiveRoute
 import com.patsy.app.ui.finaldesign.FinalVisualContract
 import com.patsy.app.ui.finaldesign.FinalWhite
+import com.patsy.app.thynk.LockedCameraHub
 import com.patsy.app.ui.finaldesign.finalDmScreenState
 import com.patsy.app.ui.finaldesign.finalProfileScreenState
 import kotlinx.coroutines.delay
