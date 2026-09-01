@@ -4,15 +4,31 @@ screen_path = Path("app/src/main/java/com/patsy/app/ui/finaldesign/FinalProfileD
 screen = screen_path.read_text(encoding="utf-8")
 
 old_signature = "fun FinalPatsyDmScreen(state: FinalDmScreenState) {"
-new_signature = '''fun FinalPatsyDmScreen(
+base_signature = '''fun FinalPatsyDmScreen(
     state: FinalDmScreenState,
     onThreadSelected: (String) -> Unit = {},
     onSendMessage: (String, String) -> Unit = { _, _ -> },
 ) {'''
-if new_signature not in screen:
-    if old_signature not in screen:
+archive_signature = '''fun FinalPatsyDmScreen(
+    state: FinalDmScreenState,
+    onThreadSelected: (String) -> Unit = {},
+    onSendMessage: (String, String) -> Unit = { _, _ -> },
+    onArchiveChanged: (String, Boolean) -> Unit = { _, _ -> },
+) {'''
+if archive_signature not in screen:
+    if base_signature in screen:
+        screen = screen.replace(base_signature, archive_signature, 1)
+    elif old_signature in screen:
+        screen = screen.replace(old_signature, archive_signature, 1)
+    else:
         raise SystemExit("PDM screen signature anchor missing")
-    screen = screen.replace(old_signature, new_signature, 1)
+
+import_anchor = "import com.patsy.app.dms.filterDmThreads\n"
+archive_import = "import com.patsy.app.dms.dmArchiveActionLabel\n"
+if archive_import not in screen:
+    if import_anchor not in screen:
+        raise SystemExit("PDM archive helper import anchor missing")
+    screen = screen.replace(import_anchor, import_anchor + archive_import, 1)
 
 # Match the semantic call, not its indentation: split and stacked branches intentionally sit at
 # different nesting levels.
@@ -30,76 +46,76 @@ if "onThreadSelected(it)" not in screen:
 old_split = '''                DmConversationPane(
                     selectedThreadId = selectedThreadId,
                     state = state,
+                    onSendMessage = onSendMessage,
                     modifier = Modifier.fillMaxHeight().weight(0.58f),
                 )'''
 new_split = '''                DmConversationPane(
                     selectedThreadId = selectedThreadId,
                     state = state,
                     onSendMessage = onSendMessage,
+                    onArchiveChanged = onArchiveChanged,
                     modifier = Modifier.fillMaxHeight().weight(0.58f),
                 )'''
 if new_split not in screen:
     if old_split not in screen:
-        raise SystemExit("Split-view conversation anchor missing")
+        raise SystemExit("Split-view conversation archive anchor missing")
     screen = screen.replace(old_split, new_split, 1)
 
-old_stacked = "                DmConversationPane(selectedThreadId, state, Modifier.weight(1f).fillMaxWidth())"
-new_stacked = '''                DmConversationPane(
+old_stacked = '''                DmConversationPane(
                     selectedThreadId = selectedThreadId,
                     state = state,
                     onSendMessage = onSendMessage,
                     modifier = Modifier.weight(1f).fillMaxWidth(),
                 )'''
+new_stacked = '''                DmConversationPane(
+                    selectedThreadId = selectedThreadId,
+                    state = state,
+                    onSendMessage = onSendMessage,
+                    onArchiveChanged = onArchiveChanged,
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                )'''
 if new_stacked not in screen:
     if old_stacked not in screen:
-        raise SystemExit("Stacked conversation anchor missing")
+        raise SystemExit("Stacked conversation archive anchor missing")
     screen = screen.replace(old_stacked, new_stacked, 1)
 
 old_conversation_signature = '''private fun DmConversationPane(
     selectedThreadId: String?,
     state: FinalDmScreenState,
+    onSendMessage: (String, String) -> Unit,
     modifier: Modifier,
 ) {'''
 new_conversation_signature = '''private fun DmConversationPane(
     selectedThreadId: String?,
     state: FinalDmScreenState,
     onSendMessage: (String, String) -> Unit,
+    onArchiveChanged: (String, Boolean) -> Unit,
     modifier: Modifier,
 ) {'''
 if new_conversation_signature not in screen:
     if old_conversation_signature not in screen:
-        raise SystemExit("Conversation pane signature anchor missing")
+        raise SystemExit("Conversation pane archive signature anchor missing")
     screen = screen.replace(old_conversation_signature, new_conversation_signature, 1)
 
-old_send_notice = '''        Text("Sending is unavailable until the real message repository is wired to this screen.", color = FinalMuted, fontSize = 10.sp)'''
-new_send_notice = '''        var draft by remember(selectedThreadId) { mutableStateOf("") }
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            OutlinedTextField(
-                value = draft,
-                onValueChange = { draft = it },
-                singleLine = true,
-                placeholder = { Text("Message", color = FinalMuted) },
-                modifier = Modifier.weight(1f),
-            )
-            TextButton(
-                onClick = {
-                    val message = draft.trim()
-                    if (message.isNotEmpty()) {
-                        onSendMessage(selectedThreadId, message)
-                        draft = ""
+old_header = '''        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(thread?.title ?: "Conversation", color = FinalWhite, fontSize = 18.sp, fontWeight = FontWeight.Black, modifier = Modifier.weight(1f))
+            Text("Video: ${if (state.capabilities.canStartVideoCall) "Ready" else "NOT_CONFIGURED"}", color = FinalMuted, fontSize = 10.sp)
+        }'''
+new_header = '''        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(thread?.title ?: "Conversation", color = FinalWhite, fontSize = 18.sp, fontWeight = FontWeight.Black, modifier = Modifier.weight(1f))
+            thread?.let { activeThread ->
+                dmArchiveActionLabel(activeThread.archived)?.let { label ->
+                    TextButton(onClick = { onArchiveChanged(activeThread.id, activeThread.archived != true) }) {
+                        Text(label, color = FinalWhite, fontSize = 10.sp)
                     }
-                },
-            ) { Text("Send", color = FinalWhite) }
-        }
-        Text(
-            "Sent here means the server accepted the message row. Delivered/read receipts are not claimed.",
-            color = FinalMuted,
-            fontSize = 10.sp,
-        )'''
-if new_send_notice not in screen:
-    if old_send_notice not in screen:
-        raise SystemExit("Conversation send notice anchor missing")
-    screen = screen.replace(old_send_notice, new_send_notice, 1)
+                }
+            }
+            Text("Video: ${if (state.capabilities.canStartVideoCall) "Ready" else "NOT_CONFIGURED"}", color = FinalMuted, fontSize = 10.sp)
+        }'''
+if new_header not in screen:
+    if old_header not in screen:
+        raise SystemExit("Conversation archive header anchor missing")
+    screen = screen.replace(old_header, new_header, 1)
 
 screen_path.write_text(screen, encoding="utf-8")
 
@@ -135,4 +151,4 @@ if new_route not in activity:
     activity = activity.replace(old_route, new_route, 1)
 
 activity_path.write_text(activity, encoding="utf-8")
-print("Live authenticated PDM inbox, conversation load, and send route integrated")
+print("Live authenticated PDM inbox, conversation load, send, read, and archive route integrated")
