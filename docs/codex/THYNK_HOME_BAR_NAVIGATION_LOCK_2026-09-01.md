@@ -32,12 +32,27 @@ When the user taps **THyNK Music** on the homebar, show a choice popup with exac
 
 All pages in this family use the approved **THyNK Music** logo according to `docs/codex/THYNK_BRAND_AND_STUDIO_LOGO_LOCK_2026-09-01.md`.
 
+## LOCKED THyNK CHATS POSITION
+
+**THyNK Chats** is positioned **immediately to the right of the centre THyNK-IN! button** on the homebar.
+
+This lock currently defines its homebar name and position only. Do not invent or rename its internal chat behavior beyond the existing authenticated messaging contracts unless the owner explicitly defines a new behavior.
+
+## LOCKED THyNK IT. POSITION
+
+**THyNK IT.** is positioned on the **furthest right** of the homebar.
+
+THyNK IT. remains the Design/general Editing workspace identity and uses the approved THyNK IT. logo according to `docs/codex/THYNK_BRAND_AND_STUDIO_LOGO_LOCK_2026-09-01.md`.
+
 ## CURRENT HOME BAR FACTS LOCKED SO FAR
 
-- Centre: **THyNK-IN!** — app/social news feed destination.
+From left to right, for the positions defined by the owner so far:
 - Immediately left of centre: **THyNK Music** — tap opens **Player / Editor** popup.
+- Centre: **THyNK-IN!** — app/social news feed destination.
+- Immediately right of centre: **THyNK Chats**.
+- Furthest right: **THyNK IT.** — Design/general Editing workspace.
 
-Do **not** invent, rename, reorder, or repurpose the remaining homebar buttons until the owner defines them.
+The remaining furthest-left homebar destination is **not yet defined by this lock**. Do not invent, rename, reorder, or repurpose it until the owner defines it.
 
 The former semantic centre Camera `+` rule is superseded by this owner lock. Preserve auth/age/Owner/RLS gates while changing navigation.
 
