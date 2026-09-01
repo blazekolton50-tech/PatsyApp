@@ -71,7 +71,12 @@ fun ThynkStudioScreen() {
             onBack = {
                 route = when (route) {
                     is ThynkRoute.Music -> ThynkRoute.Category(ThynkStudioCatalog.categories.first { it.id == "music" })
-                    is ThynkRoute.Editor -> ThynkRoute.Category(ThynkStudioCatalog.categories.first { it.id == "video" })
+                    is ThynkRoute.Editor -> {
+                        val categoryId = editorDestinationForPage((route as ThynkRoute.Editor).pageId)?.categoryId
+                        categoryId?.let { id ->
+                            ThynkRoute.Category(ThynkStudioCatalog.categories.first { it.id == id })
+                        } ?: ThynkRoute.Hub
+                    }
                     is ThynkRoute.Category -> ThynkRoute.Hub
                     ThynkRoute.Hub -> ThynkRoute.Hub
                 }
@@ -95,7 +100,11 @@ fun ThynkStudioScreen() {
                     pageId = current.pageId,
                     onOpenPage = { route = ThynkRoute.Music(it) },
                 )
-                is ThynkRoute.Editor -> ThynkVideoEditorScreen()
+                is ThynkRoute.Editor -> when (editorDestinationForPage(current.pageId)?.kind) {
+                    ThynkEditorKind.DESIGN -> ThynkDesignEditorScreen()
+                    ThynkEditorKind.VIDEO -> ThynkVideoEditorScreen()
+                    null -> InfoPanel("EDITOR UNAVAILABLE", "This editor route is not configured.")
+                }
             }
         }
     }
