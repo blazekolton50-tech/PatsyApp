@@ -1,8 +1,10 @@
-# Patsy Current Build Status — 2026-09-01 — ALL UPDATES
+# THyNK-IN Current Build Status — 2026-09-01 — ALL UPDATES
 
 ## Status
 
 This is the current build-status handoff for Draft PR #41 after the latest THyNK Panel separation, THyNK-IT adaptive creator foundation and APK verification work.
+
+**Canonical product name — binding:** the app/global product brand is **THyNK-IN**. Do not call the product “Patsy App.” **Patsy** remains the assistant/character name for Patsy-specific Rive, animation, personality, PawMoji, companion and reference-asset work. This file keeps its legacy filename only so existing references do not break.
 
 Newest authority:
 1. `docs/codex/PATSY_ALL_UPDATES_APK_HANDOFF_2026-09-01.md`
@@ -12,7 +14,7 @@ Newest authority:
 5. THyNK-IT spec/plan/matrices
 6. older reconciliation/navigation/security files where they do not conflict with the above.
 
-Repository: `blazekolton50-tech/PatsyApp`
+Repository: `blazekolton50-tech/PatsyApp` (legacy repository slug)
 Branch: `chatgpt/codex-ready-2026-09-01`
 PR: #41 — OPEN / DRAFT / UNMERGED
 Production UI/runtime: Kotlin + Jetpack Compose
@@ -74,7 +76,7 @@ React/Tailwind is donor/reference content only. Production remains native Androi
 
 ---
 
-## Global app navigation — VERIFIED contract
+## Global THyNK-IN app navigation — VERIFIED contract
 
 Global semantic destinations remain:
 
@@ -99,11 +101,11 @@ THyNK-area pages use the separate five-button panel, exact order:
 
 1. `THyNK-ME`
 2. `THyNK Chats`
-3. `THyNK-IN!`
+3. `THyNK-IN`
 4. `THyNK Music`
 5. `THyNK-IT`
 
-`THyNK-IN!` is the centre THyNK Panel destination and opens the social/news feed.
+`THyNK-IN` is the centre THyNK Panel destination, opens the social/news feed, and is the app/global product brand.
 
 Source contract now intentionally separates:
 - `FinalVisualContract.primaryNavigation*` — global app navigation;
@@ -124,7 +126,7 @@ Remaining THyNK Panel work:
 Use the matching approved supplied logo at the top of each main destination:
 - THyNK-ME → profile/THyNK-ME
 - THyNK Chats → chats/messaging
-- THyNK-IN! → social/news feed
+- THyNK-IN → social/news feed
 - THyNK Music → Music
 - THyNK-IT → adaptive creator/productivity
 
