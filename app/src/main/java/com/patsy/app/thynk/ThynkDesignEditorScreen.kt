@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -23,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,6 +71,7 @@ private val designToolIds = setOf(
 @Composable
 fun ThynkDesignEditorScreen() {
     var selectedPanel by remember { mutableStateOf("templates") }
+    var nextObjectSequence by remember { mutableIntStateOf(1) }
     var canvasState by remember {
         mutableStateOf(
             StudioCanvasState(
@@ -115,6 +119,20 @@ fun ThynkDesignEditorScreen() {
                         panelId = selectedPanel,
                         state = canvasState,
                         onStateChange = { canvasState = it },
+                        onAddToolObject = { toolId ->
+                            designCanvasObjectForTool(
+                                toolId = toolId,
+                                sequence = nextObjectSequence,
+                                canvasWidthPx = canvasState.widthPx,
+                                canvasHeightPx = canvasState.heightPx,
+                            )?.let { canvasObject ->
+                                canvasState = reduceStudioCanvasState(
+                                    canvasState,
+                                    StudioCanvasAction.AddObject(canvasObject),
+                                )
+                                nextObjectSequence += 1
+                            }
+                        },
                         modifier = Modifier.widthIn(min = 260.dp, max = 310.dp).fillMaxHeight(),
                     )
                 }
@@ -131,6 +149,20 @@ fun ThynkDesignEditorScreen() {
                         panelId = selectedPanel,
                         state = canvasState,
                         onStateChange = { canvasState = it },
+                        onAddToolObject = { toolId ->
+                            designCanvasObjectForTool(
+                                toolId = toolId,
+                                sequence = nextObjectSequence,
+                                canvasWidthPx = canvasState.widthPx,
+                                canvasHeightPx = canvasState.heightPx,
+                            )?.let { canvasObject ->
+                                canvasState = reduceStudioCanvasState(
+                                    canvasState,
+                                    StudioCanvasAction.AddObject(canvasObject),
+                                )
+                                nextObjectSequence += 1
+                            }
+                        },
                         modifier = Modifier.fillMaxWidth().height(116.dp),
                     )
                     DesignToolRail(
@@ -225,21 +257,59 @@ private fun DesignCanvasViewport(
                 fontSize = 8.sp,
                 modifier = Modifier.padding(bottom = 4.dp),
             )
-            Box(
+            BoxWithConstraints(
                 Modifier.fillMaxWidth(0.82f).aspectRatio(state.widthPx.toFloat() / state.heightPx.toFloat())
                     .background(DesignCanvas).border(1.dp, Color(0xFFC8C8CC))
                     .clickable { onSelect(null) },
             ) {
+                val scale = maxWidth.value / state.widthPx.coerceAtLeast(1).toFloat()
+                state.objects
+                    .filter { it.visible && it.type != StudioLayerType.BACKGROUND }
+                    .forEach { canvasObject ->
+                        val selected = canvasObject.id == state.selectedObjectId
+                        Box(
+                            Modifier
+                                .offset(
+                                    x = (canvasObject.xPx * scale).dp,
+                                    y = (canvasObject.yPx * scale).dp,
+                                )
+                                .width((canvasObject.widthPx * scale).dp)
+                                .height((canvasObject.heightPx * scale).dp)
+                                .graphicsLayer {
+                                    rotationZ = canvasObject.rotationDegrees
+                                    alpha = canvasObject.opacity
+                                }
+                                .border(
+                                    width = if (selected) 2.dp else 1.dp,
+                                    color = if (selected) DesignAccent else Color(0xFFB8B8C0),
+                                    shape = RoundedCornerShape(6.dp),
+                                )
+                                .background(
+                                    color = if (canvasObject.type == StudioLayerType.SHAPE) Color(0xFFE8D7FF) else Color.Transparent,
+                                    shape = RoundedCornerShape(6.dp),
+                                )
+                                .clickable { onSelect(canvasObject.id) }
+                                .padding(6.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                canvasObject.label,
+                                color = Color(0xFF25252A),
+                                fontSize = 10.sp,
+                                fontWeight = if (canvasObject.type == StudioLayerType.TEXT) FontWeight.Bold else FontWeight.Medium,
+                            )
+                        }
+                    }
                 Text(
                     "${state.widthPx} × ${state.heightPx}",
                     color = Color(0xFF9A9AA0),
                     fontSize = 9.sp,
                     modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp),
                 )
-                if (state.objects.size == 1 && state.objects.single().type == StudioLayerType.BACKGROUND) {
+                if (state.objects.none { it.type != StudioLayerType.BACKGROUND }) {
                     Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("Blank design", color = Color(0xFF333338), fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                        Text("Choose a tool to start creating", color = Color(0xFF77777E), fontSize = 10.sp)
+                        Text("Choose Text or Elements to add a real layer", color = Color(0xFF77777E), fontSize = 10.sp)
                     }
                 }
             }
@@ -252,6 +322,7 @@ private fun DesignContextPanel(
     panelId: String,
     state: StudioCanvasState,
     onStateChange: (StudioCanvasState) -> Unit,
+    onAddToolObject: (String) -> Unit,
     modifier: Modifier,
 ) {
     val selected = state.objects.firstOrNull { it.id == state.selectedObjectId }
@@ -277,6 +348,14 @@ private fun DesignContextPanel(
                     }
                 }
             }
+            "text" -> {
+                Text("Create a native text layer on the editable canvas.", color = FinalMuted, fontSize = 9.sp)
+                DesignPanelAction("ADD TEXT") { onAddToolObject("text") }
+            }
+            "elements" -> {
+                Text("Create a native shape layer on the editable canvas.", color = FinalMuted, fontSize = 9.sp)
+                DesignPanelAction("ADD SHAPE") { onAddToolObject("elements") }
+            }
             "ai" -> {
                 Text("AI Generate", color = FinalWhite, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                 Text("NOT_CONFIGURED — no provider success is simulated.", color = Color(0xFFFFC46B), fontSize = 9.sp)
@@ -301,6 +380,20 @@ private fun DesignContextPanel(
             }
             else -> Text(panelCopy(panelId), color = FinalMuted, fontSize = 9.sp)
         }
+    }
+}
+
+@Composable
+private fun DesignPanelAction(label: String, onClick: () -> Unit) {
+    Box(
+        Modifier.fillMaxWidth().padding(top = 8.dp)
+            .border(1.dp, DesignAccent, RoundedCornerShape(10.dp))
+            .clip(RoundedCornerShape(10.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 9.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(label, color = FinalWhite, fontSize = 9.sp, fontWeight = FontWeight.Black)
     }
 }
 
