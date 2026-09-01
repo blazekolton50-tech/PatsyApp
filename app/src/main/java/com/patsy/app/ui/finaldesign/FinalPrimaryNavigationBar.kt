@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -27,10 +28,16 @@ import androidx.compose.ui.unit.sp
  * SAVE MAIN APP / LOCK IN SAVE.
  *
  * Exact approved primary navigation visual:
- * Home • THyNK mark only • large centre + • PDMs • Profile.
+ * Home • THyNK mark only • large centre + Camera • PDMs • Profile.
+ *
+ * Geometry lock:
+ * - rainbow line is straight on the left and right
+ * - only the centre section rises in a smooth arch around/over the Camera button
+ * - the centre + is the Camera destination
+ * - this is the single app-wide homebar and must be retained on every authenticated page
  *
  * The semantic routes remain HOME • THyNK • CAMERA • PATSY DMS • PROFILE underneath.
- * This navigation is the single app-wide navigation system and must be retained on every page.
+ * NOTE: FinalHomeDestination.CREATE is a legacy internal enum name only; it maps to the real Camera hub.
  */
 @Composable
 fun FinalPrimaryNavigationBar(
@@ -40,7 +47,7 @@ fun FinalPrimaryNavigationBar(
     enabled: Boolean = true,
 ) {
     Column(modifier = modifier.fillMaxWidth().background(Color(0xFF0D0D10))) {
-        FinalBottomWave(showFooterCopy = false)
+        FinalHomebarRainbowLine()
         Row(
             Modifier.fillMaxWidth().height(75.dp).padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -50,14 +57,17 @@ fun FinalPrimaryNavigationBar(
                 onNavigate(FinalHomeDestination.HOME)
             }
 
-            // The approved THyNK mark stands alone. Do not add a second white THyNK caption.
+            // Temporary text fallback only until the official THyNK PNG is copied into drawable-nodpi.
+            // Do not add a second THyNK caption below it.
             FinalNavItem("THyNK", "", selected == FinalHomeDestination.THYNK, enabled) {
                 onNavigate(FinalHomeDestination.THYNK)
             }
 
-            // The approved centre action is the large + only. CAMERA remains the semantic route,
-            // not a visible secondary caption underneath this control.
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            // The large centre + is Camera. It sits into the raised centre arch of the rainbow line.
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.offset(y = (-12).dp),
+            ) {
                 Box(
                     Modifier
                         .size(60.dp)
