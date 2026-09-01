@@ -4,7 +4,6 @@ import com.patsy.app.auth.AuthSessionStore
 import com.patsy.app.auth.PublicSession
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -20,11 +19,11 @@ fun dmMemberStateResultForStatus(status: Int): DmMemberStateResult = when {
     else -> DmMemberStateResult.Unavailable
 }
 
-fun dmMemberStatePayload(threadId: String, archived: Boolean?): String = JSONObject()
-    .put("thread_id", threadId)
-    .put("action", if (archived == null) "mark_read" else "set_archived")
-    .apply { if (archived != null) put("archived", archived) }
-    .toString()
+fun dmMemberStatePayload(threadId: String, archived: Boolean?): String = if (archived == null) {
+    "{\"thread_id\":\"$threadId\",\"action\":\"mark_read\"}"
+} else {
+    "{\"thread_id\":\"$threadId\",\"action\":\"set_archived\",\"archived\":$archived}"
+}
 
 interface DmMemberStateTransport {
     suspend fun markRead(accessToken: String, threadId: String): DmMemberStateResult
