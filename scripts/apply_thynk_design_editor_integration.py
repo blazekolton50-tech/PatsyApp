@@ -112,6 +112,52 @@ NEW_LAYERS = '''                    state.objects.asReversed().take(5).forEach {
                         }
                     }'''
 
+OLD_ALIGNMENT_IMPORT = '''import com.patsy.app.studio.reduceStudioCanvasState'''
+NEW_ALIGNMENT_IMPORT = '''import com.patsy.app.studio.reduceStudioCanvasState
+import com.patsy.app.studio.studioCanvasAlignmentControls'''
+
+OLD_POSITION_PANEL = '''            "position", "opacity" -> {
+                if (selected == null) {
+                    Text("Select an object to edit position, size, rotation or opacity.", color = FinalMuted, fontSize = 9.sp)
+                } else {
+                    Text("X ${selected.xPx.toInt()}   Y ${selected.yPx.toInt()}", color = FinalWhite, fontSize = 9.sp)
+                    Text("W ${selected.widthPx.toInt()}   H ${selected.heightPx.toInt()}", color = FinalWhite, fontSize = 9.sp)
+                    Text(
+                        "Rotate ${selected.rotationDegrees.toInt()}°   Opacity ${(selected.opacity * 100).toInt()}%",
+                        color = FinalWhite,
+                        fontSize = 9.sp,
+                    )
+                }
+            }'''
+NEW_POSITION_PANEL = '''            "position", "opacity" -> {
+                if (selected == null) {
+                    Text("Select an object to edit position, size, rotation or opacity.", color = FinalMuted, fontSize = 9.sp)
+                } else {
+                    Text("X ${selected.xPx.toInt()}   Y ${selected.yPx.toInt()}", color = FinalWhite, fontSize = 9.sp)
+                    Text("W ${selected.widthPx.toInt()}   H ${selected.heightPx.toInt()}", color = FinalWhite, fontSize = 9.sp)
+                    Text(
+                        "Rotate ${selected.rotationDegrees.toInt()}°   Opacity ${(selected.opacity * 100).toInt()}%",
+                        color = FinalWhite,
+                        fontSize = 9.sp,
+                    )
+                    if (selected.locked) {
+                        Text("Unlock this layer to align it.", color = FinalMuted, fontSize = 8.sp, modifier = Modifier.padding(top = 6.dp))
+                    } else {
+                        Text("ALIGN TO CANVAS", color = FinalMuted, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
+                        Row(
+                            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(top = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            studioCanvasAlignmentControls(selected).forEach { control ->
+                                DesignMiniAction(control.label) {
+                                    onStateChange(reduceStudioCanvasState(state, control.action))
+                                }
+                            }
+                        }
+                    }
+                }
+            }'''
+
 OLD_PANEL_ACTION = '''@Composable
 private fun DesignPanelAction(label: String, onClick: () -> Unit) {'''
 NEW_PANEL_ACTION = '''@Composable
@@ -150,6 +196,8 @@ def main() -> None:
     design_updated = replace_once(design_updated, OLD_NARROW_DUPLICATE_ANCHOR, NEW_NARROW_DUPLICATE_ANCHOR, "narrow Design duplicate callback")
     design_updated = replace_once(design_updated, OLD_CONTEXT_SIGNATURE, NEW_CONTEXT_SIGNATURE, "Design context callback signature")
     design_updated = replace_once(design_updated, OLD_LAYERS, NEW_LAYERS, "Design Layers actions")
+    design_updated = replace_once(design_updated, OLD_ALIGNMENT_IMPORT, NEW_ALIGNMENT_IMPORT, "Design alignment import")
+    design_updated = replace_once(design_updated, OLD_POSITION_PANEL, NEW_POSITION_PANEL, "Design Position alignment controls")
     design_updated = replace_once(design_updated, OLD_PANEL_ACTION, NEW_PANEL_ACTION, "Design mini layer action")
     if design_updated != design_source:
         DESIGN.write_text(design_updated, encoding="utf-8")
