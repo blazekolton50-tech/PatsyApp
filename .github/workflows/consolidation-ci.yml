@@ -35,6 +35,8 @@ jobs:
         run: python3 scripts/apply_live_profile_route.py
       - name: Apply truthful PDM presentation
         run: python3 scripts/apply_truthful_dm_ui.py
+      - name: Apply live authenticated PDM route
+        run: python3 scripts/apply_live_dm_route.py
       - name: Persist integration on source branch
         if: github.event_name == 'push' && github.ref == 'refs/heads/chatgpt/thynk-music-apk-2026-08-31'
         run: |
