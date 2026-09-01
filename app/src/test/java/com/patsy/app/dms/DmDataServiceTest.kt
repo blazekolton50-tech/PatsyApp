@@ -28,6 +28,12 @@ class DmDataServiceTest {
                         RemoteDmThread(
                             id = "thread-1",
                             updatedAtEpochMillis = 200L,
+                            title = "Darcy",
+                            avatarPath = "avatars/darcy.png",
+                            isGroup = false,
+                            participantCount = 2,
+                            unreadCount = null,
+                            archived = null,
                             lastMessage = RemoteDmMessage(
                                 id = "message-1",
                                 threadId = "thread-1",
@@ -45,9 +51,9 @@ class DmDataServiceTest {
         val loaded = assertIs<DmDataResult.Loaded>(service.load(session))
         assertEquals("thread-1", loaded.threads.single().id)
         assertEquals("Hello", loaded.threads.single().lastMessage?.body)
-        assertEquals(null, loaded.threads.single().title)
+        assertEquals("Darcy", loaded.threads.single().title)
+        assertEquals(false, loaded.threads.single().isGroup)
         assertEquals(null, loaded.threads.single().unreadCount)
-        assertEquals(null, loaded.threads.single().isGroup)
         assertEquals(null, loaded.threads.single().archived)
     }
 
