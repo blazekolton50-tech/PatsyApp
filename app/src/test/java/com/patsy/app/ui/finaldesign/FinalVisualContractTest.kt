@@ -36,7 +36,7 @@ class FinalVisualContractTest {
     @Test
     fun `THyNK panel uses the five locked branded destinations`() {
         assertEquals(
-            listOf("THyNK-ME", "THyNK Chats", "THyNK-IN!", "THyNK Music", "THyNK-IT"),
+            listOf("THyNK-ME", "THyNK Chats", "THyNK-IN", "THyNK Music", "THyNK-IT"),
             FinalVisualContract.thynkPanelDisplayLabels,
         )
     }
