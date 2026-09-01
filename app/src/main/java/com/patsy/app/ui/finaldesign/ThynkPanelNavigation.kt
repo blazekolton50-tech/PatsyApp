@@ -28,8 +28,11 @@ fun ThynkPanelDestination.secureDestination(): FinalHomeDestination = when (this
     ThynkPanelDestination.IT -> FinalHomeDestination.THYNK
 }
 
-fun thynkPanelVisibleFor(surface: ThynkPanelSurface): Boolean =
-    surface == ThynkPanelSurface.BROWSING
+fun thynkPanelVisibleFor(surface: ThynkPanelSurface): Boolean = when (surface) {
+    ThynkPanelSurface.BROWSING,
+    ThynkPanelSurface.WORKSPACE,
+    -> true
+}
 
 fun shouldLightThynkPanelItem(
     item: ThynkPanelDestination,
