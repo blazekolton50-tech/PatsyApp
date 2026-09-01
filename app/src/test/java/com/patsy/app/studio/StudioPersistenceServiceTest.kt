@@ -23,14 +23,14 @@ class StudioPersistenceServiceTest {
         val service = ServerStudioPersistenceService(
             sessionStore = FakeStudioSessionStore(session),
             transport = FakeStudioTransport(
-                RemoteStudioPersistenceResult.Loaded(
+                loadResult = RemoteStudioPersistenceResult.Loaded(
                     state = StudioProjectPersistenceState(
                         projectId = "p1",
-                        editorMode = "design",
+                        editorMode = "image",
                         canvasWidthPx = 1080,
                         canvasHeightPx = 1080,
-                        durationMs = null,
-                        fps = null,
+                        durationMs = 0,
+                        fps = 30.0,
                         autosaveRevision = 4,
                         lastAutosavedAtEpochMillis = 500L,
                     ),
@@ -42,7 +42,7 @@ class StudioPersistenceServiceTest {
                             layerType = "text",
                             name = "Title",
                             zIndex = 2,
-                            startMs = null,
+                            startMs = 0,
                             endMs = null,
                             isLocked = false,
                             isHidden = false,
@@ -66,6 +66,39 @@ class StudioPersistenceServiceTest {
     }
 
     @Test
+    fun autosaveReturnsSavedOnlyWhenRemoteWriterConfirmsIt() = runTest {
+        val transport = FakeStudioTransport(
+            loadResult = RemoteStudioPersistenceResult.Unavailable,
+            saveResult = RemoteStudioSaveResult.Saved(revisionNo = 5, savedAtEpochMillis = 900L),
+        )
+        val service = ServerStudioPersistenceService(
+            sessionStore = FakeStudioSessionStore(session),
+            transport = transport,
+        )
+        val request = sampleAutosaveRequest()
+
+        val saved = assertIs<StudioSaveResult.Saved>(service.autosave(session, request))
+
+        assertEquals(5, saved.revisionNo)
+        assertEquals(900L, saved.savedAtEpochMillis)
+        assertEquals("access", transport.lastSaveAccessToken)
+        assertEquals(session.userId, transport.lastSaveUserId)
+        assertEquals(request, transport.lastSaveRequest)
+    }
+
+    @Test
+    fun autosaveSessionMismatchFailsClosedWithoutRemoteWrite() = runTest {
+        val transport = FakeStudioTransport(RemoteStudioPersistenceResult.Unavailable)
+        val service = ServerStudioPersistenceService(
+            sessionStore = FakeStudioSessionStore(session.copy(sessionId = "wrong")),
+            transport = transport,
+        )
+
+        assertIs<StudioSaveResult.Unauthorized>(service.autosave(session, sampleAutosaveRequest()))
+        assertEquals(null, transport.lastSaveRequest)
+    }
+
+    @Test
     fun sessionMismatchFailsClosed() = runTest {
         val service = ServerStudioPersistenceService(
             sessionStore = FakeStudioSessionStore(session.copy(sessionId = "wrong")),
@@ -73,6 +106,17 @@ class StudioPersistenceServiceTest {
         )
         assertIs<StudioPersistenceResult.Unauthorized>(service.load(session, "p1"))
     }
+
+    private fun sampleAutosaveRequest() = StudioAutosaveRequest(
+        projectId = "00000000-0000-0000-0000-000000000010",
+        editorMode = "image",
+        canvasWidthPx = 1080,
+        canvasHeightPx = 1080,
+        durationMs = 0,
+        fps = 30.0,
+        layers = emptyList(),
+        snapshotJson = "{}",
+    )
 }
 
 private class FakeStudioSessionStore(session: PublicSession) : AuthSessionStore {
@@ -83,7 +127,23 @@ private class FakeStudioSessionStore(session: PublicSession) : AuthSessionStore 
 }
 
 private class FakeStudioTransport(
-    private val result: RemoteStudioPersistenceResult,
+    private val loadResult: RemoteStudioPersistenceResult,
+    private val saveResult: RemoteStudioSaveResult = RemoteStudioSaveResult.Unavailable,
 ) : StudioPersistenceTransport {
-    override suspend fun load(accessToken: String, userId: String, projectId: String): RemoteStudioPersistenceResult = result
+    var lastSaveAccessToken: String? = null
+    var lastSaveUserId: String? = null
+    var lastSaveRequest: StudioAutosaveRequest? = null
+
+    override suspend fun load(accessToken: String, userId: String, projectId: String): RemoteStudioPersistenceResult = loadResult
+
+    override suspend fun autosave(
+        accessToken: String,
+        userId: String,
+        request: StudioAutosaveRequest,
+    ): RemoteStudioSaveResult {
+        lastSaveAccessToken = accessToken
+        lastSaveUserId = userId
+        lastSaveRequest = request
+        return saveResult
+    }
 }
