@@ -1,11 +1,19 @@
-# CODEX — START HERE: PATSY APP — 2026-09-01
+# CODEX — START HERE: THyNK-IN — 2026-09-01
 
-Repository: `blazekolton50-tech/PatsyApp`
+Repository: `blazekolton50-tech/PatsyApp` (legacy repository slug; product name is THyNK-IN)
 
 Working branch:
 `chatgpt/codex-ready-2026-09-01`
 
 Keep PR #41 **Draft and unmerged**. Do not merge to `main` without explicit owner approval and physical-device QA.
+
+## Canonical naming — binding
+
+- App/global product brand: **THyNK-IN**.
+- Do not call the product **Patsy App** in current UI, docs, handoffs, PR wording or new code-facing copy.
+- **Patsy** is the assistant/character name. Keep Patsy-specific animation, Rive, personality, PawMoji, companion and reference-asset names as Patsy.
+- Older filenames containing `PATSY`, `PatsyApp` or `patsy1` are legacy filenames only; do not interpret them as the current product brand.
+- Do not rename the existing `com.patsy.app` namespace/application identity as part of ordinary branding work. Treat that as a separate migration requiring install/auth/deep-link/backend verification.
 
 ## Read these first — binding order
 
@@ -25,7 +33,7 @@ The older 2026-08-31 status/handoff files are historical checkpoints. The newly 
 
 The uploaded Library contains substantial donor/editor implementations, including full THyNK Studio builds, Design/editor tools, Publication/Document workflows, Video editor donor behavior, THyNK Music Lab, templates and 1110-item setup/material descriptions.
 
-This does **not** mean the React/Tailwind/WebAudio runtime becomes production architecture. Production Patsy remains native Kotlin/Jetpack Compose with the existing Supabase, auth/security, Camera, Media3, navigation and provider truth boundaries.
+This does **not** mean the React/Tailwind/WebAudio runtime becomes production architecture. Production THyNK-IN remains native Kotlin/Jetpack Compose with the existing Supabase, auth/security, Camera, Media3, navigation and provider truth boundaries.
 
 Every donor capability must follow the four-status matrix:
 - `ALREADY_NATIVE`
@@ -78,7 +86,8 @@ After Design, follow the queue in `docs/codex/CODEX_NEXT_INSTRUCTION.txt`.
 - black/charcoal primary UI
 - white/light-grey main text
 - white primary buttons/controls with restrained rainbow/neon treatment
-- approved Patsy logo asset only
+- THyNK-IN is the app/global brand; use the approved current THyNK-IN/global brand asset where global app branding is required
+- use matching approved THyNK destination logos on their destination pages
 - one realistic main Patsy companion per page
 - cartoon Patsy only for PawMojis/stickers/reactions
 - never fake production `.riv`
