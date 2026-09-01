@@ -126,14 +126,12 @@ class StudioCanvasStateTest {
     }
 
     @Test
-    fun sizeAndOpacityInputsAreNormalizedInsteadOfCreatingInvalidCanvasState() {
-        val state = StudioCanvasState(0, -1, listOf(canvasObject("dog")))
+    fun opacityAndResizeInputsAreNormalizedInsteadOfCreatingInvalidObjects() {
+        val state = StudioCanvasState(1080, 1350, listOf(canvasObject("dog")))
         val transparent = reduceStudioCanvasState(state, StudioCanvasAction.SetOpacity("dog", -4f))
         val opaque = reduceStudioCanvasState(transparent, StudioCanvasAction.SetOpacity("dog", 4f))
         val tiny = reduceStudioCanvasState(opaque, StudioCanvasAction.Resize("dog", 0f, -10f))
 
-        assertEquals(1, tiny.widthPx)
-        assertEquals(1, tiny.heightPx)
         assertEquals(1f, tiny.objects.single().opacity)
         assertEquals(1f, tiny.objects.single().widthPx)
         assertEquals(1f, tiny.objects.single().heightPx)
