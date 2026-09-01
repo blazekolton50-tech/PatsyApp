@@ -10,6 +10,8 @@ type MemberRow = { thread_id: string; user_id: string; joined_at: string }
 type ProfileRow = { user_id: string; username: string; display_name: string | null; avatar_path: string | null }
 type ThreadRow = { id: string; updated_at: string }
 type MessageRow = { id: string; thread_id: string; sender_id: string; body: string; created_at: string; expires_at: string | null }
+type SettingsRow = { user_id: string; allow_dm_from_connections: boolean }
+type ConnectionRow = { requester_id: string; addressee_id: string; status: string }
 
 Deno.serve(async (req: Request) => {
   if (req.method !== 'GET') return json({ error: 'Method not allowed' }, 405)
@@ -60,19 +62,31 @@ Deno.serve(async (req: Request) => {
 
   const memberRows = (members ?? []) as MemberRow[]
   const participantIds = [...new Set(memberRows.map((row) => row.user_id))]
-  const [{ data: participantCapabilities, error: participantCapabilityError }, { data: blocks, error: blockError }] = await Promise.all([
+  const [capabilityResult, blockResult, settingsResult, connectionsResult] = await Promise.all([
     admin.from('account_capabilities').select('user_id,verified_age_tier,can_use_dms').in('user_id', participantIds),
     admin.from('user_blocks').select('blocker_id,blocked_id').or(`blocker_id.eq.${user.id},blocked_id.eq.${user.id}`),
+    admin.from('user_settings').select('user_id,allow_dm_from_connections').in('user_id', participantIds),
+    admin.from('user_connections').select('requester_id,addressee_id,status').eq('status', 'accepted')
+      .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`),
   ])
-  if (participantCapabilityError || blockError) return json({ error: 'Could not verify conversation safety' }, 500)
+  if (capabilityResult.error || blockResult.error || settingsResult.error || connectionsResult.error) {
+    return json({ error: 'Could not verify conversation safety' }, 500)
+  }
 
-  const capabilityByUser = new Map<string, CapabilityRow>(((participantCapabilities ?? []) as CapabilityRow[]).map((row) => [row.user_id, row]))
+  const capabilityByUser = new Map<string, CapabilityRow>(((capabilityResult.data ?? []) as CapabilityRow[]).map((row) => [row.user_id, row]))
+  const settingsByUser = new Map<string, SettingsRow>(((settingsResult.data ?? []) as SettingsRow[]).map((row) => [row.user_id, row]))
   const blockedPairs = new Set<string>()
-  for (const block of blocks ?? []) {
+  for (const block of blockResult.data ?? []) {
     const blocker = block.blocker_id as string
     const blocked = block.blocked_id as string
     if (blocker === user.id) blockedPairs.add(blocked)
     if (blocked === user.id) blockedPairs.add(blocker)
+  }
+  const acceptedConnections = new Set<string>()
+  for (const connection of (connectionsResult.data ?? []) as ConnectionRow[]) {
+    if (connection.status !== 'accepted') continue
+    if (connection.requester_id === user.id) acceptedConnections.add(connection.addressee_id)
+    if (connection.addressee_id === user.id) acceptedConnections.add(connection.requester_id)
   }
 
   const membersByThread = new Map<string, MemberRow[]>()
@@ -84,10 +98,17 @@ Deno.serve(async (req: Request) => {
 
   const safeThreadIds = threadIds.filter((threadId) => {
     const threadMembers = membersByThread.get(threadId) ?? []
-    if (!threadMembers.some((member) => member.user_id === user.id)) return false
+    // Group conversation authorization has not yet been verified end-to-end; fail closed for now.
+    if (threadMembers.length !== 2 || !threadMembers.some((member) => member.user_id === user.id)) return false
+    const other = threadMembers.find((member) => member.user_id !== user.id)
+    if (!other || !acceptedConnections.has(other.user_id)) return false
     return threadMembers.every((member) => {
       const capability = capabilityByUser.get(member.user_id)
-      return capability?.verified_age_tier === '16_plus' && capability.can_use_dms === true && !blockedPairs.has(member.user_id)
+      const settings = settingsByUser.get(member.user_id)
+      return capability?.verified_age_tier === '16_plus' &&
+        capability.can_use_dms === true &&
+        settings?.allow_dm_from_connections === true &&
+        !blockedPairs.has(member.user_id)
     })
   })
   if (safeThreadIds.length === 0) return json({ threads: [] })
@@ -121,20 +142,18 @@ Deno.serve(async (req: Request) => {
   const result = safeThreadIds.flatMap((threadId) => {
     const thread = threadById.get(threadId)
     if (!thread) return []
-    const threadMembers = (membersByThread.get(threadId) ?? []).sort((a, b) => a.joined_at.localeCompare(b.joined_at) || a.user_id.localeCompare(b.user_id))
-    const otherIds = threadMembers.map((member) => member.user_id).filter((id) => id !== user.id)
-    const otherProfiles = otherIds.map((id) => profileByUser.get(id)).filter(Boolean) as ProfileRow[]
-    const isGroup = threadMembers.length > 2
-    const directProfile = !isGroup && otherProfiles.length === 1 ? otherProfiles[0] : null
-    const groupTitle = otherProfiles.map((profile) => profile.display_name?.trim() || profile.username).filter(Boolean).sort((a, b) => a.localeCompare(b)).join(', ')
+    const threadMembers = membersByThread.get(threadId) ?? []
+    const other = threadMembers.find((member) => member.user_id !== user.id)
+    const otherProfile = other ? profileByUser.get(other.user_id) : null
     const latest = latestByThread.get(threadId) ?? null
     return [{
       thread_id: threadId,
       updated_at: thread.updated_at,
-      is_group: isGroup,
+      is_group: false,
+      is_friend: true,
       participant_count: threadMembers.length,
-      title: directProfile ? (directProfile.display_name?.trim() || directProfile.username || 'Conversation') : (groupTitle || 'Group conversation'),
-      avatar_path: directProfile?.avatar_path ?? null,
+      title: otherProfile ? (otherProfile.display_name?.trim() || otherProfile.username || 'Conversation') : 'Conversation',
+      avatar_path: otherProfile?.avatar_path ?? null,
       last_message_id: latest?.id ?? null,
       last_message_body: latest?.body ?? null,
       last_message_sender_id: latest?.sender_id ?? null,
