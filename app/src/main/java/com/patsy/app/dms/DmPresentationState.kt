@@ -28,6 +28,12 @@ data class DmThreadSummary(
     val archived: Boolean?,
 )
 
+fun dmArchiveActionLabel(archived: Boolean?): String? = when (archived) {
+    false -> "Archive"
+    true -> "Unarchive"
+    null -> null
+}
+
 fun filterDmThreads(
     threads: List<DmThreadSummary>,
     filter: DmFilter,
