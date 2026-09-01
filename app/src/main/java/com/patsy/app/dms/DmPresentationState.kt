@@ -22,9 +22,10 @@ data class DmThreadSummary(
     val id: String,
     val title: String,
     val lastMessage: String?,
-    val unreadCount: Int,
-    val isGroup: Boolean,
-    val archived: Boolean,
+    val unreadCount: Int?,
+    val isFriend: Boolean?,
+    val isGroup: Boolean?,
+    val archived: Boolean?,
 )
 
 fun filterDmThreads(
@@ -36,11 +37,11 @@ fun filterDmThreads(
     return threads.asSequence()
         .filter { thread ->
             when (filter) {
-                DmFilter.ALL -> !thread.archived
-                DmFilter.UNREAD -> !thread.archived && thread.unreadCount > 0
-                DmFilter.FRIENDS -> !thread.archived && !thread.isGroup
-                DmFilter.GROUPS -> !thread.archived && thread.isGroup
-                DmFilter.ARCHIVED -> thread.archived
+                DmFilter.ALL -> thread.archived != true
+                DmFilter.UNREAD -> thread.archived != true && (thread.unreadCount ?: 0) > 0
+                DmFilter.FRIENDS -> thread.archived != true && thread.isFriend == true
+                DmFilter.GROUPS -> thread.archived != true && thread.isGroup == true
+                DmFilter.ARCHIVED -> thread.archived == true
             }
         }
         .filter { thread ->
