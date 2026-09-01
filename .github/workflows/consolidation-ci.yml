@@ -55,7 +55,9 @@ jobs:
           git add app/src/main/java/com/patsy/app/thynk/ThynkStudioScreen.kt
           if ! git diff --cached --quiet; then
             git commit -m "feat: wire native THyNK Design editor host"
-            git pull --rebase origin chatgpt/codex-ready-2026-09-01
+            git reset --hard HEAD
+            git fetch origin chatgpt/codex-ready-2026-09-01
+            git rebase origin/chatgpt/codex-ready-2026-09-01
             git push origin HEAD:chatgpt/codex-ready-2026-09-01
           fi
       - name: Upload debug APK
