@@ -57,4 +57,17 @@ class ThynkStudioContractTest {
         assertEquals("design-editor", editorPageForThynkItem("CUSTOM SIZE"))
         assertEquals("design-editor", editorPageForThynkItem("TEMPLATES"))
     }
+
+    @Test
+    fun `editor pages retain their owning category and editor kind`() {
+        assertEquals(
+            ThynkEditorDestination("design", ThynkEditorKind.DESIGN),
+            editorDestinationForPage("design-editor"),
+        )
+        assertEquals(
+            ThynkEditorDestination("video", ThynkEditorKind.VIDEO),
+            editorDestinationForPage("video-editor"),
+        )
+        assertEquals(null, editorDestinationForPage("unknown-editor"))
+    }
 }
