@@ -1,10 +1,12 @@
-# Patsy — ALL Updates / APK Handoff — 2026-09-01
+# THyNK-IN — ALL Updates / APK Handoff — 2026-09-01
 
 ## Authority
 
 This file is the newest high-priority Codex handoff for PR #41.
 
-Repository: `blazekolton50-tech/PatsyApp`
+**Canonical product name — binding:** the app/global product brand is **THyNK-IN**. Do not call the product “Patsy App.” **Patsy** remains the assistant/character name for Patsy-specific Rive, animation, personality, PawMoji, companion and reference-asset work. This file keeps its legacy filename only so existing references do not break.
+
+Repository: `blazekolton50-tech/PatsyApp` (legacy repository slug)
 Branch: `chatgpt/codex-ready-2026-09-01`
 PR: #41 — KEEP DRAFT AND UNMERGED
 
@@ -30,7 +32,7 @@ If an older document says to preserve a flat ten-category THyNK structure as the
 
 ## 1. TWO NAVIGATION LAYERS — DO NOT CONFUSE THEM
 
-### Global Patsy app navigation
+### Global THyNK-IN app navigation
 
 Semantic routes remain:
 
@@ -53,11 +55,11 @@ THyNK pages additionally use the locked five-button THyNK Panel in this exact le
 
 1. `THyNK-ME`
 2. `THyNK Chats`
-3. `THyNK-IN!`
+3. `THyNK-IN`
 4. `THyNK Music`
 5. `THyNK-IT`
 
-`THyNK-IN!` is the centre THyNK Panel destination and opens the social/news-feed area.
+`THyNK-IN` is the centre THyNK Panel destination, opens the social/news-feed area, and is the app/global product brand.
 
 The THyNK Panel is NOT permission to replace the global app navigation contract or its security semantics. Treat the two bars/contracts separately.
 
@@ -71,7 +73,7 @@ Each main THyNK destination page must show its matching approved logo at the top
 
 - THyNK-ME logo → profile / THyNK-ME destination
 - THyNK Chats logo → messaging / chats destination
-- THyNK-IN! logo → social/news-feed destination
+- THyNK-IN logo → social/news-feed destination
 - THyNK Music logo → Music destination
 - THyNK-IT logo → adaptive creator/productivity destination
 
