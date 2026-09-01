@@ -159,6 +159,56 @@ INTERMEDIATE_POSITION_PANEL = '''            "position", "opacity" -> {
                     }
                 }
             }'''
+PRE_SIZE_POSITION_PANEL = '''            "position", "opacity" -> {
+                if (selected == null) {
+                    Text("Select an object to edit position, size, rotation or opacity.", color = FinalMuted, fontSize = 9.sp)
+                } else {
+                    Text("X ${selected.xPx.toInt()}   Y ${selected.yPx.toInt()}", color = FinalWhite, fontSize = 9.sp)
+                    Text("W ${selected.widthPx.toInt()}   H ${selected.heightPx.toInt()}", color = FinalWhite, fontSize = 9.sp)
+                    Text(
+                        "Rotate ${selected.rotationDegrees.toInt()}°   Opacity ${(selected.opacity * 100).toInt()}%",
+                        color = FinalWhite,
+                        fontSize = 9.sp,
+                    )
+                    val panelControls = studioCanvasPanelControls(panelId, selected)
+                    if (selected.locked) {
+                        Text("Unlock this layer to edit it.", color = FinalMuted, fontSize = 8.sp, modifier = Modifier.padding(top = 6.dp))
+                    } else {
+                        if (panelControls.quick.isNotEmpty()) {
+                            Text(
+                                if (panelId == "position") "POSITION & ROTATION" else "OPACITY",
+                                color = FinalMuted,
+                                fontSize = 8.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(top = 8.dp),
+                            )
+                            Row(
+                                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(top = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                panelControls.quick.forEach { control ->
+                                    DesignMiniAction(control.label) {
+                                        onStateChange(reduceStudioCanvasState(state, control.action))
+                                    }
+                                }
+                            }
+                        }
+                        if (panelControls.alignment.isNotEmpty()) {
+                            Text("ALIGN TO CANVAS", color = FinalMuted, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
+                            Row(
+                                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(top = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                panelControls.alignment.forEach { control ->
+                                    DesignMiniAction(control.label) {
+                                        onStateChange(reduceStudioCanvasState(state, control.action))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }'''
 NEW_POSITION_PANEL = '''            "position", "opacity" -> {
                 if (selected == null) {
                     Text("Select an object to edit position, size, rotation or opacity.", color = FinalMuted, fontSize = 9.sp)
@@ -187,6 +237,19 @@ NEW_POSITION_PANEL = '''            "position", "opacity" -> {
                                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                             ) {
                                 panelControls.quick.forEach { control ->
+                                    DesignMiniAction(control.label) {
+                                        onStateChange(reduceStudioCanvasState(state, control.action))
+                                    }
+                                }
+                            }
+                        }
+                        if (panelControls.size.isNotEmpty()) {
+                            Text("SIZE", color = FinalMuted, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
+                            Row(
+                                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(top = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                panelControls.size.forEach { control ->
                                     DesignMiniAction(control.label) {
                                         onStateChange(reduceStudioCanvasState(state, control.action))
                                     }
@@ -265,9 +328,9 @@ def main() -> None:
     )
     design_updated = replace_any(
         design_updated,
-        [INTERMEDIATE_POSITION_PANEL, OLD_POSITION_PANEL],
+        [PRE_SIZE_POSITION_PANEL, INTERMEDIATE_POSITION_PANEL, OLD_POSITION_PANEL],
         NEW_POSITION_PANEL,
-        "Design Position and Opacity controls",
+        "Design Position, Size and Opacity controls",
     )
     design_updated = replace_once(design_updated, OLD_PANEL_ACTION, NEW_PANEL_ACTION, "Design mini layer action")
     if design_updated != design_source:
