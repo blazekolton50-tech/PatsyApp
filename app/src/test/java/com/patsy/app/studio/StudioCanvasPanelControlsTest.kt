@@ -19,12 +19,16 @@ class StudioCanvasPanelControlsTest {
     )
 
     @Test
-    fun positionPanelExposesQuickEditsAndCanvasAlignment() {
+    fun positionPanelExposesMoveRotateSizeAndCanvasAlignment() {
         val controls = studioCanvasPanelControls("position", selected())
 
         assertEquals(
             listOf("X -10", "X +10", "Y -10", "Y +10", "ROT -15", "ROT +15"),
             controls.quick.map { it.label },
+        )
+        assertEquals(
+            listOf("W -10", "W +10", "H -10", "H +10"),
+            controls.size.map { it.label },
         )
         assertEquals(
             listOf("LEFT", "H-CENTRE", "RIGHT", "TOP", "V-CENTRE", "BOTTOM"),
@@ -37,6 +41,7 @@ class StudioCanvasPanelControlsTest {
         val controls = studioCanvasPanelControls("opacity", selected())
 
         assertEquals(listOf("-10%", "+10%"), controls.quick.map { it.label })
+        assertTrue(controls.size.isEmpty())
         assertTrue(controls.alignment.isEmpty())
     }
 
@@ -46,8 +51,10 @@ class StudioCanvasPanelControlsTest {
         val unknown = studioCanvasPanelControls("templates", selected())
 
         assertTrue(locked.quick.isEmpty())
+        assertTrue(locked.size.isEmpty())
         assertTrue(locked.alignment.isEmpty())
         assertTrue(unknown.quick.isEmpty())
+        assertTrue(unknown.size.isEmpty())
         assertTrue(unknown.alignment.isEmpty())
     }
 }
