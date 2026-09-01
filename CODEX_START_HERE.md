@@ -1,64 +1,127 @@
-# CODEX — START HERE: PATSY APP
+# CODEX — START HERE: THyNK-IN — 2026-09-01
 
-Repository: `blazekolton50-tech/PatsyApp`
+Repository: `blazekolton50-tech/PatsyApp` (legacy repository slug; product name is THyNK-IN)
 
-Do not redesign or replace this project from scratch.
+Working branch:
+`chatgpt/codex-ready-2026-09-01`
 
-## First task
-Before changing code, inspect the existing repository and return an audit with four sections:
+Keep PR #41 **Draft and unmerged**. Do not merge to `main` without explicit owner approval and physical-device QA.
 
-- IMPLEMENTED
-- PARTIAL
-- MISSING
-- CONFLICTING
+## Canonical naming — binding
 
-Check navigation/routes, theme/design tokens, authentication, Patsy rendering/animation, social/feed, Design Studio, profile, messaging, scheduling, storage/media retention, safety/age gating and owner/admin areas.
+- App/global product brand: **THyNK-IN**.
+- Do not call the product **Patsy App** in current UI, docs, handoffs, PR wording or new code-facing copy.
+- **Patsy** is the assistant/character name. Keep Patsy-specific animation, Rive, personality, PawMoji, companion and reference-asset names as Patsy.
+- Older filenames containing `PATSY`, `PatsyApp` or `patsy1` are legacy filenames only; do not interpret them as the current product brand.
+- Do not rename the existing `com.patsy.app` namespace/application identity as part of ordinary branding work. Treat that as a separate migration requiring install/auth/deep-link/backend verification.
+
+## Read these first — binding order
+
+1. `docs/superpowers/specs/2026-09-01-thynk-full-studio-reconciliation-design.md`
+2. `docs/superpowers/plans/2026-09-01-thynk-full-studio-reconciliation.md`
+3. `docs/codex/THYNK_FULL_STUDIO_CAPABILITY_MATRIX_2026-09-01.md`
+4. `docs/codex/THYNK_FULL_STUDIO_CAPABILITY_MATRIX_2026-09-01.json`
+5. `docs/codex/PATSY_CURRENT_BUILD_STATUS_2026-09-01.md`
+6. `docs/codex/PATSY_SOURCE_INTAKE_2026-09-01.md`
+7. `docs/codex/CODEX_NEXT_INSTRUCTION.txt`
+8. `docs/PATSY_DESIGN_PRESERVATION_MASTER_2026-08-31.md`
+9. `docs/NAVIGATION_LOCK_2026-08-31.md`
+
+The older 2026-08-31 status/handoff files are historical checkpoints. The newly uploaded full THyNK Studio reconciliation above supersedes the older assumption that most Studio material is wrapper-only.
+
+## Source truth
+
+The uploaded Library contains substantial donor/editor implementations, including full THyNK Studio builds, Design/editor tools, Publication/Document workflows, Video editor donor behavior, THyNK Music Lab, templates and 1110-item setup/material descriptions.
+
+This does **not** mean the React/Tailwind/WebAudio runtime becomes production architecture. Production THyNK-IN remains native Kotlin/Jetpack Compose with the existing Supabase, auth/security, Camera, Media3, navigation and provider truth boundaries.
+
+Every donor capability must follow the four-status matrix:
+- `ALREADY_NATIVE`
+- `PORT_FROM_UPLOAD`
+- `REPLACE_PLACEHOLDER`
+- `GENUINELY_MISSING`
+
+Do not rebuild `ALREADY_NATIVE` work. Do not copy `REPLACE_PLACEHOLDER` demo behavior as production. Do not claim `GENUINELY_MISSING` work is complete.
+
+## Already native — do not redo
+
+- Kotlin/Jetpack Compose production shell
+- FINAL Login / Set Password / Home baseline
+- Supabase auth/session/account-bootstrap/Owner foundations
+- age/protected route gates
+- one authenticated outer primary navigation bar
+- ten THyNK categories
+- ten stable THyNK Music page IDs
+- `StudioEditorState.kt`
+- `StudioToolCatalog.kt`
+- Media3 1.8.1 single-clip video foundation
+- native Camera photo/video capture
+- native image/video import
+- private FileProvider capture URIs
+- video handoff to THyNK Media3 editor
+- Rive host/runtime contracts, but **not** the final authored production Patsy `.riv`
+
+Do not repeat Media3, global-navigation, Camera-foundation, category-routing or auth/security jobs.
+
+## First coding slice after this documentation reconciliation
+
+Start with **Design & Templates native port on the existing shared editor core**, using the capability matrix.
+
+Port donor behavior such as:
+- deterministic canvas transforms
+- layers hide/lock/reorder
+- rulers/guides
+- align/distribute
+- text/elements/stickers/draw/frames/background tool coverage
+- template catalogue workflow
+
+Do not create a second editor or embed the donor React runtime.
+
+Asset/template files still fail closed until real bytes, origin/license, checksum, format and supersession status are verified. Asset verification is a gate inside the slice that uses the asset; it must not block porting non-asset editor behavior.
+
+After Design, follow the queue in `docs/codex/CODEX_NEXT_INSTRUCTION.txt`.
 
 ## Locked visual rules
-- Black/charcoal primary UI.
-- Main text white/light grey.
-- Primary buttons are WHITE with restrained rainbow/neon borders/glow.
-- Approved Patsy logo is centred at the top on principal pages.
-- Tagline is `A LEGACY LED BY PAWS`, small/subtle only.
-- Main Patsy is the realistic grey shaggy dog companion, never cartoon/chibi.
-- Main Patsy is not permanently boxed, circled or trapped in a halo. She should move freely on transparent background where possible.
-- Main Patsy is always alive in the interface: walk/trot, sit, lie down, turn, head tilt, blink, look around, mouth movement, react, gesture, peek from screen edges, move between UI areas, shrink/settle when appropriate.
-- Cartoon Patsy is reserved for PawMojis / custom keyboard / stickers / reactions only.
 
-## Signup copy
-Use exactly:
+- black/charcoal primary UI
+- white/light-grey main text
+- white primary buttons/controls with restrained rainbow/neon treatment
+- THyNK-IN is the app/global brand; use the approved current THyNK-IN/global brand asset where global app branding is required
+- use matching approved THyNK destination logos on their destination pages
+- one realistic main Patsy companion per page
+- cartoon Patsy only for PawMojis/stickers/reactions
+- never fake production `.riv`
 
-`I'm Patsy. Your personal AI PetPal. Log in and I'll show you what I can do!`
+## Locked main navigation
 
-## Main navigation
-Home · Design Studio · Create/+ · Patsy DMs · Profile
+Semantic routes:
+`HOME · THyNK · CAMERA · PATSY DMS · PROFILE`
 
-## Design Studio
-Treat this as a major feature area, not one generic page. It includes Ask Patsy while creating, AI image generation, 10-second AI video generation, memes, templates, image/video editing, filters/adjustments, text/layout tools, project continuation, preview, save/export, share, email copy, import/reload and schedule/post after approval.
+Visible bar:
+`Home · [coloured THyNK only] · [large + only] · PDMs · Profile`
 
-If any provider/API is unavailable, mark it `NOT_CONFIGURED`. Never fake a working service.
+No second white THyNK subtitle. No CAMERA caption under the centre +. Schedule/Calendar stay secondary.
 
-## Media retention
-- Unlocked images/videos in Patsy storage are temporary and auto-delete after 3 months.
-- Warn users clearly and remind them before expiry.
-- Offer: Save to Device · Email Me a Copy · Lock in Patsy · Share · Import/Reload.
-- Emailing a copy does not lock the item in Patsy storage.
-- Users can reload from device storage and supported cloud/file providers such as Google Drive / OneDrive / Dropbox where available.
-- Locked-profile target limits: 100 photos and 30 videos.
+## Top-right account menu
 
-## Remember Me
-Anything intentionally remembered/locked uses Patsy's paw. Outline by default; when saved it fills with bright neon, gives a short click + soft chime, pulses once, sparkles fade, then remains locked in.
+`Account · About · Profile · Settings · Remember Me`
 
-## Messaging
-Default DM retention target: auto-delete after 3 days unless settings/age rules permit otherwise.
+## Production truth boundaries
 
-## Age-aware rules
-Keep under-16 protections and age gating enforced. Do not expose adult-only social/messaging features merely by hiding UI; enforce at the appropriate backend/security layer too.
+Do not introduce:
+- WebView/React/Vite/Next as the production THyNK runtime
+- a second Express/Prisma/Spring backend replacing Supabase
+- browser `localStorage` as production persistence
+- fake export URLs or alert-only production actions
+- random/placeholder waveforms presented as real audio
+- simulated AI generation/mastering/provider success
+- weakened auth/RLS/Owner/age gates
+- fake production Rive using GIFs, sprites, PNG pose swaps or bobbing static images
 
-## Persistent Patsy
-Patsy is one persistent AI companion across the app with Brain, Memory, Personality, Awareness and Safety systems. She is not a decorative mascot.
+Provider-backed work stays `NOT_CONFIGURED` until genuinely configured and verified.
 
-## Priority conflict to fix after the audit
-Any current main-Patsy treatment that uses a cartoon/static boxed mascot should be replaced with the realistic unboxed moving Patsy treatment, without changing PawMoji assets.
+## Verification
 
-Preserve approved work. Do not make broad visual changes without explicit approval.
+Every coding slice must show RED-before-GREEN evidence, targeted/full tests, debug/release build results, exact final GitHub Actions run/head SHA and remaining physical-device/provider/Rive limitations.
+
+Stop on failure. Keep the PR Draft. Do not merge.

@@ -3,14 +3,15 @@ package com.patsy.app.ui.finaldesign
 /**
  * SAVE MAIN APP / LOCK IN SAVE
  *
- * Source-of-truth constants for the FINAL Login, Set Password and Home page designs.
- * The visible Login/Set Password label remains "Remember Me" to match the approved images,
- * while the underlying authentication meaning is keepSignedIn/session restoration only.
- * The separate Patsy Remember Me paw remains reserved for user-approved saved content.
+ * Source-of-truth constants for the FINAL Login, Set Password and authenticated chrome.
+ * The visible Login/Set Password label remains "Remember Me", while the underlying authentication
+ * meaning is keepSignedIn/session restoration only. The separate Patsy Remember Me paw remains
+ * reserved for user-approved saved content.
  *
- * The primary navigation visual is now locked to the approved uploaded reference and must be
- * present on every page. Semantic route names stay explicit for security/navigation logic even
- * when the visual label is intentionally blank (THyNK mark and centre + action).
+ * IMPORTANT: global app navigation and the THyNK-area Panel are separate UI contracts.
+ * Global navigation keeps HOME / THyNK / CAMERA / PATSY DMS / PROFILE semantics and the existing
+ * Home / THyNK mark / + / PDMs / Profile visual. THyNK-area pages additionally use the locked
+ * THyNK-ME / THyNK Chats / THyNK-IN / THyNK Music / THyNK-IT panel.
  */
 object FinalVisualContract {
     const val logoSquareDp = 132
@@ -25,16 +26,24 @@ object FinalVisualContract {
     const val loginPersistenceSemanticName = "keepSignedIn"
     const val loginPersistenceIsSavedContentMemory = false
 
-    // Semantic destinations remain stable for routing/security.
+    // Global semantic destinations remain stable for route authorization/security.
     val primaryNavigation = listOf("HOME", "THyNK", "CAMERA", "PATSY DMS", "PROFILE")
 
-    // Exact approved visual labels from THyNK_Bottom_Nav_EXACT_2x.png.
-    // THyNK has its coloured mark only; do not repeat a white THyNK caption underneath.
-    // The centre + has no secondary CAMERA caption. PATSY DMS is visually shortened to PDMs.
+    // App-wide bottom navigation remains visible on authenticated pages.
     const val navigationVisibleOnAllPages = true
     val primaryNavigationDisplayLabels = listOf("Home", "", "", "PDMs", "Profile")
     const val showThynkSecondaryLabel = false
     const val showCenterActionSecondaryLabel = false
+
+    // THyNK-area panel: distinct from the global app navigation and shown on relevant THyNK pages.
+    const val thynkPanelVisibleOnThynkPages = true
+    val thynkPanelDisplayLabels = listOf(
+        "THyNK-ME",
+        "THyNK Chats",
+        "THyNK-IN",
+        "THyNK Music",
+        "THyNK-IT",
+    )
 
     const val debugUsername = "patsytest"
     const val debugTemporaryPassword = "PatsyTest!2026"

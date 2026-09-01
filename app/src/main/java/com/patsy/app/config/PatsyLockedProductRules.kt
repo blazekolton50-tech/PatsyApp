@@ -3,9 +3,12 @@ package com.patsy.app.config
 /**
  * Owner-approved product invariants. These are implementation guardrails, not optional styling hints.
  * Material changes require explicit owner approval.
+ *
+ * The object/package names are legacy technical identifiers. The current app/global product brand is THyNK-IN.
  */
 object PatsyLockedProductRules {
     object Branding {
+        const val appName = "THyNK-IN"
         const val creationStudioName = "THyNK"
         const val tagline = "A LEGACY LED BY PAWS"
         const val signupCopy = "I'm Patsy. Your personal AI PetPal. Log in and I'll show you what I can do!"

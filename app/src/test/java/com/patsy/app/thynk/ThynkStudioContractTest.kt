@@ -49,6 +49,25 @@ class ThynkStudioContractTest {
     fun `video editor items map to the shared video editor route`() {
         assertEquals("video-editor", editorPageForThynkItem("VIDEO EDITOR"))
         assertEquals("video-editor", editorPageForThynkItem("TRIM & CUT"))
-        assertEquals(null, editorPageForThynkItem("POSTERS"))
+    }
+
+    @Test
+    fun `design items map to the shared native design editor route`() {
+        assertEquals("design-editor", editorPageForThynkItem("POSTERS"))
+        assertEquals("design-editor", editorPageForThynkItem("CUSTOM SIZE"))
+        assertEquals("design-editor", editorPageForThynkItem("TEMPLATES"))
+    }
+
+    @Test
+    fun `editor pages retain their owning category and editor kind`() {
+        assertEquals(
+            ThynkEditorDestination("design", ThynkEditorKind.DESIGN),
+            editorDestinationForPage("design-editor"),
+        )
+        assertEquals(
+            ThynkEditorDestination("video", ThynkEditorKind.VIDEO),
+            editorDestinationForPage("video-editor"),
+        )
+        assertEquals(null, editorDestinationForPage("unknown-editor"))
     }
 }
