@@ -4,9 +4,8 @@ import com.patsy.app.auth.AuthSessionStore
 import com.patsy.app.auth.PublicSession
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONArray
+import org.json.JSONObject
 import java.net.HttpURLConnection
-import java.net.URLEncoder
 import java.net.URL
 
 sealed interface DmDataResult {
@@ -20,6 +19,8 @@ data class DmThreadRecord(
     val updatedAtEpochMillis: Long,
     val lastMessage: RemoteDmMessage?,
     val title: String? = null,
+    val avatarPath: String? = null,
+    val participantCount: Int? = null,
     val unreadCount: Int? = null,
     val isGroup: Boolean? = null,
     val archived: Boolean? = null,
@@ -28,6 +29,12 @@ data class DmThreadRecord(
 data class RemoteDmThread(
     val id: String,
     val updatedAtEpochMillis: Long,
+    val title: String?,
+    val avatarPath: String?,
+    val isGroup: Boolean?,
+    val participantCount: Int?,
+    val unreadCount: Int?,
+    val archived: Boolean?,
     val lastMessage: RemoteDmMessage?,
 )
 
@@ -69,12 +76,18 @@ class ServerDmDataService(
         return when (val result = transport.fetch(stored.accessToken, session.userId)) {
             is RemoteDmDataResult.Loaded -> DmDataResult.Loaded(
                 result.threads
-                    .sortedByDescending { it.updatedAtEpochMillis }
+                    .sortedByDescending { it.lastMessage?.createdAtEpochMillis ?: it.updatedAtEpochMillis }
                     .map {
                         DmThreadRecord(
                             id = it.id,
                             updatedAtEpochMillis = it.updatedAtEpochMillis,
                             lastMessage = it.lastMessage,
+                            title = it.title,
+                            avatarPath = it.avatarPath,
+                            participantCount = it.participantCount,
+                            unreadCount = it.unreadCount,
+                            isGroup = it.isGroup,
+                            archived = it.archived,
                         )
                     },
             )
@@ -88,83 +101,66 @@ class SupabaseDmDataTransport(
     baseUrl: String,
     private val publishableKey: String,
 ) : DmDataTransport {
-    private val restBase = "${baseUrl.trimEnd('/')}/rest/v1"
+    private val endpoint = "${baseUrl.trimEnd('/')}/functions/v1/pdm-inbox"
 
     override suspend fun fetch(accessToken: String, userId: String): RemoteDmDataResult =
         withContext(Dispatchers.IO) {
             try {
-                val encodedUserId = URLEncoder.encode(userId, Charsets.UTF_8.name())
-                val membership = get(
-                    "$restBase/dm_members?select=thread_id&user_id=eq.$encodedUserId",
-                    accessToken,
-                )
-                if (membership.status == 401 || membership.status == 403) {
-                    return@withContext RemoteDmDataResult.Unauthorized
+                val response = get(accessToken)
+                when {
+                    response.status == 401 || response.status == 403 -> RemoteDmDataResult.Unauthorized
+                    response.status !in 200..299 -> RemoteDmDataResult.Unavailable
+                    else -> parse(response.body)
                 }
-                if (membership.status !in 200..299) return@withContext RemoteDmDataResult.Unavailable
-
-                val membershipRows = JSONArray(membership.body)
-                val threadIds = buildList {
-                    repeat(membershipRows.length()) {
-                        add(membershipRows.getJSONObject(it).getString("thread_id"))
-                    }
-                }.distinct()
-                if (threadIds.isEmpty()) return@withContext RemoteDmDataResult.Loaded(emptyList())
-
-                val threads = mutableListOf<RemoteDmThread>()
-                for (threadId in threadIds) {
-                    val encodedThreadId = URLEncoder.encode(threadId, Charsets.UTF_8.name())
-                    val threadResponse = get(
-                        "$restBase/dm_threads?select=id,updated_at&id=eq.$encodedThreadId&limit=1",
-                        accessToken,
-                    )
-                    if (threadResponse.status == 401 || threadResponse.status == 403) {
-                        return@withContext RemoteDmDataResult.Unauthorized
-                    }
-                    if (threadResponse.status !in 200..299) return@withContext RemoteDmDataResult.Unavailable
-                    val threadRows = JSONArray(threadResponse.body)
-                    if (threadRows.length() != 1) continue
-                    val threadJson = threadRows.getJSONObject(0)
-
-                    val messageResponse = get(
-                        "$restBase/dm_messages?select=id,thread_id,sender_id,body,created_at,expires_at&thread_id=eq.$encodedThreadId&order=created_at.desc&limit=1",
-                        accessToken,
-                    )
-                    if (messageResponse.status == 401 || messageResponse.status == 403) {
-                        return@withContext RemoteDmDataResult.Unauthorized
-                    }
-                    if (messageResponse.status !in 200..299) return@withContext RemoteDmDataResult.Unavailable
-                    val messageRows = JSONArray(messageResponse.body)
-                    val lastMessage = if (messageRows.length() == 1) {
-                        val message = messageRows.getJSONObject(0)
-                        RemoteDmMessage(
-                            id = message.getString("id"),
-                            threadId = message.getString("thread_id"),
-                            senderId = message.getString("sender_id"),
-                            body = message.optString("body"),
-                            createdAtEpochMillis = parseIsoMillis(message.optString("created_at")),
-                            expiresAtEpochMillis = message.optString("expires_at")
-                                .takeIf { it.isNotBlank() && it != "null" }
-                                ?.let(::parseIsoMillis),
-                        )
-                    } else null
-
-                    threads += RemoteDmThread(
-                        id = threadJson.getString("id"),
-                        updatedAtEpochMillis = parseIsoMillis(threadJson.optString("updated_at")),
-                        lastMessage = lastMessage,
-                    )
-                }
-                RemoteDmDataResult.Loaded(threads)
             } catch (_: Exception) {
                 RemoteDmDataResult.Unavailable
             }
         }
 
+    private fun parse(body: String): RemoteDmDataResult = try {
+        val root = JSONObject(body)
+        val rows = root.getJSONArray("threads")
+        val threads = buildList {
+            repeat(rows.length()) { index ->
+                val row = rows.getJSONObject(index)
+                val threadId = row.getString("thread_id")
+                val lastMessageId = row.optNullableString("last_message_id")
+                val lastMessage = lastMessageId?.let {
+                    val senderId = row.optNullableString("last_message_sender_id")
+                        ?: return RemoteDmDataResult.Unavailable
+                    RemoteDmMessage(
+                        id = it,
+                        threadId = threadId,
+                        senderId = senderId,
+                        body = row.optNullableString("last_message_body").orEmpty(),
+                        createdAtEpochMillis = parseIsoMillis(row.optNullableString("last_message_created_at")),
+                        expiresAtEpochMillis = row.optNullableString("last_message_expires_at")?.let(::parseIsoMillis),
+                    )
+                }
+                add(
+                    RemoteDmThread(
+                        id = threadId,
+                        updatedAtEpochMillis = parseIsoMillis(row.optNullableString("updated_at")),
+                        title = row.optNullableString("title"),
+                        avatarPath = row.optNullableString("avatar_path"),
+                        isGroup = row.optNullableBoolean("is_group"),
+                        participantCount = row.optNullableInt("participant_count"),
+                        unreadCount = row.optNullableInt("unread_count"),
+                        archived = row.optNullableBoolean("archived"),
+                        lastMessage = lastMessage,
+                    ),
+                )
+            }
+        }
+        RemoteDmDataResult.Loaded(threads)
+    } catch (_: Exception) {
+        RemoteDmDataResult.Unavailable
+    }
+
     private data class Response(val status: Int, val body: String)
 
-    private fun get(url: String, accessToken: String): Response {
-        val connection = (URL(url).openConnection() as HttpURLConnection).apply {
+    private fun get(accessToken: String): Response {
+        val connection = (URL(endpoint).openConnection() as HttpURLConnection).apply {
             requestMethod = "GET"
             connectTimeout = 15_000
             readTimeout = 20_000
@@ -182,8 +178,17 @@ class SupabaseDmDataTransport(
         }
     }
 
-    private fun parseIsoMillis(value: String): Long = try {
-        java.time.Instant.parse(value).toEpochMilli()
+    private fun JSONObject.optNullableString(name: String): String? =
+        if (!has(name) || isNull(name)) null else optString(name).takeIf { it.isNotBlank() }
+
+    private fun JSONObject.optNullableInt(name: String): Int? =
+        if (!has(name) || isNull(name)) null else getInt(name)
+
+    private fun JSONObject.optNullableBoolean(name: String): Boolean? =
+        if (!has(name) || isNull(name)) null else getBoolean(name)
+
+    private fun parseIsoMillis(value: String?): Long = try {
+        value?.let { java.time.Instant.parse(it).toEpochMilli() } ?: 0L
     } catch (_: Exception) {
         0L
     }
