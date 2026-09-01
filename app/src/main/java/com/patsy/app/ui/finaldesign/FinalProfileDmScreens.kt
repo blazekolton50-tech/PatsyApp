@@ -310,7 +310,7 @@ private fun DmInboxPane(
                     ) {
                         Row(Modifier.fillMaxWidth()) {
                             Text(thread.title, color = FinalWhite, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                            if (thread.unreadCount > 0) Text(thread.unreadCount.toString(), color = FinalWhite, fontSize = 11.sp)
+                            thread.unreadCount?.takeIf { it > 0 }?.let { unread -> Text(unread.toString(), color = FinalWhite, fontSize = 11.sp) }
                         }
                         Text(thread.lastMessage ?: "No messages yet", color = FinalMuted, fontSize = 11.sp, modifier = Modifier.padding(top = 4.dp))
                     }
