@@ -9,4 +9,7 @@ object StudioPersistenceBindings {
 private object UnconfiguredStudioPersistenceService : StudioPersistenceService {
     override suspend fun load(session: PublicSession, projectId: String): StudioPersistenceResult =
         StudioPersistenceResult.Unavailable
+
+    override suspend fun autosave(session: PublicSession, request: StudioAutosaveRequest): StudioSaveResult =
+        StudioSaveResult.Unavailable
 }
