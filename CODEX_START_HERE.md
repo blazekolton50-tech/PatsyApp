@@ -1,64 +1,81 @@
-# CODEX — START HERE: PATSY APP
+# CODEX — START HERE: PATSY APP — 2026-09-01
 
 Repository: `blazekolton50-tech/PatsyApp`
 
-Do not redesign or replace this project from scratch.
+Working branch for the next execution:
+`chatgpt/codex-ready-2026-09-01`
 
-## First task
-Before changing code, inspect the existing repository and return an audit with four sections:
+This branch was created from verified PR #39 code head:
+`78009aa63cdbdb0ae1d33a537ec14392f0b3380b`
 
-- IMPLEMENTED
-- PARTIAL
-- MISSING
-- CONFLICTING
+Keep all related PR work **Draft**. Do **not** merge to `main` without explicit owner approval and physical-device QA.
 
-Check navigation/routes, theme/design tokens, authentication, Patsy rendering/animation, social/feed, Design Studio, profile, messaging, scheduling, storage/media retention, safety/age gating and owner/admin areas.
+## Read these first
+1. `docs/codex/PATSY_CURRENT_BUILD_STATUS_2026-09-01.md`
+2. `docs/codex/PATSY_SOURCE_INTAKE_2026-09-01.md`
+3. `docs/codex/CODEX_NEXT_INSTRUCTION.txt`
+4. `docs/PATSY_DESIGN_PRESERVATION_MASTER_2026-08-31.md`
+5. `docs/NAVIGATION_LOCK_2026-08-31.md`
+
+The older 2026-08-31 Codex handoff/status files are historical checkpoints and must not override the 2026-09-01 files above.
+
+## Before changing code
+Report the exact current HEAD and audit only for drift against the 2026-09-01 status. Do not restart already-completed jobs.
+
+Already present in the current native line:
+- Kotlin/Jetpack Compose production architecture
+- FINAL Login / Set Password / Home baseline
+- secured auth/account bootstrap/Owner foundations
+- locked ten-category THyNK architecture
+- THyNK Music ten stable page IDs
+- Studio editor state/tool catalogue
+- Media3 1.8.1 video player foundation
+- one authenticated outer primary navigation bar
+- native Camera photo/video capture and image/video import
+- FileProvider-backed capture URIs
+- video handoff to THyNK Media3 editor
+
+Do **not** repeat Media3, global-navigation or Camera-foundation jobs.
+
+## First coding job
+Start with the verified donor-asset intake foundation described in:
+`docs/superpowers/plans/2026-08-31-thynk-donor-asset-intake.md`
+
+Use the branch override and source decisions in:
+`docs/codex/CODEX_NEXT_INSTRUCTION.txt`
+
+After it is GREEN, proceed to the generic THyNK canvas/image-import/real-PNG-export job, then Design & Templates integration, Music refinement and page/profile alignment in the exact order given by the instruction.
 
 ## Locked visual rules
-- Black/charcoal primary UI.
-- Main text white/light grey.
-- Primary buttons are WHITE with restrained rainbow/neon borders/glow.
-- Approved Patsy logo is centred at the top on principal pages.
-- Tagline is `A LEGACY LED BY PAWS`, small/subtle only.
-- Main Patsy is the realistic grey shaggy dog companion, never cartoon/chibi.
-- Main Patsy is not permanently boxed, circled or trapped in a halo. She should move freely on transparent background where possible.
-- Main Patsy is always alive in the interface: walk/trot, sit, lie down, turn, head tilt, blink, look around, mouth movement, react, gesture, peek from screen edges, move between UI areas, shrink/settle when appropriate.
-- Cartoon Patsy is reserved for PawMojis / custom keyboard / stickers / reactions only.
+- black/charcoal primary UI
+- white/light-grey main text
+- white primary buttons/controls with restrained rainbow/neon treatment
+- approved Patsy logo asset only
+- one realistic main Patsy companion per page
+- cartoon Patsy only for PawMojis/stickers/reactions
+- never fake the production `.riv`
 
-## Signup copy
-Use exactly:
+## Locked main navigation
+Semantic routes:
+`HOME · THyNK · CAMERA · PATSY DMS · PROFILE`
 
-`I'm Patsy. Your personal AI PetPal. Log in and I'll show you what I can do!`
+Visible bar:
+`Home · [coloured THyNK only] · [large + only] · PDMs · Profile`
 
-## Main navigation
-Home · Design Studio · Create/+ · Patsy DMs · Profile
+No second white THyNK subtitle. No CAMERA caption under the centre +. Schedule/Calendar stay secondary.
 
-## Design Studio
-Treat this as a major feature area, not one generic page. It includes Ask Patsy while creating, AI image generation, 10-second AI video generation, memes, templates, image/video editing, filters/adjustments, text/layout tools, project continuation, preview, save/export, share, email copy, import/reload and schedule/post after approval.
+## Top-right account menu lock
+`Account · About · Profile · Settings · Remember Me`
 
-If any provider/API is unavailable, mark it `NOT_CONFIGURED`. Never fake a working service.
+## Donor-source safety
+The newly uploaded Gemini Java/XML WebView wrapper is **not** production Patsy architecture and must not be merged. The uploaded Android Studio THyNK Music ZIP is an older native recovery/reference snapshot, not a replacement for the newer PR #39 line.
 
-## Media retention
-- Unlocked images/videos in Patsy storage are temporary and auto-delete after 3 months.
-- Warn users clearly and remind them before expiry.
-- Offer: Save to Device · Email Me a Copy · Lock in Patsy · Share · Import/Reload.
-- Emailing a copy does not lock the item in Patsy storage.
-- Users can reload from device storage and supported cloud/file providers such as Google Drive / OneDrive / Dropbox where available.
-- Locked-profile target limits: 100 photos and 30 videos.
+Drive/AI Studio/Replit/Canva/archive sources remain `REFERENCE_ONLY` until the donor verifier proves origin/license, real bytes/resource, checksum and duplicate/supersession status.
 
-## Remember Me
-Anything intentionally remembered/locked uses Patsy's paw. Outline by default; when saved it fills with bright neon, gives a short click + soft chime, pulses once, sparkles fade, then remains locked in.
+## Truthfulness
+If a provider/API or production asset is unavailable, keep it `NOT_CONFIGURED` or otherwise explicitly unavailable. Never fake generation, mastering, export, DMs, storage success, owner authority or production Rive behavior.
 
-## Messaging
-Default DM retention target: auto-delete after 3 days unless settings/age rules permit otherwise.
+## Verification
+Every coding job must show RED-before-GREEN evidence, targeted/full unit tests, debug/release build results, exact final GitHub Actions run, exact head SHA and remaining device/provider limitations.
 
-## Age-aware rules
-Keep under-16 protections and age gating enforced. Do not expose adult-only social/messaging features merely by hiding UI; enforce at the appropriate backend/security layer too.
-
-## Persistent Patsy
-Patsy is one persistent AI companion across the app with Brain, Memory, Personality, Awareness and Safety systems. She is not a decorative mascot.
-
-## Priority conflict to fix after the audit
-Any current main-Patsy treatment that uses a cartoon/static boxed mascot should be replaced with the realistic unboxed moving Patsy treatment, without changing PawMoji assets.
-
-Preserve approved work. Do not make broad visual changes without explicit approval.
+Stop on failure. Do not merge.
