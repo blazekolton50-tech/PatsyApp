@@ -43,7 +43,7 @@ import com.patsy.app.studio.StudioLayerType
 import com.patsy.app.studio.StudioMode
 import com.patsy.app.studio.StudioToolCatalog
 import com.patsy.app.studio.reduceStudioCanvasState
-import com.patsy.app.studio.studioCanvasAlignmentControls
+import com.patsy.app.studio.studioCanvasPanelControls
 import com.patsy.app.ui.finaldesign.FinalCard
 import com.patsy.app.ui.finaldesign.FinalCharcoal
 import com.patsy.app.ui.finaldesign.FinalMuted
@@ -429,17 +429,39 @@ private fun DesignContextPanel(
                         color = FinalWhite,
                         fontSize = 9.sp,
                     )
+                    val panelControls = studioCanvasPanelControls(panelId, selected)
                     if (selected.locked) {
-                        Text("Unlock this layer to align it.", color = FinalMuted, fontSize = 8.sp, modifier = Modifier.padding(top = 6.dp))
+                        Text("Unlock this layer to edit it.", color = FinalMuted, fontSize = 8.sp, modifier = Modifier.padding(top = 6.dp))
                     } else {
-                        Text("ALIGN TO CANVAS", color = FinalMuted, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
-                        Row(
-                            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(top = 4.dp),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        ) {
-                            studioCanvasAlignmentControls(selected).forEach { control ->
-                                DesignMiniAction(control.label) {
-                                    onStateChange(reduceStudioCanvasState(state, control.action))
+                        if (panelControls.quick.isNotEmpty()) {
+                            Text(
+                                if (panelId == "position") "POSITION & ROTATION" else "OPACITY",
+                                color = FinalMuted,
+                                fontSize = 8.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(top = 8.dp),
+                            )
+                            Row(
+                                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(top = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                panelControls.quick.forEach { control ->
+                                    DesignMiniAction(control.label) {
+                                        onStateChange(reduceStudioCanvasState(state, control.action))
+                                    }
+                                }
+                            }
+                        }
+                        if (panelControls.alignment.isNotEmpty()) {
+                            Text("ALIGN TO CANVAS", color = FinalMuted, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
+                            Row(
+                                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(top = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                panelControls.alignment.forEach { control ->
+                                    DesignMiniAction(control.label) {
+                                        onStateChange(reduceStudioCanvasState(state, control.action))
+                                    }
                                 }
                             }
                         }
