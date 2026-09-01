@@ -17,6 +17,9 @@ import com.patsy.app.profile.ServerProfileDataService
 import com.patsy.app.profile.SupabaseProfileDataTransport
 import com.patsy.app.security.SupabaseOwnerAuthorizationService
 import com.patsy.app.security.SupabaseOwnerAuthorizationTransport
+import com.patsy.app.storage.ServerStorageDataService
+import com.patsy.app.storage.StorageServiceBindings
+import com.patsy.app.storage.SupabaseStorageDataTransport
 
 class PatsyApplication : Application() {
     override fun onCreate() {
@@ -61,6 +64,13 @@ class PatsyApplication : Application() {
         DmServiceBindings.dmDataService = ServerDmDataService(
             sessionStore = sessionStore,
             transport = SupabaseDmDataTransport(
+                baseUrl = BuildConfig.SUPABASE_URL,
+                publishableKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
+            ),
+        )
+        StorageServiceBindings.storageDataService = ServerStorageDataService(
+            sessionStore = sessionStore,
+            transport = SupabaseStorageDataTransport(
                 baseUrl = BuildConfig.SUPABASE_URL,
                 publishableKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
             ),
