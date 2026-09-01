@@ -1,5 +1,11 @@
-PATSY APP — CODEX NEXT EXECUTION INSTRUCTION — 2026-09-01 — ALL UPDATES
+THyNK-IN — CODEX NEXT EXECUTION INSTRUCTION — 2026-09-01 — ALL UPDATES
 SAVE MAIN APP / SAVE LOCK IN
+
+CANONICAL PRODUCT NAME — BINDING:
+- App/global product brand: THyNK-IN
+- Do not call the product “Patsy App”.
+- Patsy remains the assistant/character name for Patsy-specific Rive, animation, personality, PawMoji, companion and reference-asset work.
+- Legacy repository/package/file identifiers containing PatsyApp, patsy1, PATSY or com.patsy.app do not redefine the product brand and must not be blindly renamed during ordinary branding work.
 
 WORK ONLY IN:
 Repository: blazekolton50-tech/PatsyApp
@@ -67,9 +73,9 @@ Home · [coloured THyNK mark only] · [large + only] · PDMs · Profile
 
 THyNK PANEL — THyNK-AREA NAVIGATION
 Exact left-to-right order:
-THyNK-ME · THyNK Chats · THyNK-IN! · THyNK Music · THyNK-IT
+THyNK-ME · THyNK Chats · THyNK-IN · THyNK Music · THyNK-IT
 
-- THyNK-IN! is the centre THyNK Panel destination and opens social/news feed;
+- THyNK-IN is the centre THyNK Panel destination, opens social/news feed, and is the app/global product brand;
 - do NOT replace global route semantics with THyNK Panel labels;
 - current source contract intentionally separates `primaryNavigationDisplayLabels` and `thynkPanelDisplayLabels`.
 
@@ -79,7 +85,7 @@ THyNK HEADER LOGOS — LOCKED
 Main THyNK destinations show their matching approved supplied logo at top:
 - THyNK-ME → profile/THyNK-ME
 - THyNK Chats → chats/messaging
-- THyNK-IN! → social/news feed
+- THyNK-IN → social/news feed
 - THyNK Music → Music
 - THyNK-IT → adaptive creator/productivity
 
@@ -235,7 +241,7 @@ Before expanding more UI:
 8. create/upload Android Studio ZIP;
 9. record exact final head/run/artifact evidence.
 
-A green APK is a BUILDABLE TEST APK, not proof all production features/providers/device flows are complete.
+A green APK is a BUILDABLE TEST APK, not proof all planned production features/providers/device flows are complete.
 
 ==================================================
 NEXT CODE QUEUE AFTER JOB 0
