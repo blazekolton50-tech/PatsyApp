@@ -452,6 +452,19 @@ private fun DesignContextPanel(
                                 }
                             }
                         }
+                        if (panelControls.size.isNotEmpty()) {
+                            Text("SIZE", color = FinalMuted, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
+                            Row(
+                                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(top = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                panelControls.size.forEach { control ->
+                                    DesignMiniAction(control.label) {
+                                        onStateChange(reduceStudioCanvasState(state, control.action))
+                                    }
+                                }
+                            }
+                        }
                         if (panelControls.alignment.isNotEmpty()) {
                             Text("ALIGN TO CANVAS", color = FinalMuted, fontSize = 8.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
                             Row(
