@@ -31,6 +31,8 @@ jobs:
         run: python3 scripts/apply_camera_native_integration.py
       - name: Apply native THyNK Design editor host
         run: python3 scripts/apply_thynk_design_editor_integration.py
+      - name: Apply live authenticated Profile route
+        run: python3 scripts/apply_live_profile_route.py
       - name: Persist integration on source branch
         if: github.event_name == 'push' && github.ref == 'refs/heads/chatgpt/thynk-music-apk-2026-08-31'
         run: |
@@ -47,14 +49,14 @@ jobs:
         run: ./gradlew assembleDebug --stacktrace
       - name: Build release variant
         run: ./gradlew assembleRelease --stacktrace
-      - name: Persist verified THyNK Design host
+      - name: Persist verified native integrations
         if: github.event_name == 'push' && github.ref == 'refs/heads/chatgpt/codex-ready-2026-09-01'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app/src/main/java/com/patsy/app/thynk/ThynkStudioScreen.kt
+          git add app/src/main/java/com/patsy/app/thynk/ThynkStudioScreen.kt app/src/main/java/com/patsy/app/FinalMainActivity.kt
           if ! git diff --cached --quiet; then
-            git commit -m "feat: wire native THyNK Design editor host"
+            git commit -m "feat: persist verified native integrations"
             git reset --hard HEAD
             git fetch origin chatgpt/codex-ready-2026-09-01
             git rebase origin/chatgpt/codex-ready-2026-09-01
