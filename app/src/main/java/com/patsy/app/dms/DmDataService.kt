@@ -23,6 +23,7 @@ data class DmThreadRecord(
     val participantCount: Int? = null,
     val unreadCount: Int? = null,
     val isGroup: Boolean? = null,
+    val isFriend: Boolean? = null,
     val archived: Boolean? = null,
 )
 
@@ -32,6 +33,7 @@ data class RemoteDmThread(
     val title: String?,
     val avatarPath: String?,
     val isGroup: Boolean?,
+    val isFriend: Boolean?,
     val participantCount: Int?,
     val unreadCount: Int?,
     val archived: Boolean?,
@@ -87,6 +89,7 @@ class ServerDmDataService(
                             participantCount = it.participantCount,
                             unreadCount = it.unreadCount,
                             isGroup = it.isGroup,
+                            isFriend = it.isFriend,
                             archived = it.archived,
                         )
                     },
@@ -144,6 +147,7 @@ class SupabaseDmDataTransport(
                         title = row.optNullableString("title"),
                         avatarPath = row.optNullableString("avatar_path"),
                         isGroup = row.optNullableBoolean("is_group"),
+                        isFriend = row.optNullableBoolean("is_friend"),
                         participantCount = row.optNullableInt("participant_count"),
                         unreadCount = row.optNullableInt("unread_count"),
                         archived = row.optNullableBoolean("archived"),
