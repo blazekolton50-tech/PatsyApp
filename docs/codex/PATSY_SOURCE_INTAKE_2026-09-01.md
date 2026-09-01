@@ -9,7 +9,7 @@ Record reconciled sources that may influence the Patsy Android app without allow
 1. current code on `chatgpt/codex-ready-2026-09-01`
 2. checked-in design/navigation/auth/security locks
 3. live Supabase backend/security truth
-4. latest owner-approved requirements
+4. latest owner-approved requirements and visual references
 5. verified owner-supplied files whose bytes/origin are known
 6. newly uploaded full THyNK Studio donor implementation for editor behavior/workflow
 7. other Drive / AI Studio / Replit / Canva / archive donor material
@@ -17,9 +17,151 @@ Record reconciled sources that may influence the Patsy Android app without allow
 
 No donor source may silently replace native architecture.
 
-## Full THyNK Studio upload — newly reconciled
+## 2026-09-01 latest owner page/design reconciliation
 
-The earlier source intake was too conservative because it primarily recorded Drive/archive wrappers and the older Android recovery ZIP. The Library now contains substantial THyNK Studio implementation material that has been directly inspected.
+The following newly supplied pages and donor files are now part of the current design handoff. The visual references control composition and intended UX; HTML/React/Tailwind/WebAudio implementations remain donor material to be ported selectively into native Kotlin/Compose rather than copied as production architecture.
+
+### Profile page — newest composition target
+
+Preserve:
+- centred approved Patsy wordmark at the top
+- notification and top-right menu affordances
+- profile image with restrained rainbow ring and camera/edit affordance
+- display name, handle and bio
+- profile statistics strip only when values are backed by real data
+- rainbow-outline Edit Profile action
+- About Me card
+- Quick Post / Creator Tools: Image, Video, Document, Template, More
+- Recent Projects with View all
+- Saved Projects with View all
+- permanent shared bottom navigation
+
+Do not ship the sample `128 Projects`, `2.4K Followers`, `312 Following`, `1.8K Likes`, sample thumbnails, folder counts, badges or other generated content as production facts. Bind to real backend/project/feed data or truthful empty/loading states.
+
+Quick Post / Creator Tools must route into the shared THyNK/Create flows rather than create duplicate editors.
+
+### Expanded Owner/Profile menu — newest visual reference
+
+This larger Profile/Owner menu is distinct from compact top-right account access. It is grouped as:
+
+ACCOUNT
+- Scheduling — Plan your posts
+- Calendar — Events & reminders
+- Friends — Connect & collaborate
+- Locked Media — Private & secure
+- THyNK Storage — Put-Away Portal
+
+PREFERENCES
+- Settings — App preferences
+- Account Info — Personal details
+- Theme — Dark (Default)
+- Notifications — Manage alerts
+
+SUPPORT
+- Help & Support — Get help anytime
+- About Patsy
+- Log Out
+
+Visual target: black/charcoal panels, subdued borders, white primary text, grey secondary copy, pink section headings, simple line icons, restrained purple/rainbow accents, pink destructive/logout treatment.
+
+Owner/admin authority must remain server/capability backed. Rendering this menu never grants Owner capability. Theme and preference controls are only WORKING when genuinely persisted.
+
+### Patsy DMs — newest responsive page target
+
+The supplied PDM references define:
+- narrow phone: inbox first, then conversation screen
+- large phone/tablet/foldable/landscape: one responsive split-view screen with conversation list at left and open conversation at right
+- search
+- filters: All / Unread / Friends / Groups / Archived
+- unread badges
+- new-message/compose affordance
+- group conversations
+- media messages
+- message composer with attachment/emoji/send affordances
+- conversation info
+- privacy/retention explanation including the default three-day DM retention target
+- permanent shared bottom navigation
+
+Call/video-call entry controls are approved UI targets but remain `NOT_CONFIGURED`/disabled until a real secure calling provider and authorization path are configured and verified.
+
+Do not port donor fake users, fabricated counts/timestamps/messages, local-only unread authority, delayed fabricated replies, fake delivered/read states or auto-replies.
+
+Production implementation must bind to the existing secure Supabase DM schema/function contracts, membership authorization, realtime, attachments, blocking/reporting, notifications, retention cleanup and age/protected-domain gates.
+
+### Unified homebar donor — newest geometry reference
+
+`Unified-Patsy-Identical-Homebar.html` is a donor for the shared bottom-bar geometry and interaction pattern.
+
+Preserve the single authenticated primary bar:
+- semantic routes: `HOME · THyNK · CAMERA · PATSY DMS · PROFILE`
+- visible: `Home · [coloured THyNK only] · [large + only] · PDMs · Profile`
+- large raised centre Camera `+`
+- thin restrained rainbow separator with straight outer runs and a smooth raised centre arch around the Camera control
+- one shared implementation across authenticated pages, nested THyNK/editor/Music pages, Profile, Owner-authorized pages and protected authenticated states
+
+Do not copy stale literal `THYNK`, CAMERA captions, duplicate homebars or web-only navigation architecture.
+
+### THyNK Studio — newest Image/Design editing visual authority
+
+The supplied `THyNK STUDIO – MAIN EDITING PAGE` image/design reference is the current composition target for the professional Design/Image workspace.
+
+Desktop/tablet workspace includes:
+- top project/editor bar with Back, THyNK branding, Undo/Redo, Help, Share/Export and More
+- large neutral active canvas/work area inside the dark app shell
+- rulers/guides and pixel measurements
+- object selection bounds/handles
+- left tools: Templates, Upload, Photos, Elements, Text, AI Generate, Stickers, Draw, Shapes, Background, Frames and More
+- layers panel with visibility/reorder affordances
+- properties panel for position, size, rotation and opacity
+- quick layout controls: Rulers, Guides, Grid, Snap, Bring Forward, Send Backward, Align, Distribute, Lock, Group, Duplicate, Delete
+- zoom and viewport controls
+- autosave/history expectations
+- permanent shared app navigation
+
+Template flow shown by the same reference:
+`THyNK Studio → Templates → category → subcategory → template preview → Customize / Use Template → correct Design Space mode`.
+
+Template categories/subcategories shown are structural/content references, not proof that the stated catalogue counts exist. Labels such as `10,000+ Designs`, `1000+ Fonts`, AI generation, Magic Resize, Background Remover, cloud sync and export formats remain requirements/status-controlled capabilities until genuinely implemented and verified.
+
+On phones, reorganize the same underlying tools into native trays/panels; do not reduce the shared engine to a toy editor.
+
+### THyNK Studio — newest Music editing visual authority
+
+The supplied Music main-editing reference is the current high-density composition target for the Music workspace.
+
+Workspace includes:
+- multitrack timeline and ruler
+- example track roles such as Vocals, Beat, Bass, Keys, Guitar and FX
+- waveform/MIDI/automation-style lane presentation as appropriate to actual track data
+- playhead and transport
+- BPM/tap tempo, key signature, level meters, master volume and balance panel
+- track add/delete/reorder, mute/solo and track controls
+- Select, Split, Trim, Cut, Copy, Paste, Delete, Duplicate
+- Volume, Pan, Mute, Solo, Fade In, Fade Out, Reverse, Stretch, Pitch, EQ, Effects, Automation and More
+- zoom/navigation
+- autosave, history/undo, project backup and cloud-sync UX only when supported
+- templates/categories/subcategories and template preview as part of the same THyNK ecosystem
+- permanent shared app navigation on responsive app layouts
+
+The donor target shows WAV/MP3/AAC/FLAC and high-quality/share/cloud claims. These are not automatically production-real. Export must only advertise formats actually produced and validated by the Android audio path. Provider-backed generation, mastering, vocal processing and similar services remain `NOT_CONFIGURED` until configured and verified.
+
+`Thynk-Studio-Pro-Music.html` is classified as `SUBSTANTIAL_DONOR_IMPLEMENTATION`: its sequencing/mixer/audio UX and WebAudio behavior may inform native implementation, but browser WebAudio and mock export alerts are not the Android production engine.
+
+### New 100-WAV THyNK Music library candidate
+
+`music-clips-100-original (1).zip` contains 100 numbered WAV assets grouped as kicks, snares, hats, claps, bass, synths, percussion, FX and ten loop styles.
+
+Classification: `ASSET_PRESENT / PRODUCTION_VALIDATION_REQUIRED`.
+
+Preserve the supplied audio files rather than regenerating substitutes. Before promotion to production library, verify actual bytes/audio properties, provenance/originality/license, duplicate status, Android decode compatibility and stable asset identity/checksums. The word `original` in a filename is not licensing proof.
+
+### Latest Profile HTML donor
+
+`Patsy-Profile-Thynk-Fixed (1).html` is a UI/interaction donor only. Useful material includes dark Profile structure, raised centre control, Edit Profile interaction and dropdown patterns. Correct stale labels/assets/sample data during native implementation. Do not port React/Tailwind as production architecture.
+
+## Full THyNK Studio upload — reconciled
+
+The Library contains substantial THyNK Studio implementation material that has been directly inspected.
 
 Relevant uploaded sources include:
 - `Thynk-Full-Ecosystem-Studio(1).html`
@@ -168,8 +310,8 @@ Semantic:
 Visible:
 `Home · [coloured THyNK only] · [large + only] · PDMs · Profile`
 
-### Account menu
-`Account · About · Profile · Settings · Remember Me`
+### Compact top-right account access
+Keep the compact account access separate from the expanded Profile/Owner menu. Do not collapse the larger Profile menu into the top-right control.
 
 ### THyNK Music
 Keep these route IDs stable:
