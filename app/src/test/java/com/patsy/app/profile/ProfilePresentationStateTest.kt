@@ -28,9 +28,9 @@ class ProfilePresentationStateTest {
 
     @Test
     fun knownMetricFormatsWithoutChangingStoredTruth() {
-        val metric = ProfileMetric("Projects", 128)
+        val metric = ProfileMetric("Projects", 128L)
 
-        assertEquals(128, metric.count)
+        assertEquals(128L, metric.count)
         assertEquals("128", metric.formattedValue)
     }
 
