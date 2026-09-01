@@ -1,5 +1,7 @@
 package com.patsy.app.studio
 
+import kotlin.math.round
+
 enum class StudioCanvasQuickEditGroup {
     POSITION,
     OPACITY,
@@ -27,8 +29,11 @@ fun studioCanvasQuickEditControls(
         )
 
         StudioCanvasQuickEditGroup.OPACITY -> listOf(
-            StudioCanvasQuickEditControl("-10%", StudioCanvasAction.SetOpacity(selected.id, selected.opacity - 0.1f)),
-            StudioCanvasQuickEditControl("+10%", StudioCanvasAction.SetOpacity(selected.id, selected.opacity + 0.1f)),
+            StudioCanvasQuickEditControl("-10%", StudioCanvasAction.SetOpacity(selected.id, steppedOpacity(selected.opacity, -0.1f))),
+            StudioCanvasQuickEditControl("+10%", StudioCanvasAction.SetOpacity(selected.id, steppedOpacity(selected.opacity, 0.1f))),
         )
     }
 }
+
+private fun steppedOpacity(opacity: Float, delta: Float): Float =
+    (round((opacity + delta) * 100f) / 100f).coerceIn(0f, 1f)
