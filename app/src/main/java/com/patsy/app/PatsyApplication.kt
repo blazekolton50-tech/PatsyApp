@@ -10,7 +10,9 @@ import com.patsy.app.auth.SupabaseHttpAuthTransport
 import com.patsy.app.auth.SupabaseHttpRecoveryTransport
 import com.patsy.app.auth.SupabaseHttpRegistrationTransport
 import com.patsy.app.dms.DmServiceBindings
+import com.patsy.app.dms.ServerDmConversationService
 import com.patsy.app.dms.ServerDmDataService
+import com.patsy.app.dms.SupabaseDmConversationTransport
 import com.patsy.app.dms.SupabaseDmDataTransport
 import com.patsy.app.profile.ProfileServiceBindings
 import com.patsy.app.profile.ServerProfileDataService
@@ -67,6 +69,13 @@ class PatsyApplication : Application() {
         DmServiceBindings.dmDataService = ServerDmDataService(
             sessionStore = sessionStore,
             transport = SupabaseDmDataTransport(
+                baseUrl = BuildConfig.SUPABASE_URL,
+                publishableKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
+            ),
+        )
+        DmServiceBindings.conversationService = ServerDmConversationService(
+            sessionStore = sessionStore,
+            transport = SupabaseDmConversationTransport(
                 baseUrl = BuildConfig.SUPABASE_URL,
                 publishableKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
             ),
