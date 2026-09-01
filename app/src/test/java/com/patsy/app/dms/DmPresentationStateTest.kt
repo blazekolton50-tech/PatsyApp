@@ -7,9 +7,10 @@ import kotlin.test.assertTrue
 
 class DmPresentationStateTest {
     private val threads = listOf(
-        DmThreadSummary("a", "A", "Hello", unreadCount = 2, isGroup = false, archived = false),
-        DmThreadSummary("b", "B Group", "Hi", unreadCount = 0, isGroup = true, archived = false),
-        DmThreadSummary("c", "C", "Archived", unreadCount = 1, isGroup = false, archived = true),
+        DmThreadSummary("a", "A", "Hello", unreadCount = 2, isFriend = true, isGroup = false, archived = false),
+        DmThreadSummary("b", "B Group", "Hi", unreadCount = 0, isFriend = false, isGroup = true, archived = false),
+        DmThreadSummary("c", "C", "Archived", unreadCount = 1, isFriend = true, isGroup = false, archived = true),
+        DmThreadSummary("d", "Unknown State", null, unreadCount = null, isFriend = true, isGroup = false, archived = null),
     )
 
     @Test
@@ -25,11 +26,12 @@ class DmPresentationStateTest {
     }
 
     @Test
-    fun unreadFriendGroupAndArchivedFiltersStayDeterministic() {
+    fun filtersUseOnlyKnownServerFacts() {
         assertEquals(listOf("a"), filterDmThreads(threads, DmFilter.UNREAD, "").map { it.id })
-        assertEquals(listOf("a"), filterDmThreads(threads, DmFilter.FRIENDS, "").map { it.id })
+        assertEquals(listOf("a", "d"), filterDmThreads(threads, DmFilter.FRIENDS, "").map { it.id })
         assertEquals(listOf("b"), filterDmThreads(threads, DmFilter.GROUPS, "").map { it.id })
         assertEquals(listOf("c"), filterDmThreads(threads, DmFilter.ARCHIVED, "").map { it.id })
+        assertEquals(listOf("a", "b", "d"), filterDmThreads(threads, DmFilter.ALL, "").map { it.id })
     }
 
     @Test
