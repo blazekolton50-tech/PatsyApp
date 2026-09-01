@@ -8,9 +8,8 @@ package com.patsy.app.ui.finaldesign
  * while the underlying authentication meaning is keepSignedIn/session restoration only.
  * The separate Patsy Remember Me paw remains reserved for user-approved saved content.
  *
- * The primary navigation visual is now locked to the approved uploaded reference and must be
- * present on every page. Semantic route names stay explicit for security/navigation logic even
- * when the visual label is intentionally blank (THyNK mark and centre + action).
+ * The authenticated app navigation keeps the existing secure semantic destinations underneath,
+ * while the visible chrome is now the five-button THyNK Panel supplied by the owner.
  */
 object FinalVisualContract {
     const val logoSquareDp = 132
@@ -25,14 +24,18 @@ object FinalVisualContract {
     const val loginPersistenceSemanticName = "keepSignedIn"
     const val loginPersistenceIsSavedContentMemory = false
 
-    // Semantic destinations remain stable for routing/security.
+    // Keep the existing semantic destinations stable for route authorization/security.
     val primaryNavigation = listOf("HOME", "THyNK", "CAMERA", "PATSY DMS", "PROFILE")
 
-    // Exact approved visual labels from THyNK_Bottom_Nav_EXACT_2x.png.
-    // THyNK has its coloured mark only; do not repeat a white THyNK caption underneath.
-    // The centre + has no secondary CAMERA caption. PATSY DMS is visually shortened to PDMs.
+    // Locked visible THyNK Panel order.
     const val navigationVisibleOnAllPages = true
-    val primaryNavigationDisplayLabels = listOf("Home", "", "", "PDMs", "Profile")
+    val primaryNavigationDisplayLabels = listOf(
+        "THyNK-ME",
+        "THyNK Chats",
+        "THyNK-IN!",
+        "THyNK Music",
+        "THyNK-IT",
+    )
     const val showThynkSecondaryLabel = false
     const val showCenterActionSecondaryLabel = false
 
