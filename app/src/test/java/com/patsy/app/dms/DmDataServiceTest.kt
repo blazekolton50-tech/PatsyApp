@@ -31,6 +31,7 @@ class DmDataServiceTest {
                             title = "Darcy",
                             avatarPath = "avatars/darcy.png",
                             isGroup = false,
+                            isFriend = true,
                             participantCount = 2,
                             unreadCount = null,
                             archived = null,
@@ -53,6 +54,7 @@ class DmDataServiceTest {
         assertEquals("Hello", loaded.threads.single().lastMessage?.body)
         assertEquals("Darcy", loaded.threads.single().title)
         assertEquals(false, loaded.threads.single().isGroup)
+        assertEquals(true, loaded.threads.single().isFriend)
         assertEquals(null, loaded.threads.single().unreadCount)
         assertEquals(null, loaded.threads.single().archived)
     }
