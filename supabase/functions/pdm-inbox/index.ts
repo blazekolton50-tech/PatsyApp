@@ -5,42 +5,14 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
   headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
 })
 
-type CapabilityRow = {
-  user_id: string
-  verified_age_tier: string
-  can_use_dms: boolean
-}
-
-type MemberRow = {
-  thread_id: string
-  user_id: string
-  joined_at: string
-}
-
-type ProfileRow = {
-  user_id: string
-  username: string
-  display_name: string | null
-  avatar_path: string | null
-}
-
-type ThreadRow = {
-  id: string
-  updated_at: string
-}
-
-type MessageRow = {
-  id: string
-  thread_id: string
-  sender_id: string
-  body: string
-  created_at: string
-  expires_at: string | null
-}
+type CapabilityRow = { user_id: string; verified_age_tier: string; can_use_dms: boolean }
+type MemberRow = { thread_id: string; user_id: string; joined_at: string }
+type ProfileRow = { user_id: string; username: string; display_name: string | null; avatar_path: string | null }
+type ThreadRow = { id: string; updated_at: string }
+type MessageRow = { id: string; thread_id: string; sender_id: string; body: string; created_at: string; expires_at: string | null }
 
 Deno.serve(async (req: Request) => {
   if (req.method !== 'GET') return json({ error: 'Method not allowed' }, 405)
-
   const authHeader = req.headers.get('Authorization')
   if (!authHeader?.startsWith('Bearer ')) return json({ error: 'Unauthorized' }, 401)
 
@@ -53,9 +25,7 @@ Deno.serve(async (req: Request) => {
     global: { headers: { Authorization: authHeader } },
     auth: { persistSession: false, autoRefreshToken: false },
   })
-  const admin = createClient(supabaseUrl, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
+  const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } })
 
   const { data: userData, error: userError } = await userClient.auth.getUser()
   const user = userData.user
@@ -65,7 +35,7 @@ Deno.serve(async (req: Request) => {
     .from('account_capabilities')
     .select('user_id,verified_age_tier,can_use_dms')
     .eq('user_id', user.id)
-    .maybeSingle<CapabilityRow>()
+    .maybeSingle()
   if (capabilityError) return json({ error: 'Could not verify messaging access' }, 500)
   if (!callerCapability || callerCapability.verified_age_tier !== '16_plus' || callerCapability.can_use_dms !== true) {
     return json({ error: 'Messaging is unavailable for this account' }, 403)
@@ -90,16 +60,13 @@ Deno.serve(async (req: Request) => {
 
   const memberRows = (members ?? []) as MemberRow[]
   const participantIds = [...new Set(memberRows.map((row) => row.user_id))]
-
   const [{ data: participantCapabilities, error: participantCapabilityError }, { data: blocks, error: blockError }] = await Promise.all([
     admin.from('account_capabilities').select('user_id,verified_age_tier,can_use_dms').in('user_id', participantIds),
     admin.from('user_blocks').select('blocker_id,blocked_id').or(`blocker_id.eq.${user.id},blocked_id.eq.${user.id}`),
   ])
   if (participantCapabilityError || blockError) return json({ error: 'Could not verify conversation safety' }, 500)
 
-  const capabilityByUser = new Map<string, CapabilityRow>(
-    ((participantCapabilities ?? []) as CapabilityRow[]).map((row) => [row.user_id, row]),
-  )
+  const capabilityByUser = new Map<string, CapabilityRow>(((participantCapabilities ?? []) as CapabilityRow[]).map((row) => [row.user_id, row]))
   const blockedPairs = new Set<string>()
   for (const block of blocks ?? []) {
     const blocker = block.blocker_id as string
@@ -120,26 +87,21 @@ Deno.serve(async (req: Request) => {
     if (!threadMembers.some((member) => member.user_id === user.id)) return false
     return threadMembers.every((member) => {
       const capability = capabilityByUser.get(member.user_id)
-      return capability?.verified_age_tier === '16_plus' &&
-        capability.can_use_dms === true &&
-        !blockedPairs.has(member.user_id)
+      return capability?.verified_age_tier === '16_plus' && capability.can_use_dms === true && !blockedPairs.has(member.user_id)
     })
   })
   if (safeThreadIds.length === 0) return json({ threads: [] })
 
-  const safeParticipantIds = [...new Set(
-    safeThreadIds.flatMap((id) => (membersByThread.get(id) ?? []).map((member) => member.user_id)),
-  )]
+  const safeParticipantIds = [...new Set(safeThreadIds.flatMap((id) => (membersByThread.get(id) ?? []).map((member) => member.user_id)))]
   const { data: profiles, error: profileError } = await admin
     .from('profiles')
     .select('user_id,username,display_name,avatar_path')
     .in('user_id', safeParticipantIds)
   if (profileError) return json({ error: 'Could not load conversation profiles' }, 500)
-  const profileByUser = new Map<string, ProfileRow>(
-    ((profiles ?? []) as ProfileRow[]).map((profile) => [profile.user_id, profile]),
-  )
+  const profileByUser = new Map<string, ProfileRow>(((profiles ?? []) as ProfileRow[]).map((profile) => [profile.user_id, profile]))
 
   const latestByThread = new Map<string, MessageRow | null>()
+  let latestFailed = false
   await Promise.all(safeThreadIds.map(async (threadId) => {
     const now = new Date().toISOString()
     const { data: latest, error } = await admin
@@ -149,42 +111,29 @@ Deno.serve(async (req: Request) => {
       .or(`expires_at.is.null,expires_at.gt.${now}`)
       .order('created_at', { ascending: false })
       .limit(1)
-      .maybeSingle<MessageRow>()
-    if (error) throw error
-    latestByThread.set(threadId, latest ?? null)
-  })).catch(() => undefined)
+      .maybeSingle()
+    if (error) { latestFailed = true; return }
+    latestByThread.set(threadId, (latest as MessageRow | null) ?? null)
+  }))
+  if (latestFailed || latestByThread.size !== safeThreadIds.length) return json({ error: 'Could not load recent messages' }, 500)
 
-  // Fail closed if any latest-message lookup failed rather than returning a partially misleading inbox.
-  if (latestByThread.size !== safeThreadIds.length) return json({ error: 'Could not load recent messages' }, 500)
-
-  const threadById = new Map<string, ThreadRow>(
-    ((threads ?? []) as ThreadRow[]).map((thread) => [thread.id, thread]),
-  )
-
+  const threadById = new Map<string, ThreadRow>(((threads ?? []) as ThreadRow[]).map((thread) => [thread.id, thread]))
   const result = safeThreadIds.flatMap((threadId) => {
     const thread = threadById.get(threadId)
     if (!thread) return []
-    const threadMembers = (membersByThread.get(threadId) ?? [])
-      .sort((a, b) => a.joined_at.localeCompare(b.joined_at) || a.user_id.localeCompare(b.user_id))
+    const threadMembers = (membersByThread.get(threadId) ?? []).sort((a, b) => a.joined_at.localeCompare(b.joined_at) || a.user_id.localeCompare(b.user_id))
     const otherIds = threadMembers.map((member) => member.user_id).filter((id) => id !== user.id)
     const otherProfiles = otherIds.map((id) => profileByUser.get(id)).filter(Boolean) as ProfileRow[]
     const isGroup = threadMembers.length > 2
     const directProfile = !isGroup && otherProfiles.length === 1 ? otherProfiles[0] : null
-    const groupTitle = otherProfiles
-      .map((profile) => profile.display_name?.trim() || profile.username)
-      .filter(Boolean)
-      .sort((a, b) => a.localeCompare(b))
-      .join(', ')
+    const groupTitle = otherProfiles.map((profile) => profile.display_name?.trim() || profile.username).filter(Boolean).sort((a, b) => a.localeCompare(b)).join(', ')
     const latest = latestByThread.get(threadId) ?? null
-
     return [{
       thread_id: threadId,
       updated_at: thread.updated_at,
       is_group: isGroup,
       participant_count: threadMembers.length,
-      title: directProfile
-        ? (directProfile.display_name?.trim() || directProfile.username || 'Conversation')
-        : (groupTitle || 'Group conversation'),
+      title: directProfile ? (directProfile.display_name?.trim() || directProfile.username || 'Conversation') : (groupTitle || 'Group conversation'),
       avatar_path: directProfile?.avatar_path ?? null,
       last_message_id: latest?.id ?? null,
       last_message_body: latest?.body ?? null,
@@ -195,12 +144,6 @@ Deno.serve(async (req: Request) => {
       archived: null,
     }]
   })
-
-  result.sort((a, b) => {
-    const aTime = Date.parse(a.last_message_created_at ?? a.updated_at)
-    const bTime = Date.parse(b.last_message_created_at ?? b.updated_at)
-    return bTime - aTime
-  })
-
+  result.sort((a, b) => Date.parse(b.last_message_created_at ?? b.updated_at) - Date.parse(a.last_message_created_at ?? a.updated_at))
   return json({ threads: result })
 })
