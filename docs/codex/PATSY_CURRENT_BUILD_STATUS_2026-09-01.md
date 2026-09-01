@@ -1,40 +1,70 @@
 # Patsy Current Build Status — 2026-09-01
 
 ## Purpose
-This is the current source-of-truth handoff for Codex after reconciling the live GitHub stack, connected Supabase, Google Drive donor material, Replit, Notion/Canva discovery, and the owner-supplied Android/Gemini uploads received on 2026-09-01.
 
-Do not use the older 2026-08-31 status as the execution starting point when this file is present.
+This is the current source-of-truth handoff after reconciling the verified native GitHub line with the newly uploaded full THyNK Studio implementation.
+
+Do not use the older 2026-08-31 status or the earlier wrapper-only donor assumption as the execution starting point.
 
 ## Authoritative native line
+
 - Repository: `blazekolton50-tech/PatsyApp`
+- Branch: `chatgpt/codex-ready-2026-09-01`
 - Native implementation: Kotlin + Jetpack Compose
-- Verified parent Draft PR: **#39 — Draft: native Camera capture and THyNK handoff foundation**
-- Verified parent branch: `chatgpt/camera-native-foundation-2026-08-31`
-- Verified parent head: `78009aa63cdbdb0ae1d33a537ec14392f0b3380b`
-- Codex-ready branch created from that exact head: `chatgpt/codex-ready-2026-09-01`
-- PR #39 is stacked on Draft PR #38. Keep both Draft. Do not merge either without explicit owner approval and physical-device QA.
+- Verified parent code head: `78009aa63cdbdb0ae1d33a537ec14392f0b3380b`
+- Verified parent Draft PR: #39 — native Camera capture and THyNK handoff foundation
+- PR #41 is the current Draft Codex/reconciliation handoff branch
+- Do not merge without explicit owner approval and physical-device QA
 
-## Latest verified CI before this handoff-only branch
+## Last verified code CI before documentation-only reconciliation
+
 Patsy Consolidation CI:
-- run number: `206`
-- run id: `33444861508`
-- exact code head: `78009aa63cdbdb0ae1d33a537ec14392f0b3380b`
-- conclusion: **SUCCESS**
-- unit tests: PASS
-- debug APK build: PASS
-- release variant build: PASS
-- debug APK upload: PASS
-- Android Studio ZIP build/upload: PASS
+- run number `206`
+- run id `33444861508`
+- exact code head `78009aa63cdbdb0ae1d33a537ec14392f0b3380b`
+- conclusion **SUCCESS**
+- unit tests PASS
+- debug APK PASS
+- release variant PASS
+- debug APK upload PASS
+- Android Studio ZIP build/upload PASS
 
-Any commits made on `chatgpt/codex-ready-2026-09-01` after the SHA above are handoff/documentation changes unless explicitly stated otherwise. Codex must still verify its own final head before completion claims.
+Documentation commits above that code SHA do not by themselves re-verify Android code. Any later production-code slice must run fresh verification on its final head.
+
+## Full THyNK Studio reconciliation — new current truth
+
+The newly uploaded Library is not merely a collection of wrapper filenames. Directly inspected sources include substantial working/donor editor implementations:
+- `Thynk-Full-Ecosystem-Studio(1).html`
+- `Thynk-Full-Studio-Working(1).html`
+- `Thynk-Studio-Pro-Complete` builds
+- `FULL-INVENTORY.pdf`
+- `THyNK-MUSIC-EVERYTHING.pdf`
+- `THYNK-Music-Lab.tsx`
+- `Templates.tsx`
+- Gemini/React Publication/Magazine and Video editor source
+- 1110-item setup/material descriptions
+
+The uploaded Studio demonstrates a broader feature set than the earlier handoff counted: Design canvas tools/layers/rulers/guides/templates, Publication/Documents page/spread workflows, Video timeline/effect concepts, Music Lab player/EQ/drum/piano/sampler/layers/effects workflows, templates, and local autosave/version-history ideas.
+
+Binding reconciliation files:
+- `docs/superpowers/specs/2026-09-01-thynk-full-studio-reconciliation-design.md`
+- `docs/superpowers/plans/2026-09-01-thynk-full-studio-reconciliation.md`
+- `docs/codex/THYNK_FULL_STUDIO_CAPABILITY_MATRIX_2026-09-01.md`
+- `docs/codex/THYNK_FULL_STUDIO_CAPABILITY_MATRIX_2026-09-01.json`
+
+Every capability is classified as:
+- `ALREADY_NATIVE`
+- `PORT_FROM_UPLOAD`
+- `REPLACE_PLACEHOLDER`
+- `GENUINELY_MISSING`
+
+Production architecture remains native Kotlin/Compose. Do not embed the donor React/Tailwind/WebAudio runtime, browser persistence or donor backend.
 
 ## Completed native foundations — do not redo
 
-### FINAL / SAVE MAIN APP screen foundation
-Preserve the approved Login, Set Password and Home visual baseline. Do not redesign these screens while adding deeper functionality.
+### Auth / protected shell
 
-### Authentication / protected shell
-Current stack includes:
+Already present:
 - Supabase auth/session transport foundation
 - encrypted session-token storage
 - Remember Me as session policy, not plaintext password storage
@@ -42,58 +72,58 @@ Current stack includes:
 - centralized route/deep-link authorization
 - fail-closed age/protected account handling
 - server-backed Owner authorization foundation
-- publishable client key only; no service-role/provider secret in Android
+- no service-role/provider secret in Android
 
-Real-user physical-device auth is still unverified because the connected project currently has no Auth users.
+Real-user physical-device auth remains unverified while the connected project has no real test Auth-user validation evidence.
 
 ### One authenticated primary navigation
-Current `FinalMainActivity` owns the shared authenticated primary navigation outside page content. Login and Set Password remain outside authenticated routing.
 
 Semantic routes remain:
 `HOME · THyNK · CAMERA · PATSY DMS · PROFILE`
 
-Visible bar remains locked as:
+Visible bar remains:
 `Home · [coloured THyNK only] · [large + only] · PDMs · Profile`
 
-Rules:
-- no duplicate small white THyNK subtitle
-- no CAMERA caption under the centre +
-- centre + remains Camera semantically
-- black/charcoal base + approved restrained rainbow wave/glow
-- authenticated Home, THyNK, Camera, PDMs, Profile, Owner Profile and Owner Tools use the shared outer bar
-- do not weaken auth/age/Owner gates to keep the bar visible
+Preserve the one outer navigation bar through authenticated nested THyNK/editor/Music pages. Do not reintroduce page-owned primary bars or weaken auth/Owner/age gates.
 
-Physical-device visual QA is still required.
+### Shared Studio editor core
 
-### THyNK editor/video foundation
 Already present:
 - `StudioEditorState.kt`
 - `StudioToolCatalog.kt`
+- existing Studio state tests
+- THyNK category/routing foundation
+
+These are the integration targets for uploaded Design/Photo/Publication/Presentation behavior. Do not create a second independent editor state model.
+
+### Media3 video foundation
+
+Already present:
 - `StudioVideoPlayerLogic.kt`
 - `StudioVideoPlayer.kt`
 - Media3 `1.8.1`
-- nested `video-editor` routing
-- truthful EMPTY / LOADING / READY / FAILED media state
-- no fake sample/imported production media
+- truthful EMPTY / LOADING / READY / FAILED state
+- video-editor handoff foundation
 
-Do not repeat the old Media3 job.
+Do not repeat the Media3 player job.
 
 ### Native Camera foundation
-Already present and green on PR #39:
-- Android photo capture
-- Android video capture
-- Android image import
-- Android video import
-- private FileProvider capture URIs
-- no broad storage permission
-- video URI handoff to the shared THyNK Media3 editor
-- internal routes for THyNK/Templates/Projects
-- AI Image and AI Video remain `NOT_CONFIGURED`
 
-Physical-device camera-app handoff and return-URI behavior still require real-device QA.
+Already present and previously green:
+- photo capture
+- video capture
+- image import
+- video import
+- private FileProvider URIs
+- no broad storage permission
+- video handoff to Media3 editor
+- AI Image/AI Video remain `NOT_CONFIGURED`
+
+Physical-device external Camera handoff/return behavior still requires device QA.
 
 ## Locked THyNK architecture
-Do not create another THyNK home. Preserve these ten main categories:
+
+Preserve these ten categories:
 1. Design & Templates
 2. Social & Content
 3. Photo & Image
@@ -105,10 +135,71 @@ Do not create another THyNK home. Preserve these ten main categories:
 9. THyNK Music
 10. AI & My Studio
 
-Current category item catalogue in `ThynkStudioCatalog.kt` is the native routing baseline.
+Do not create a second THyNK home.
 
-## THyNK Music — current native state
-Ten stable Music page IDs already exist and must remain stable:
+## Design & Templates — revised state
+
+The native editor core exists, and the upload now supplies substantial donor behavior for the missing/richer editor layer.
+
+### Already native
+- shared editor state/tool catalogue foundation
+- native app routing/shell
+- native import foundations
+
+### Port from upload
+- deterministic canvas transforms
+- layer hide/lock/reorder
+- rulers/guides
+- align/distribute
+- Text / Elements / Stickers / Draw / Frames / Background tool workflows
+- template catalogue behavior
+
+### Replace donor placeholders
+- placeholder/external images
+- browser persistence/export shortcuts
+- manifest-only assets without verified bytes/origin
+
+The **first coding slice after reconciliation is Design & Templates native port on the shared editor core**, not donor-wrapper rediscovery.
+
+## Photo & Image
+
+Port donor crop/adjust/filter/transform concepts through the shared native canvas/render/export architecture. CSS/browser-only effects are not production edits unless the native exported result contains the edit.
+
+## Video & Camera — revised state
+
+### Already native
+- Camera capture/import/FileProvider
+- Media3 player foundation
+
+### Port from upload
+- timeline UX/state
+- filter/effect/transition/text-animation/overlay models and controls
+
+### Replace placeholders
+- browser `captureStream`
+- timed demo `MediaRecorder` export
+- fake export URLs
+- alert-only controls
+
+A real Android video export pipeline remains separate work and cannot be claimed from browser demo export behavior.
+
+## Documents / Publication / Presentations
+
+The upload contains materially useful page/spread workflow donors:
+- multi-page concepts
+- add/duplicate/delete/reorder
+- single/facing spreads
+- text/image frame concepts
+- columns/gutters/guides/print-layout ideas
+- document and presentation templates
+
+Port these as focused native page-model slices. Do not treat visual mock cards or `alert(...)` buttons as real editing behavior.
+
+Verified Android PDF/document export remains genuinely incomplete until real bytes are written from the native editable page model.
+
+## THyNK Music — revised state
+
+Ten route IDs remain stable:
 1. `music-home`
 2. `create-music`
 3. `ai-music-generator`
@@ -120,106 +211,74 @@ Ten stable Music page IDs already exist and must remain stable:
 9. `mastering`
 10. `export`
 
-Current truth boundaries:
-- local UI/editor controls may work locally
-- do not fabricate audio data or waveforms
-- do not simulate AI generation success/progress
-- Create Music / AI generation / lyrics-vocal processing / mastering / audio export stay `NOT_CONFIGURED` until genuine pipelines are wired and verified
-- selecting an export format is not export success
+### Already native
+- ten-screen route foundation
+- native THyNK/Music screen foundation
 
-## Design & Templates — current direction
-Design is a primary THyNK category, not a generic placeholder page.
+### Port from upload
+- player controls
+- visualizer concepts driven by real audio
+- 10-band EQ UI/model
+- drum sequencer
+- piano roll
+- sampler editing workflow
+- track/layer controls
+- effects controls/model
+- sound-library workflow
 
-Locked first production vertical slice remains:
-- central canvas presets + custom size validation
-- deterministic canvas layer model
-- select / move / resize / rotate / flip / duplicate / delete / reorder
-- bounded undo/redo
-- Android image import with validation
-- real PNG export from logical canvas dimensions
-- editable project state remains separate from export result
-- permanent outer navigation remains visible
+### Replace placeholders
+- random waveform data
+- WebAudio oscillator/demo stand-ins
+- donor backend endpoints not backed by production services
 
-After this base slice is green, verified templates/assets can be surfaced through the donor manifest. Reference-only wrapper files must never appear as production templates.
+### Genuinely missing / NOT_CONFIGURED until real pipeline exists
+- AI music generation
+- lyrics/vocal provider processing
+- mastering provider pipeline
+- verified real WAV/MP3/OGG/FLAC/STEMS encoding/export
 
-## Profile and top-right account menu — preserve latest owner lock
-Do not replace these with an old `More`-first navigation concept.
+Choosing an export format is not export success.
 
-Primary Profile direction includes:
-- profile picture
-- profile/bio details
-- social links
-- gallery/media
-- recent projects
-- saved projects
-- Schedule and Calendar as secondary profile/account tools, not primary bottom tabs
-- Remember Me entry
-- Owner Profile / Owner Tools only after server authorization
+## Library / persistence
 
-Top-right account menu order/labels remain:
-- Account
-- About
-- Profile
-- Settings
-- Remember Me
-
-Where legacy code uses older names/layouts, align it to this contract without weakening route gates.
+Port project-list, autosave, draft-restore and version-history workflow ideas onto native account-scoped storage/Supabase contracts. Do not port browser `localStorage` or introduce donor Express/Prisma/Spring persistence as a second backend.
 
 ## Patsy / Rive truth gate
-Current repository contains Rive host/controller/adapter foundations, but the approved final production `.riv` is still not verified as present and device-tested.
 
-Do not:
-- fake production Rive with GIFs, sprites or static pose swaps
-- call a static PNG/bob animation production Patsy
-- claim lip-sync/walking/target-aware gesture completion without the real authored `.riv` and device evidence
+Native Rive host/runtime contracts exist, but the final authored production Patsy `.riv` is still not verified present and device-tested.
 
-Main app Patsy remains the realistic approved companion; cartoon Patsy is PawMoji/sticker-only.
+Do not claim a named donor `.riv` file exists merely because a PDF/manifest names it. Never substitute GIFs, sprites, PNG pose swaps or static bobbing for production Patsy.
 
-## Supabase live truth — refreshed 2026-09-01
-Connected project is ACTIVE_HEALTHY.
+## Supabase authority
 
-Current verified snapshot:
-- 37 public tables, RLS enabled on all 37
-- 10 private tables, RLS enabled on all 10
-- 119 policies
-- 4 private storage buckets
-- Security Advisor: 0 current lints
-- Auth users: 0
-- Studio presets: 48
-- other inspected production account/DM/template/project tables remain empty at this pre-user stage
+Supabase remains authoritative for backend/security/storage truth. Do not weaken RLS/service authority or create client-side Owner/age bypasses to make donor UI easier to port.
 
-Active relevant functions include:
-- `create-dm-thread` v5, JWT verified
-- `auth-login` v1
-- `auth-register-start` v1
-- `auth-register-complete` v1
-- `auth-reset-request` v1
-- `account-bootstrap` v4, JWT verified
-- `owner-authorize` v1, JWT verified
+## New execution order
 
-Do not change RLS or backend authority merely to make UI testing easier.
+1. reconciliation/matrix/source freeze — documentation layer now established
+2. Design & Templates native port on `StudioEditorState` / `StudioToolCatalog`
+3. Photo/Image shared-canvas extensions
+4. Video timeline/effects extensions on existing Media3/Camera
+5. Documents/Publication/Presentations page-model slices
+6. THyNK Music richer native tools while preserving ten IDs
+7. Library/autosave/project persistence on native/Supabase contracts
+8. Profile/account-menu and remaining DMs/storage/Remember Me/age/provider slices
+9. consolidated Android CI + physical-device QA
+10. production Patsy Rive only when the actual authored `.riv` is verified
 
-## New 2026-09-01 uploaded-source intake
-Full inventory and decision record:
-`docs/codex/PATSY_SOURCE_INTAKE_2026-09-01.md`
+Asset verification remains fail-closed inside any slice that surfaces a real asset, but asset verification must not block porting non-asset editor behavior already demonstrated in the upload.
 
-Key decisions:
-- owner-uploaded Android Studio THyNK Music artifact = useful older native recovery/reference snapshot; do not replace the newer PR #39 line with it
-- Gemini Java WebView wrapper = REJECTED for native production port
-- Gemini WebView XML = REJECTED for native production port
-- Drive/AI Studio/Replit/archive packs = REFERENCE_ONLY until bytes/license/checksum/duplicate status are verified
+## Verification rule for every production-code slice
 
-## Current execution order for Codex
-Use `docs/codex/CODEX_NEXT_INSTRUCTION.txt` as the binding instruction.
+- exact starting SHA
+- RED-before-GREEN test evidence
+- targeted tests
+- full unit suite
+- debug build
+- release build
+- fresh final-head CI
+- exact ending SHA
+- remaining device/provider/Rive limitations
+- confirm PR remains Draft and unmerged
 
-High-level order:
-1. verified donor-asset intake foundation
-2. generic THyNK canvas + Android image import + real PNG export
-3. Design & Templates verified-asset/template surfacing and autosave integration
-4. THyNK Music ten-screen refinement without fake providers
-5. Profile + account-menu visual/routing alignment to latest lock
-6. production DMs / storage / Remember Me slices as separately verified work
-7. production Patsy Rive only when the actual authored `.riv` is available
-8. consolidated CI + physical-device QA
-
-STOP on a failed dependent job. Keep work Draft. Never merge automatically.
+Stop on failure. Never merge automatically.
