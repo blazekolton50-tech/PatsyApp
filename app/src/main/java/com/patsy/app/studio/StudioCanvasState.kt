@@ -21,6 +21,18 @@ data class StudioCanvasState(
     val selectedObjectId: String? = null,
 )
 
+enum class StudioCanvasHorizontalAlignment {
+    LEFT,
+    CENTER,
+    RIGHT,
+}
+
+enum class StudioCanvasVerticalAlignment {
+    TOP,
+    CENTER,
+    BOTTOM,
+}
+
 sealed interface StudioCanvasAction {
     data class AddObject(val canvasObject: StudioCanvasObject) : StudioCanvasAction
     data class Select(val objectId: String?) : StudioCanvasAction
@@ -55,6 +67,14 @@ sealed interface StudioCanvasAction {
         val newObjectId: String,
         val offsetXPx: Float = 24f,
         val offsetYPx: Float = 24f,
+    ) : StudioCanvasAction
+    data class AlignHorizontal(
+        val objectId: String,
+        val alignment: StudioCanvasHorizontalAlignment,
+    ) : StudioCanvasAction
+    data class AlignVertical(
+        val objectId: String,
+        val alignment: StudioCanvasVerticalAlignment,
     ) : StudioCanvasAction
     data class BringForward(val objectId: String) : StudioCanvasAction
     data class SendBackward(val objectId: String) : StudioCanvasAction
@@ -137,6 +157,28 @@ fun reduceStudioCanvasState(
                 )
             }
         }
+    }
+
+    is StudioCanvasAction.AlignHorizontal -> state.updateUnlockedObject(action.objectId) { canvasObject ->
+        val availableWidth = (state.widthPx.toFloat() - canvasObject.widthPx).coerceAtLeast(0f)
+        canvasObject.copy(
+            xPx = when (action.alignment) {
+                StudioCanvasHorizontalAlignment.LEFT -> 0f
+                StudioCanvasHorizontalAlignment.CENTER -> availableWidth / 2f
+                StudioCanvasHorizontalAlignment.RIGHT -> availableWidth
+            },
+        )
+    }
+
+    is StudioCanvasAction.AlignVertical -> state.updateUnlockedObject(action.objectId) { canvasObject ->
+        val availableHeight = (state.heightPx.toFloat() - canvasObject.heightPx).coerceAtLeast(0f)
+        canvasObject.copy(
+            yPx = when (action.alignment) {
+                StudioCanvasVerticalAlignment.TOP -> 0f
+                StudioCanvasVerticalAlignment.CENTER -> availableHeight / 2f
+                StudioCanvasVerticalAlignment.BOTTOM -> availableHeight
+            },
+        )
     }
 
     is StudioCanvasAction.BringForward -> state.reorderOneStep(action.objectId, +1)
