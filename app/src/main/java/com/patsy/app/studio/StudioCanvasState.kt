@@ -50,6 +50,12 @@ sealed interface StudioCanvasAction {
         val objectId: String,
         val locked: Boolean,
     ) : StudioCanvasAction
+    data class Duplicate(
+        val objectId: String,
+        val newObjectId: String,
+        val offsetXPx: Float = 24f,
+        val offsetYPx: Float = 24f,
+    ) : StudioCanvasAction
     data class BringForward(val objectId: String) : StudioCanvasAction
     data class SendBackward(val objectId: String) : StudioCanvasAction
     data class Delete(val objectId: String) : StudioCanvasAction
@@ -109,6 +115,27 @@ fun reduceStudioCanvasState(
             if (canvasObject.id == action.objectId) canvasObject.copy(locked = action.locked) else canvasObject
         },
     )
+
+    is StudioCanvasAction.Duplicate -> {
+        if (action.newObjectId.isBlank() || state.objects.any { it.id == action.newObjectId }) {
+            state
+        } else {
+            val source = state.objects.firstOrNull { it.id == action.objectId }
+            if (source == null) {
+                state
+            } else {
+                val duplicate = source.copy(
+                    id = action.newObjectId,
+                    xPx = source.xPx + action.offsetXPx,
+                    yPx = source.yPx + action.offsetYPx,
+                )
+                state.copy(
+                    objects = state.objects + duplicate,
+                    selectedObjectId = duplicate.id,
+                )
+            }
+        }
+    }
 
     is StudioCanvasAction.BringForward -> state.reorderOneStep(action.objectId, +1)
     is StudioCanvasAction.SendBackward -> state.reorderOneStep(action.objectId, -1)
