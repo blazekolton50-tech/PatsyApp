@@ -30,9 +30,9 @@ class ThynkPanelNavigationTest {
     }
 
     @Test
-    fun `panel is visible while choosing and hidden inside a workspace`() {
+    fun `panel stays visible across THyNK browsing and workspaces`() {
         assertTrue(thynkPanelVisibleFor(ThynkPanelSurface.BROWSING))
-        assertFalse(thynkPanelVisibleFor(ThynkPanelSurface.WORKSPACE))
+        assertTrue(thynkPanelVisibleFor(ThynkPanelSurface.WORKSPACE))
     }
 
     @Test
