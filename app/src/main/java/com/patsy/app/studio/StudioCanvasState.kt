@@ -23,6 +23,11 @@ data class StudioCanvasState(
 
 sealed interface StudioCanvasAction {
     data class Select(val objectId: String?) : StudioCanvasAction
+    data class Move(
+        val objectId: String,
+        val deltaXPx: Float,
+        val deltaYPx: Float,
+    ) : StudioCanvasAction
 }
 
 fun reduceStudioCanvasState(
@@ -32,6 +37,19 @@ fun reduceStudioCanvasState(
     is StudioCanvasAction.Select -> state.copy(
         selectedObjectId = action.objectId?.takeIf { candidate ->
             state.objects.any { it.id == candidate }
+        },
+    )
+
+    is StudioCanvasAction.Move -> state.copy(
+        objects = state.objects.map { canvasObject ->
+            if (canvasObject.id != action.objectId || canvasObject.locked) {
+                canvasObject
+            } else {
+                canvasObject.copy(
+                    xPx = canvasObject.xPx + action.deltaXPx,
+                    yPx = canvasObject.yPx + action.deltaYPx,
+                )
+            }
         },
     )
 }
