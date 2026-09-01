@@ -9,6 +9,12 @@ sealed interface DmMemberStateResult {
     data object Unavailable : DmMemberStateResult
 }
 
+fun dmMemberStateResultForStatus(status: Int): DmMemberStateResult = when {
+    status in 200..299 -> DmMemberStateResult.Updated
+    status == 401 || status == 403 -> DmMemberStateResult.Unauthorized
+    else -> DmMemberStateResult.Unavailable
+}
+
 interface DmMemberStateTransport {
     suspend fun markRead(accessToken: String, threadId: String): DmMemberStateResult
     suspend fun setArchived(accessToken: String, threadId: String, archived: Boolean): DmMemberStateResult
