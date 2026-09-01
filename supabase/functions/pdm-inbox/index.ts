@@ -6,7 +6,7 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 })
 
 type CapabilityRow = { user_id: string; verified_age_tier: string; can_use_dms: boolean }
-type MemberRow = { thread_id: string; user_id: string; joined_at: string }
+type MemberRow = { thread_id: string; user_id: string; joined_at: string; last_read_at?: string | null; archived_at?: string | null }
 type ProfileRow = { user_id: string; username: string; display_name: string | null; avatar_path: string | null }
 type ThreadRow = { id: string; updated_at: string }
 type MessageRow = { id: string; thread_id: string; sender_id: string; body: string; created_at: string; expires_at: string | null }
@@ -45,13 +45,16 @@ Deno.serve(async (req: Request) => {
 
   const { data: ownMemberships, error: ownMembershipError } = await admin
     .from('dm_members')
-    .select('thread_id,user_id,joined_at')
+    .select('thread_id,user_id,joined_at,last_read_at,archived_at')
     .eq('user_id', user.id)
     .order('joined_at', { ascending: false })
     .limit(100)
   if (ownMembershipError) return json({ error: 'Could not load conversations' }, 500)
 
-  const threadIds = [...new Set((ownMemberships ?? []).map((row) => row.thread_id as string))]
+  const ownMembershipByThread = new Map<string, MemberRow>(
+    ((ownMemberships ?? []) as MemberRow[]).map((row) => [row.thread_id, row]),
+  )
+  const threadIds = [...ownMembershipByThread.keys()]
   if (threadIds.length === 0) return json({ threads: [] })
 
   const [{ data: threads, error: threadError }, { data: members, error: memberError }] = await Promise.all([
@@ -122,10 +125,14 @@ Deno.serve(async (req: Request) => {
   const profileByUser = new Map<string, ProfileRow>(((profiles ?? []) as ProfileRow[]).map((profile) => [profile.user_id, profile]))
 
   const latestByThread = new Map<string, MessageRow | null>()
-  let latestFailed = false
+  const unreadByThread = new Map<string, number>()
+  let messageLookupFailed = false
   await Promise.all(safeThreadIds.map(async (threadId) => {
     const now = new Date().toISOString()
-    const { data: latest, error } = await admin
+    const ownMembership = ownMembershipByThread.get(threadId)
+    if (!ownMembership) { messageLookupFailed = true; return }
+
+    let latestQuery = admin
       .from('dm_messages')
       .select('id,thread_id,sender_id,body,created_at,expires_at')
       .eq('thread_id', threadId)
@@ -133,15 +140,31 @@ Deno.serve(async (req: Request) => {
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle()
-    if (error) { latestFailed = true; return }
-    latestByThread.set(threadId, (latest as MessageRow | null) ?? null)
+
+    let unreadQuery = admin
+      .from('dm_messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('thread_id', threadId)
+      .neq('sender_id', user.id)
+      .or(`expires_at.is.null,expires_at.gt.${now}`)
+    if (ownMembership.last_read_at) unreadQuery = unreadQuery.gt('created_at', ownMembership.last_read_at)
+
+    const [latestResult, unreadResult] = await Promise.all([latestQuery, unreadQuery])
+    if (latestResult.error || unreadResult.error) { messageLookupFailed = true; return }
+    latestByThread.set(threadId, (latestResult.data as MessageRow | null) ?? null)
+    unreadByThread.set(threadId, unreadResult.count ?? 0)
   }))
-  if (latestFailed || latestByThread.size !== safeThreadIds.length) return json({ error: 'Could not load recent messages' }, 500)
+  if (
+    messageLookupFailed ||
+    latestByThread.size !== safeThreadIds.length ||
+    unreadByThread.size !== safeThreadIds.length
+  ) return json({ error: 'Could not load recent messages' }, 500)
 
   const threadById = new Map<string, ThreadRow>(((threads ?? []) as ThreadRow[]).map((thread) => [thread.id, thread]))
   const result = safeThreadIds.flatMap((threadId) => {
     const thread = threadById.get(threadId)
-    if (!thread) return []
+    const ownMembership = ownMembershipByThread.get(threadId)
+    if (!thread || !ownMembership) return []
     const threadMembers = membersByThread.get(threadId) ?? []
     const other = threadMembers.find((member) => member.user_id !== user.id)
     const otherProfile = other ? profileByUser.get(other.user_id) : null
@@ -159,8 +182,8 @@ Deno.serve(async (req: Request) => {
       last_message_sender_id: latest?.sender_id ?? null,
       last_message_created_at: latest?.created_at ?? null,
       last_message_expires_at: latest?.expires_at ?? null,
-      unread_count: null,
-      archived: null,
+      unread_count: unreadByThread.get(threadId) ?? 0,
+      archived: ownMembership.archived_at != null,
     }]
   })
   result.sort((a, b) => Date.parse(b.last_message_created_at ?? b.updated_at) - Date.parse(a.last_message_created_at ?? a.updated_at))
