@@ -18,6 +18,10 @@ class ThynkPanelNavigationTest {
             ),
             ThynkPanelDestination.entries,
         )
+        assertEquals(
+            listOf("THyNK-ME", "THyNK Chats", "THyNK-IN", "THyNK Music", "THyNK-IT"),
+            ThynkPanelDestination.entries.map { it.visibleLabel },
+        )
     }
 
     @Test
