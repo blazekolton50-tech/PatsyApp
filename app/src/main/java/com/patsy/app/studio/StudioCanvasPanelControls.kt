@@ -2,6 +2,7 @@ package com.patsy.app.studio
 
 data class StudioCanvasPanelControls(
     val quick: List<StudioCanvasQuickEditControl> = emptyList(),
+    val size: List<StudioCanvasQuickEditControl> = emptyList(),
     val alignment: List<StudioCanvasAlignmentControl> = emptyList(),
 )
 
@@ -14,6 +15,7 @@ fun studioCanvasPanelControls(
     return when (panelId) {
         "position" -> StudioCanvasPanelControls(
             quick = studioCanvasQuickEditControls(selected, StudioCanvasQuickEditGroup.POSITION),
+            size = studioCanvasSizeQuickEditControls(selected),
             alignment = studioCanvasAlignmentControls(selected),
         )
 
