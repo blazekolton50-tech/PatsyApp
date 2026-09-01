@@ -10,9 +10,11 @@ import androidx.compose.runtime.setValue
 import com.patsy.app.auth.PublicSession
 import com.patsy.app.dms.DmConversationResult
 import com.patsy.app.dms.DmDataResult
+import com.patsy.app.dms.DmMemberStateResult
 import com.patsy.app.dms.DmSendResult
 import com.patsy.app.dms.DmServiceBindings
 import com.patsy.app.dms.DmThreadSummary
+import com.patsy.app.dms.shouldRefreshInboxAfterMemberState
 import kotlinx.coroutines.launch
 
 @Composable
@@ -59,6 +61,13 @@ fun FinalPatsyDmLiveRoute(
                             )
                         },
                     )
+                    when (val memberState = DmServiceBindings.memberStateService.markRead(session, threadId)) {
+                        DmMemberStateResult.Updated -> {
+                            if (shouldRefreshInboxAfterMemberState(memberState)) refreshInbox()
+                        }
+                        DmMemberStateResult.Unauthorized -> onUnauthorized()
+                        DmMemberStateResult.Unavailable -> Unit
+                    }
                 }
                 DmConversationResult.Unauthorized -> onUnauthorized()
                 DmConversationResult.Unavailable -> Unit
