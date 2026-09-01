@@ -5,6 +5,7 @@ on:
     branches:
       - codex/consolidate-final3-auth-rive-2026-08-31
       - chatgpt/thynk-music-apk-2026-08-31
+      - chatgpt/codex-ready-2026-09-01
   pull_request:
     branches:
       - feat/final-login-password-home-design-lock
