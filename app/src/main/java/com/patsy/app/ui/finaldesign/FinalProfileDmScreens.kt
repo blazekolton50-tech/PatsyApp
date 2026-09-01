@@ -44,6 +44,7 @@ import com.patsy.app.dms.DmPresentationState
 import com.patsy.app.dms.DmThreadSummary
 import com.patsy.app.dms.dmLayoutForWidth
 import com.patsy.app.dms.filterDmThreads
+import com.patsy.app.dms.dmArchiveActionLabel
 import com.patsy.app.profile.ProfileMenuDestination
 import com.patsy.app.profile.ProfileMenuGroup
 import com.patsy.app.profile.ProfilePresentationState
@@ -228,6 +229,7 @@ fun FinalPatsyDmScreen(
     state: FinalDmScreenState,
     onThreadSelected: (String) -> Unit = {},
     onSendMessage: (String, String) -> Unit = { _, _ -> },
+    onArchiveChanged: (String, Boolean) -> Unit = { _, _ -> },
 ) {
     var search by remember { mutableStateOf(state.presentation.searchQuery) }
     var filter by remember { mutableStateOf(state.presentation.filter) }
@@ -255,6 +257,7 @@ fun FinalPatsyDmScreen(
                     selectedThreadId = selectedThreadId,
                     state = state,
                     onSendMessage = onSendMessage,
+                    onArchiveChanged = onArchiveChanged,
                     modifier = Modifier.fillMaxHeight().weight(0.58f),
                 )
             }
@@ -278,6 +281,7 @@ fun FinalPatsyDmScreen(
                     selectedThreadId = selectedThreadId,
                     state = state,
                     onSendMessage = onSendMessage,
+                    onArchiveChanged = onArchiveChanged,
                     modifier = Modifier.weight(1f).fillMaxWidth(),
                 )
             }
@@ -347,6 +351,7 @@ private fun DmConversationPane(
     selectedThreadId: String?,
     state: FinalDmScreenState,
     onSendMessage: (String, String) -> Unit,
+    onArchiveChanged: (String, Boolean) -> Unit,
     modifier: Modifier,
 ) {
     Column(modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -362,6 +367,13 @@ private fun DmConversationPane(
         val thread = state.threads.firstOrNull { it.id == selectedThreadId }
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(thread?.title ?: "Conversation", color = FinalWhite, fontSize = 18.sp, fontWeight = FontWeight.Black, modifier = Modifier.weight(1f))
+            thread?.let { activeThread ->
+                dmArchiveActionLabel(activeThread.archived)?.let { label ->
+                    TextButton(onClick = { onArchiveChanged(activeThread.id, activeThread.archived != true) }) {
+                        Text(label, color = FinalWhite, fontSize = 10.sp)
+                    }
+                }
+            }
             Text("Video: ${if (state.capabilities.canStartVideoCall) "Ready" else "NOT_CONFIGURED"}", color = FinalMuted, fontSize = 10.sp)
         }
         if (state.messages.isEmpty()) {
