@@ -11,7 +11,7 @@ package com.patsy.app.ui.finaldesign
  * IMPORTANT: global app navigation and the THyNK-area Panel are separate UI contracts.
  * Global navigation keeps HOME / THyNK / CAMERA / PATSY DMS / PROFILE semantics and the existing
  * Home / THyNK mark / + / PDMs / Profile visual. THyNK-area pages additionally use the locked
- * THyNK-ME / THyNK Chats / THyNK-IN! / THyNK Music / THyNK-IT panel.
+ * THyNK-ME / THyNK Chats / THyNK-IN / THyNK Music / THyNK-IT panel.
  */
 object FinalVisualContract {
     const val logoSquareDp = 132
@@ -40,7 +40,7 @@ object FinalVisualContract {
     val thynkPanelDisplayLabels = listOf(
         "THyNK-ME",
         "THyNK Chats",
-        "THyNK-IN!",
+        "THyNK-IN",
         "THyNK Music",
         "THyNK-IT",
     )
