@@ -43,7 +43,7 @@ import com.patsy.app.security.FailClosedOwnerAuthorizationGate
 import com.patsy.app.security.FinalOwnerAccessPolicy
 import com.patsy.app.security.OwnerAuthorizationDecision
 import com.patsy.app.security.OwnerCapability
-import com.patsy.app.thynk.LockedCameraHub
+import com.patsy.app.thynk.NativeCameraHub
 import com.patsy.app.thynk.ThynkStudioScreen
 import com.patsy.app.ui.finaldesign.FinalCharcoal
 import com.patsy.app.ui.finaldesign.FinalDebugSetPasswordRoute
@@ -53,6 +53,7 @@ import com.patsy.app.ui.finaldesign.FinalLoginRoute
 import com.patsy.app.ui.finaldesign.FinalPatsyDmScreen
 import com.patsy.app.ui.finaldesign.FinalPrimaryNavigationBar
 import com.patsy.app.ui.finaldesign.FinalProfileScreen
+import com.patsy.app.ui.finaldesign.FinalProfileLiveRoute
 import com.patsy.app.ui.finaldesign.FinalVisualContract
 import com.patsy.app.ui.finaldesign.FinalWhite
 import com.patsy.app.ui.finaldesign.finalDmScreenState
@@ -343,54 +344,62 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
                             } else {
                                 when (page) {
                                     FinalAppPage.THYNK -> ThynkStudioScreen()
-                                    FinalAppPage.CREATE -> LockedCameraHub()
+                                    FinalAppPage.CREATE -> NativeCameraHub(onOpenThynk = { navigate(FinalHomeDestination.THYNK) })
                                     FinalAppPage.DMS -> FinalPatsyDmScreen(
                                         state = finalDmScreenState(),
                                     )
-                                    FinalAppPage.PROFILE -> FinalProfileScreen(
-                                        state = finalProfileScreenState(
-                                            displayName = session?.username ?: "Your profile",
-                                            username = session?.username ?: "",
-                                        ),
-                                        emailVerified = session?.emailVerified == true,
-                                        ownerAccessChecked = ownerAccessChecked,
-                                        canViewOwnerProfile = FinalOwnerAccessPolicy.canOpen(
-                                            ownerProfileGrant,
-                                            OwnerCapability.VIEW_OWNER_PROFILE,
-                                        ),
-                                        canViewOwnerTools = FinalOwnerAccessPolicy.canOpen(
-                                            ownerToolsGrant,
-                                            OwnerCapability.VIEW_OWNER_TOOLS,
-                                        ),
-                                        onQuickAction = { page = FinalAppPage.THYNK },
-                                        onOpenOwnerProfile = {
-                                            scope.launch {
-                                                val refreshed = refreshOwnerAccess().first
-                                                if (
-                                                    FinalOwnerAccessPolicy.canOpen(
-                                                        refreshed,
-                                                        OwnerCapability.VIEW_OWNER_PROFILE,
-                                                    )
-                                                ) {
-                                                    page = FinalAppPage.OWNER_PROFILE
-                                                }
-                                            }
-                                        },
-                                        onOpenOwnerTools = {
-                                            scope.launch {
-                                                val refreshed = refreshOwnerAccess().second
-                                                if (
-                                                    FinalOwnerAccessPolicy.canOpen(
-                                                        refreshed,
-                                                        OwnerCapability.VIEW_OWNER_TOOLS,
-                                                    )
-                                                ) {
-                                                    page = FinalAppPage.OWNER_TOOLS
-                                                }
-                                            }
-                                        },
-                                        onSignOut = ::signOut,
-                                    )
+                                    FinalAppPage.PROFILE -> {
+                                        val activeSession = session
+                                        if (activeSession == null) {
+                                            FinalProtectedAccessState(
+                                                message = "Your profile requires a verified signed-in session.",
+                                                onSignOut = ::signOut,
+                                            )
+                                        } else {
+                                            FinalProfileLiveRoute(
+                                                session = activeSession,
+                                                emailVerified = activeSession.emailVerified,
+                                                ownerAccessChecked = ownerAccessChecked,
+                                                canViewOwnerProfile = FinalOwnerAccessPolicy.canOpen(
+                                                    ownerProfileGrant,
+                                                    OwnerCapability.VIEW_OWNER_PROFILE,
+                                                ),
+                                                canViewOwnerTools = FinalOwnerAccessPolicy.canOpen(
+                                                    ownerToolsGrant,
+                                                    OwnerCapability.VIEW_OWNER_TOOLS,
+                                                ),
+                                                onQuickAction = { page = FinalAppPage.THYNK },
+                                                onOpenOwnerProfile = {
+                                                    scope.launch {
+                                                        val refreshed = refreshOwnerAccess().first
+                                                        if (
+                                                            FinalOwnerAccessPolicy.canOpen(
+                                                                refreshed,
+                                                                OwnerCapability.VIEW_OWNER_PROFILE,
+                                                            )
+                                                        ) {
+                                                            page = FinalAppPage.OWNER_PROFILE
+                                                        }
+                                                    }
+                                                },
+                                                onOpenOwnerTools = {
+                                                    scope.launch {
+                                                        val refreshed = refreshOwnerAccess().second
+                                                        if (
+                                                            FinalOwnerAccessPolicy.canOpen(
+                                                                refreshed,
+                                                                OwnerCapability.VIEW_OWNER_TOOLS,
+                                                            )
+                                                        ) {
+                                                            page = FinalAppPage.OWNER_TOOLS
+                                                        }
+                                                    }
+                                                },
+                                                onUnauthorized = { page = FinalAppPage.PROTECTED },
+                                                onSignOut = ::signOut,
+                                            )
+                                        }
+                                    }
                                     else -> Unit
                                 }
                             }
