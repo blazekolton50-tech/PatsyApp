@@ -1,0 +1,12 @@
+package com.patsy.app.studio
+
+import com.patsy.app.auth.PublicSession
+
+object StudioPersistenceBindings {
+    var service: StudioPersistenceService = UnconfiguredStudioPersistenceService
+}
+
+private object UnconfiguredStudioPersistenceService : StudioPersistenceService {
+    override suspend fun load(session: PublicSession, projectId: String): StudioPersistenceResult =
+        StudioPersistenceResult.Unavailable
+}
