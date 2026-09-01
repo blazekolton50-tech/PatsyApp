@@ -33,6 +33,8 @@ jobs:
         run: python3 scripts/apply_thynk_design_editor_integration.py
       - name: Apply live authenticated Profile route
         run: python3 scripts/apply_live_profile_route.py
+      - name: Apply truthful PDM presentation
+        run: python3 scripts/apply_truthful_dm_ui.py
       - name: Persist integration on source branch
         if: github.event_name == 'push' && github.ref == 'refs/heads/chatgpt/thynk-music-apk-2026-08-31'
         run: |
@@ -54,7 +56,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app/src/main/java/com/patsy/app/thynk/ThynkStudioScreen.kt app/src/main/java/com/patsy/app/FinalMainActivity.kt
+          git add app/src/main/java/com/patsy/app/thynk/ThynkStudioScreen.kt app/src/main/java/com/patsy/app/FinalMainActivity.kt app/src/main/java/com/patsy/app/ui/finaldesign/FinalProfileDmScreens.kt
           if ! git diff --cached --quiet; then
             git commit -m "feat: persist verified native integrations"
             git reset --hard HEAD
