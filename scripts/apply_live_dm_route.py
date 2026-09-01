@@ -14,15 +14,17 @@ if new_signature not in screen:
         raise SystemExit("PDM screen signature anchor missing")
     screen = screen.replace(old_signature, new_signature, 1)
 
-old_thread = "                    onThread = { selectedThreadId = it },"
-new_thread = '''                    onThread = {
+# Match the semantic call, not its indentation: split and stacked branches intentionally sit at
+# different nesting levels.
+old_thread = "onThread = { selectedThreadId = it },"
+new_thread = '''onThread = {
                         selectedThreadId = it
                         onThreadSelected(it)
                     },'''
-if new_thread not in screen:
+if "onThreadSelected(it)" not in screen:
     count = screen.count(old_thread)
     if count != 2:
-        raise SystemExit(f"Expected two PDM thread-selection anchors, found {count}")
+        raise SystemExit(f"Expected two PDM thread-selection calls, found {count}")
     screen = screen.replace(old_thread, new_thread)
 
 old_split = '''                DmConversationPane(
