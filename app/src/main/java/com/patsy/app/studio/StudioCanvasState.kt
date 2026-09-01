@@ -58,6 +58,8 @@ sealed interface StudioCanvasAction {
     ) : StudioCanvasAction
     data class BringForward(val objectId: String) : StudioCanvasAction
     data class SendBackward(val objectId: String) : StudioCanvasAction
+    data class BringToFront(val objectId: String) : StudioCanvasAction
+    data class SendToBack(val objectId: String) : StudioCanvasAction
     data class Delete(val objectId: String) : StudioCanvasAction
 }
 
@@ -139,6 +141,8 @@ fun reduceStudioCanvasState(
 
     is StudioCanvasAction.BringForward -> state.reorderOneStep(action.objectId, +1)
     is StudioCanvasAction.SendBackward -> state.reorderOneStep(action.objectId, -1)
+    is StudioCanvasAction.BringToFront -> state.reorderToEdge(action.objectId, toFront = true)
+    is StudioCanvasAction.SendToBack -> state.reorderToEdge(action.objectId, toFront = false)
 
     is StudioCanvasAction.Delete -> {
         val target = state.objects.firstOrNull { it.id == action.objectId }
@@ -162,13 +166,31 @@ private inline fun StudioCanvasState.updateUnlockedObject(
     },
 )
 
+private fun StudioCanvasState.editableFloorIndex(): Int =
+    if (objects.firstOrNull()?.type == StudioLayerType.BACKGROUND) 1 else 0
+
 private fun StudioCanvasState.reorderOneStep(
     objectId: String,
     delta: Int,
 ): StudioCanvasState {
     val fromIndex = objects.indexOfFirst { it.id == objectId }
-    if (fromIndex < 0) return this
-    val targetIndex = (fromIndex + delta).coerceIn(0, objects.lastIndex)
+    if (fromIndex < 0 || objects[fromIndex].type == StudioLayerType.BACKGROUND) return this
+    val targetIndex = (fromIndex + delta).coerceIn(editableFloorIndex(), objects.lastIndex)
+    if (targetIndex == fromIndex) return this
+
+    val reordered = objects.toMutableList()
+    val item = reordered.removeAt(fromIndex)
+    reordered.add(targetIndex, item)
+    return copy(objects = reordered)
+}
+
+private fun StudioCanvasState.reorderToEdge(
+    objectId: String,
+    toFront: Boolean,
+): StudioCanvasState {
+    val fromIndex = objects.indexOfFirst { it.id == objectId }
+    if (fromIndex < 0 || objects[fromIndex].type == StudioLayerType.BACKGROUND) return this
+    val targetIndex = if (toFront) objects.lastIndex else editableFloorIndex()
     if (targetIndex == fromIndex) return this
 
     val reordered = objects.toMutableList()
