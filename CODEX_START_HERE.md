@@ -2,63 +2,54 @@
 
 Repository: `blazekolton50-tech/PatsyApp`
 
+## CURRENT WORK BRANCH
+
+`chatgpt/codex-ready-brand-ui-lock-2026-09-01`
+
+This branch is stacked on the green native Camera foundation from Draft PR #39.
+KEEP ALL WORK DRAFT. DO NOT MERGE.
+
+## READ FIRST
+
+The current master handoff is:
+
+`docs/codex/CODEX_READY_2026-09-01.md`
+
+That file supersedes older branding/navigation/UI wording where the two conflict.
+
 Do not redesign or replace this project from scratch.
+Preserve working native Android/Kotlin/Compose code, Supabase security, real Camera/Media3 foundations and truthful provider boundaries.
 
-## First task
-Before changing code, inspect the existing repository and return an audit with four sections:
+## FIRST EXECUTION PASS
 
-- IMPLEMENTED
-- PARTIAL
-- MISSING
-- CONFLICTING
+Before changing code:
 
-Check navigation/routes, theme/design tokens, authentication, Patsy rendering/animation, social/feed, Design Studio, profile, messaging, scheduling, storage/media retention, safety/age gating and owner/admin areas.
+1. Read `docs/codex/CODEX_READY_2026-09-01.md`.
+2. Inspect the current repository and return IMPLEMENTED / PARTIAL / MISSING / CONFLICTING.
+3. Verify the two owner-supplied official logo PNGs are available to your workspace.
+4. Copy them to the exact Android resource paths specified in the handoff and verify the listed SHA-256 values.
+5. Replace recreated/typed THyNK marks with the official PNGs.
+6. Preserve the one global homebar on every authenticated page and editor.
+7. Preserve the real centre + Camera route.
+8. Continue the PDM/Profile/THyNK/Music/Video work from existing code and plans rather than starting new shells.
 
-## Locked visual rules
-- Black/charcoal primary UI.
-- Main text white/light grey.
-- Primary buttons are WHITE with restrained rainbow/neon borders/glow.
-- Approved Patsy logo is centred at the top on principal pages.
-- Tagline is `A LEGACY LED BY PAWS`, small/subtle only.
-- Main Patsy is the realistic grey shaggy dog companion, never cartoon/chibi.
-- Main Patsy is not permanently boxed, circled or trapped in a halo. She should move freely on transparent background where possible.
-- Main Patsy is always alive in the interface: walk/trot, sit, lie down, turn, head tilt, blink, look around, mouth movement, react, gesture, peek from screen edges, move between UI areas, shrink/settle when appropriate.
-- Cartoon Patsy is reserved for PawMojis / custom keyboard / stickers / reactions only.
+## NON-NEGOTIABLE CURRENT NAV
 
-## Signup copy
-Use exactly:
+`HOME · [official THyNK logo] · large + CAMERA · PDMs · PROFILE`
 
-`I'm Patsy. Your personal AI PetPal. Log in and I'll show you what I can do!`
+The rainbow separator is straight on both outer sides and rises only in a smooth centre arch around/over the Camera +.
+No second THyNK caption below the logo.
 
-## Main navigation
-Home · Design Studio · Create/+ · Patsy DMs · Profile
+## BRAND HEADER RULE
 
-## Design Studio
-Treat this as a major feature area, not one generic page. It includes Ask Patsy while creating, AI image generation, 10-second AI video generation, memes, templates, image/video editing, filters/adjustments, text/layout tools, project continuation, preview, save/export, share, email copy, import/reload and schedule/post after approval.
+- Patsy pages → official Patsy logo.
+- THyNK pages → official THyNK logo.
+- Music editing pages → official THyNK Music logo.
+- Video editing pages → official THyNK Music logo.
 
-If any provider/API is unavailable, mark it `NOT_CONFIGURED`. Never fake a working service.
+## TRUTH RULE
 
-## Media retention
-- Unlocked images/videos in Patsy storage are temporary and auto-delete after 3 months.
-- Warn users clearly and remind them before expiry.
-- Offer: Save to Device · Email Me a Copy · Lock in Patsy · Share · Import/Reload.
-- Emailing a copy does not lock the item in Patsy storage.
-- Users can reload from device storage and supported cloud/file providers such as Google Drive / OneDrive / Dropbox where available.
-- Locked-profile target limits: 100 photos and 30 videos.
+Use `WORKING`, `LOCAL`, or `NOT_CONFIGURED`.
+Never fake AI generation, stems, waveforms, calling, cloud persistence, mastering or export success.
 
-## Remember Me
-Anything intentionally remembered/locked uses Patsy's paw. Outline by default; when saved it fills with bright neon, gives a short click + soft chime, pulses once, sparkles fade, then remains locked in.
-
-## Messaging
-Default DM retention target: auto-delete after 3 days unless settings/age rules permit otherwise.
-
-## Age-aware rules
-Keep under-16 protections and age gating enforced. Do not expose adult-only social/messaging features merely by hiding UI; enforce at the appropriate backend/security layer too.
-
-## Persistent Patsy
-Patsy is one persistent AI companion across the app with Brain, Memory, Personality, Awareness and Safety systems. She is not a decorative mascot.
-
-## Priority conflict to fix after the audit
-Any current main-Patsy treatment that uses a cartoon/static boxed mascot should be replaced with the realistic unboxed moving Patsy treatment, without changing PawMoji assets.
-
-Preserve approved work. Do not make broad visual changes without explicit approval.
+Run tests/builds before claiming completion and report remaining device-only checks.
