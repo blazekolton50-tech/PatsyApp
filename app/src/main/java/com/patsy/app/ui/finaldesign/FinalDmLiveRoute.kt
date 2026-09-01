@@ -97,6 +97,24 @@ fun FinalPatsyDmLiveRoute(
         }
     }
 
+    fun setArchived(threadId: String, archived: Boolean) {
+        scope.launch {
+            when (val result = DmServiceBindings.memberStateService.setArchived(session, threadId, archived)) {
+                DmMemberStateResult.Updated -> {
+                    if (screenState.presentation.selectedThreadId == threadId) {
+                        screenState = screenState.copy(
+                            presentation = screenState.presentation.copy(selectedThreadId = null),
+                            messages = emptyList(),
+                        )
+                    }
+                    if (shouldRefreshInboxAfterMemberState(result)) refreshInbox()
+                }
+                DmMemberStateResult.Unauthorized -> onUnauthorized()
+                DmMemberStateResult.Unavailable -> Unit
+            }
+        }
+    }
+
     LaunchedEffect(session.sessionId) {
         refreshInbox()
     }
@@ -105,5 +123,6 @@ fun FinalPatsyDmLiveRoute(
         state = screenState,
         onThreadSelected = ::openThread,
         onSendMessage = ::sendMessage,
+        onArchiveChanged = ::setArchived,
     )
 }
