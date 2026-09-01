@@ -1,6 +1,7 @@
 from pathlib import Path
 
 HOST = Path("app/src/main/java/com/patsy/app/thynk/ThynkStudioScreen.kt")
+DESIGN = Path("app/src/main/java/com/patsy/app/thynk/ThynkDesignEditorScreen.kt")
 
 OLD_BACK = '''                    is ThynkRoute.Editor -> ThynkRoute.Category(ThynkStudioCatalog.categories.first { it.id == "video" })'''
 NEW_BACK = '''                    is ThynkRoute.Editor -> {
@@ -17,6 +18,117 @@ NEW_RENDER = '''                is ThynkRoute.Editor -> when (editorDestinationF
                     null -> InfoPanel("EDITOR UNAVAILABLE", "This editor route is not configured.")
                 }'''
 
+OLD_WIDE_DUPLICATE_ANCHOR = '''                        },
+                        modifier = Modifier.widthIn(min = 260.dp, max = 310.dp).fillMaxHeight(),'''
+NEW_WIDE_DUPLICATE_ANCHOR = '''                        },
+                        onDuplicateObject = { objectId ->
+                            canvasState = reduceStudioCanvasState(
+                                canvasState,
+                                StudioCanvasAction.Duplicate(
+                                    objectId = objectId,
+                                    newObjectId = "copy-${nextObjectSequence}",
+                                ),
+                            )
+                            nextObjectSequence += 1
+                        },
+                        modifier = Modifier.widthIn(min = 260.dp, max = 310.dp).fillMaxHeight(),'''
+
+OLD_NARROW_DUPLICATE_ANCHOR = '''                        },
+                        modifier = Modifier.fillMaxWidth().height(116.dp),'''
+NEW_NARROW_DUPLICATE_ANCHOR = '''                        },
+                        onDuplicateObject = { objectId ->
+                            canvasState = reduceStudioCanvasState(
+                                canvasState,
+                                StudioCanvasAction.Duplicate(
+                                    objectId = objectId,
+                                    newObjectId = "copy-${nextObjectSequence}",
+                                ),
+                            )
+                            nextObjectSequence += 1
+                        },
+                        modifier = Modifier.fillMaxWidth().height(116.dp),'''
+
+OLD_CONTEXT_SIGNATURE = '''    onStateChange: (StudioCanvasState) -> Unit,
+    onAddToolObject: (String) -> Unit,
+    modifier: Modifier,'''
+NEW_CONTEXT_SIGNATURE = '''    onStateChange: (StudioCanvasState) -> Unit,
+    onAddToolObject: (String) -> Unit,
+    onDuplicateObject: (String) -> Unit,
+    modifier: Modifier,'''
+
+OLD_LAYERS = '''                    state.objects.asReversed().take(5).forEach { layer ->
+                        Row(
+                            Modifier.fillMaxWidth().clickable {
+                                onStateChange(reduceStudioCanvasState(state, StudioCanvasAction.Select(layer.id)))
+                            }.padding(vertical = 5.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(layer.label, color = FinalWhite, fontSize = 10.sp, modifier = Modifier.weight(1f))
+                            Text(if (layer.visible) "SHOW" else "HIDE", color = FinalMuted, fontSize = 8.sp)
+                            Text(if (layer.locked) "  LOCK" else "  OPEN", color = FinalMuted, fontSize = 8.sp)
+                        }
+                    }'''
+NEW_LAYERS = '''                    state.objects.asReversed().take(5).forEach { layer ->
+                        Column(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                            Row(
+                                Modifier.fillMaxWidth().clickable {
+                                    onStateChange(reduceStudioCanvasState(state, StudioCanvasAction.Select(layer.id)))
+                                },
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(layer.label, color = FinalWhite, fontSize = 10.sp, modifier = Modifier.weight(1f))
+                                Text(if (layer.visible) "VISIBLE" else "HIDDEN", color = FinalMuted, fontSize = 8.sp)
+                                Text(if (layer.locked) "  LOCKED" else "  EDIT", color = FinalMuted, fontSize = 8.sp)
+                            }
+                            if (layer.type != StudioLayerType.BACKGROUND) {
+                                Row(
+                                    Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(top = 4.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                ) {
+                                    DesignMiniAction(if (layer.visible) "HIDE" else "SHOW") {
+                                        onStateChange(reduceStudioCanvasState(state, StudioCanvasAction.SetVisible(layer.id, !layer.visible)))
+                                    }
+                                    DesignMiniAction(if (layer.locked) "UNLOCK" else "LOCK") {
+                                        onStateChange(reduceStudioCanvasState(state, StudioCanvasAction.SetLocked(layer.id, !layer.locked)))
+                                    }
+                                    DesignMiniAction("FORWARD") {
+                                        onStateChange(reduceStudioCanvasState(state, StudioCanvasAction.BringForward(layer.id)))
+                                    }
+                                    DesignMiniAction("BACK") {
+                                        onStateChange(reduceStudioCanvasState(state, StudioCanvasAction.SendBackward(layer.id)))
+                                    }
+                                    DesignMiniAction("FRONT") {
+                                        onStateChange(reduceStudioCanvasState(state, StudioCanvasAction.BringToFront(layer.id)))
+                                    }
+                                    DesignMiniAction("BACKMOST") {
+                                        onStateChange(reduceStudioCanvasState(state, StudioCanvasAction.SendToBack(layer.id)))
+                                    }
+                                    DesignMiniAction("DUPLICATE") { onDuplicateObject(layer.id) }
+                                    DesignMiniAction("DELETE") {
+                                        onStateChange(reduceStudioCanvasState(state, StudioCanvasAction.Delete(layer.id)))
+                                    }
+                                }
+                            }
+                        }
+                    }'''
+
+OLD_PANEL_ACTION = '''@Composable
+private fun DesignPanelAction(label: String, onClick: () -> Unit) {'''
+NEW_PANEL_ACTION = '''@Composable
+private fun DesignMiniAction(label: String, onClick: () -> Unit) {
+    Box(
+        Modifier.border(1.dp, DesignBorder, RoundedCornerShape(7.dp))
+            .clip(RoundedCornerShape(7.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 7.dp, vertical = 5.dp),
+    ) {
+        Text(label, color = FinalMuted, fontSize = 7.sp, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun DesignPanelAction(label: String, onClick: () -> Unit) {'''
+
 
 def replace_once(source: str, old: str, new: str, label: str) -> str:
     if new in source:
@@ -27,14 +139,25 @@ def replace_once(source: str, old: str, new: str, label: str) -> str:
 
 
 def main() -> None:
-    source = HOST.read_text(encoding="utf-8")
-    updated = replace_once(source, OLD_BACK, NEW_BACK, "editor Back ownership")
-    updated = replace_once(updated, OLD_RENDER, NEW_RENDER, "editor render dispatch")
-    if updated != source:
-        HOST.write_text(updated, encoding="utf-8")
-        print("THyNK Design editor host integration applied")
+    host_source = HOST.read_text(encoding="utf-8")
+    host_updated = replace_once(host_source, OLD_BACK, NEW_BACK, "editor Back ownership")
+    host_updated = replace_once(host_updated, OLD_RENDER, NEW_RENDER, "editor render dispatch")
+    if host_updated != host_source:
+        HOST.write_text(host_updated, encoding="utf-8")
+
+    design_source = DESIGN.read_text(encoding="utf-8")
+    design_updated = replace_once(design_source, OLD_WIDE_DUPLICATE_ANCHOR, NEW_WIDE_DUPLICATE_ANCHOR, "wide Design duplicate callback")
+    design_updated = replace_once(design_updated, OLD_NARROW_DUPLICATE_ANCHOR, NEW_NARROW_DUPLICATE_ANCHOR, "narrow Design duplicate callback")
+    design_updated = replace_once(design_updated, OLD_CONTEXT_SIGNATURE, NEW_CONTEXT_SIGNATURE, "Design context callback signature")
+    design_updated = replace_once(design_updated, OLD_LAYERS, NEW_LAYERS, "Design Layers actions")
+    design_updated = replace_once(design_updated, OLD_PANEL_ACTION, NEW_PANEL_ACTION, "Design mini layer action")
+    if design_updated != design_source:
+        DESIGN.write_text(design_updated, encoding="utf-8")
+
+    if host_updated != host_source or design_updated != design_source:
+        print("THyNK Design host and native layer controls integration applied")
     else:
-        print("THyNK Design editor host integration already applied")
+        print("THyNK Design host and native layer controls integration already applied")
 
 
 if __name__ == "__main__":
