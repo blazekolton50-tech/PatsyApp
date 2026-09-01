@@ -4,7 +4,7 @@
 
 **Goal:** Replace the legacy `More`-style final-profile surface with the latest locked Profile layout and make the exact five-item top-right account menu consistently route to secondary account pages without changing the five primary destinations or weakening authorization.
 
-**Architecture:** Add pure contracts for account-menu order and profile sections, then create focused Compose files under `ui/finaldesign` instead of expanding legacy `MainActivity.kt`. Hoist secondary page/menu routing into `FinalMainActivity`, keep Owner checks exactly server-backed, and reuse existing final design tokens/logo assets. Secondary Account/About/Settings/Remember Me pages are not primary bottom destinations.
+**Architecture:** Add pure contracts for account-menu order and profile sections, create focused Compose files under `ui/finaldesign`, and hoist secondary page/menu routing into `FinalMainActivity`. Preserve current Owner authorization checks exactly. Account/About/Settings/Remember Me are secondary pages and never become bottom-navigation destinations.
 
 **Tech Stack:** Kotlin/JVM unit tests, Jetpack Compose/Material3, current auth/bootstrap/Owner contracts, existing final design tokens.
 
@@ -13,8 +13,9 @@
 ## Global Constraints
 
 - Work on `chatgpt/codex-ready-2026-09-01`; keep Draft and unmerged.
-- Execute after the main THyNK donor/canvas/design/music jobs remain GREEN.
+- Execute only after the main THyNK donor/canvas/design/music jobs remain GREEN.
 - Primary semantic destinations remain exactly `HOME · THyNK · CAMERA · PATSY DMS · PROFILE`.
+- Current display-label contract remains exactly `Home · [no text under THyNK] · [no text under +] · PDMs · Profile`.
 - Schedule and Calendar remain secondary tools, never primary bottom tabs.
 - Top-right account menu order is exactly `Account · About · Profile · Settings · Remember Me`.
 - Owner Profile/Owner Tools stay server-authorized and fail closed.
@@ -35,7 +36,7 @@
 **Interfaces:**
 - Produces: `FinalAccountMenuDestination`, `FinalAccountMenuContract.items`, `FinalProfileSection`, `FinalProfileContract.sections`.
 
-- [ ] **Step 1: Write failing account-menu order test**
+- [ ] **Step 1: Write failing contract tests**
 
 ```kotlin
 package com.patsy.app.ui.finaldesign
@@ -53,8 +54,6 @@ class FinalAccountMenuContractTest {
 }
 ```
 
-- [ ] **Step 2: Write failing profile-section test**
-
 ```kotlin
 package com.patsy.app.ui.finaldesign
 
@@ -71,22 +70,25 @@ class FinalProfileContractTest {
 }
 ```
 
-- [ ] **Step 3: Run tests to verify RED**
+- [ ] **Step 2: Run tests and verify RED**
 
 ```bash
 ./gradlew testDebugUnitTest --tests 'com.patsy.app.ui.finaldesign.FinalAccountMenuContractTest'
 ./gradlew testDebugUnitTest --tests 'com.patsy.app.ui.finaldesign.FinalProfileContractTest'
 ```
-Expected: FAIL because the contracts do not exist.
+Expected: FAIL because the new contract types do not exist.
 
-- [ ] **Step 4: Implement the contracts**
+- [ ] **Step 3: Implement the exact contracts**
 
 ```kotlin
 package com.patsy.app.ui.finaldesign
 
 enum class FinalAccountMenuDestination { ACCOUNT, ABOUT, PROFILE, SETTINGS, REMEMBER_ME }
 
-data class FinalAccountMenuItem(val destination: FinalAccountMenuDestination, val label: String)
+data class FinalAccountMenuItem(
+    val destination: FinalAccountMenuDestination,
+    val label: String,
+)
 
 object FinalAccountMenuContract {
     val items = listOf(
@@ -112,10 +114,12 @@ enum class FinalProfileSection(val label: String) {
     REMEMBER_ME("Remember Me"),
 }
 
-object FinalProfileContract { val sections = FinalProfileSection.entries.toList() }
+object FinalProfileContract {
+    val sections = FinalProfileSection.entries.toList()
+}
 ```
 
-- [ ] **Step 5: Run tests and commit**
+- [ ] **Step 4: Run tests and commit**
 
 ```bash
 ./gradlew testDebugUnitTest --tests 'com.patsy.app.ui.finaldesign.FinalAccountMenuContractTest'
@@ -124,51 +128,51 @@ git add app/src/main/java/com/patsy/app/ui/finaldesign/FinalAccountMenuContract.
 git commit -m "test: lock profile and account menu contracts"
 ```
 
-### Task 2: Build reusable top-right account menu UI with exact actions
+---
+
+### Task 2: Build reusable top-right account menu UI and wire current top bars
 
 **Files:**
 - Create: `app/src/main/java/com/patsy/app/ui/finaldesign/FinalAccountMenu.kt`
 - Modify: `app/src/main/java/com/patsy/app/ui/finaldesign/FinalHomeScreen.kt`
 - Modify: `app/src/main/java/com/patsy/app/thynk/ThynkStudioScreen.kt`
 - Modify: `app/src/main/java/com/patsy/app/thynk/NativeCameraHub.kt`
+- Modify: `app/src/test/java/com/patsy/app/ui/finaldesign/FinalAccountMenuContractTest.kt`
 
 **Interfaces:**
 - Consumes: `FinalAccountMenuContract.items`.
-- Produces: `FinalAccountMenuButton`, `FinalAccountMenuPopup`, `onOpenAccountMenu` callbacks on Home/THyNK/Camera headers.
+- Produces: `accountMenuDestinationForLabel`, `FinalAccountMenuButton`, `FinalAccountMenuPopup`.
 
-- [ ] **Step 1: Add a pure selection helper and failing test**
+- [ ] **Step 1: Add failing selection-helper test**
 
-Add to `FinalAccountMenuContract.kt`:
+```kotlin
+@Test fun onlyLockedMenuLabelsResolve() {
+    assertEquals(FinalAccountMenuDestination.PROFILE, accountMenuDestinationForLabel("Profile"))
+    assertEquals(null, accountMenuDestinationForLabel("Schedule"))
+}
+```
+
+- [ ] **Step 2: Run and verify RED**
+
+```bash
+./gradlew testDebugUnitTest --tests 'com.patsy.app.ui.finaldesign.FinalAccountMenuContractTest.onlyLockedMenuLabelsResolve'
+```
+Expected: FAIL because `accountMenuDestinationForLabel` does not exist.
+
+- [ ] **Step 3: Implement helper and menu composables**
 
 ```kotlin
 fun accountMenuDestinationForLabel(label: String): FinalAccountMenuDestination? =
     FinalAccountMenuContract.items.firstOrNull { it.label == label }?.destination
 ```
 
-Add test:
+`FinalAccountMenuButton(onClick)` uses the existing top-right circular charcoal/rainbow treatment and `•••` semantics.
 
-```kotlin
-@Test fun profileLabelRoutesToProfileWithoutChangingPrimaryContract() {
-    assertEquals(FinalAccountMenuDestination.PROFILE, accountMenuDestinationForLabel("Profile"))
-    assertEquals(null, accountMenuDestinationForLabel("Schedule"))
-}
-```
+`FinalAccountMenuPopup(expanded, onDismiss, onSelect)` renders exactly `FinalAccountMenuContract.items` in their stored order. It must not insert Schedule, Calendar, Owner Tools, Sign out or another primary destination.
 
-Run:
-```bash
-./gradlew testDebugUnitTest --tests 'com.patsy.app.ui.finaldesign.FinalAccountMenuContractTest'
-```
-Expected: RED before helper implementation, then PASS after implementation.
+- [ ] **Step 4: Replace decorative ellipses with the reusable button**
 
-- [ ] **Step 2: Create reusable menu composables**
-
-`FinalAccountMenuButton(onClick)` uses the existing rainbow/charcoal circular treatment and visible `•••` semantics.
-
-`FinalAccountMenuPopup(expanded, onDismiss, onSelect)` renders exactly the five contract items in contract order. It must not add Schedule, Calendar, Owner Tools, sign out or any sixth primary destination.
-
-- [ ] **Step 3: Replace decorative ellipses with real callback buttons**
-
-Change signatures:
+Use these signatures when the Design job has already added `accountScopeKey` to THyNK:
 
 ```kotlin
 fun FinalHomeScreen(
@@ -193,38 +197,34 @@ fun NativeCameraHub(
 )
 ```
 
-Use `FinalAccountMenuButton` in the current top-right location. Do not alter the centered logo or bottom navigation.
+Keep the centered logo and shared bottom navigation unchanged.
 
-- [ ] **Step 4: Run unit tests and debug build**
+- [ ] **Step 5: Run tests/build and commit**
 
 ```bash
 ./gradlew testDebugUnitTest --tests 'com.patsy.app.ui.finaldesign.*'
 ./gradlew assembleDebug --stacktrace
-```
-Expected: PASS.
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add app/src/main/java/com/patsy/app/ui/finaldesign app/src/main/java/com/patsy/app/thynk
+git add app/src/main/java/com/patsy/app/ui/finaldesign app/src/main/java/com/patsy/app/thynk app/src/test/java/com/patsy/app/ui/finaldesign
 git commit -m "feat: wire locked top-right account menu"
 ```
 
-### Task 3: Create truthful final Profile screen and stop using legacy `More` as the final profile UI
+---
+
+### Task 3: Create truthful final Profile screen and stop using legacy `More` as final Profile UI
 
 **Files:**
 - Create: `app/src/main/java/com/patsy/app/ui/finaldesign/FinalProfileScreen.kt`
 - Modify: `app/src/main/java/com/patsy/app/FinalMainActivity.kt`
-- Test: `app/src/test/java/com/patsy/app/ui/finaldesign/FinalProfileContractTest.kt`
+- Modify: `app/src/test/java/com/patsy/app/ui/finaldesign/FinalProfileContractTest.kt`
 
 **Interfaces:**
-- Consumes: current `Profile` session model, Owner capability booleans/callbacks, `FinalProfileContract.sections`.
+- Consumes: current `Profile` session model, email verification flag, current Owner authorization booleans/callbacks.
 - Produces: `FinalProfileViewState`, `FinalProfileScreen`.
 
-- [ ] **Step 1: Add failing truth-state test**
+- [ ] **Step 1: Add failing truthful-empty-state test**
 
 ```kotlin
-@Test fun absentOptionalProfileContentRemainsEmpty() {
+@Test fun absentOptionalProfileContentStaysAbsent() {
     val state = FinalProfileViewState(
         displayName = "Blaze",
         username = "blaze",
@@ -237,18 +237,19 @@ git commit -m "feat: wire locked top-right account menu"
         savedProjectCount = 0,
     )
     assertEquals(null, state.bio)
+    assertEquals(emptyList(), state.socialLinks)
     assertEquals(0, state.galleryCount)
-    assertEquals(0, state.recentProjectCount)
 }
 ```
 
-Run:
-```bash
-./gradlew testDebugUnitTest --tests 'com.patsy.app.ui.finaldesign.FinalProfileContractTest'
-```
-Expected: RED because `FinalProfileViewState` does not exist.
+- [ ] **Step 2: Run and verify RED**
 
-- [ ] **Step 2: Implement truthful view state**
+```bash
+./gradlew testDebugUnitTest --tests 'com.patsy.app.ui.finaldesign.FinalProfileContractTest.absentOptionalProfileContentStaysAbsent'
+```
+Expected: FAIL because `FinalProfileViewState` does not exist.
+
+- [ ] **Step 3: Implement truthful view state**
 
 ```kotlin
 data class FinalProfileViewState(
@@ -264,28 +265,32 @@ data class FinalProfileViewState(
 )
 ```
 
-Do not seed fake bio, links, media or projects. Use `Not set`, `No gallery items yet`, `No recent projects yet` and `No saved projects yet` only as empty-state copy.
+Do not seed fake bio, links, media or projects. Render exact empty-state copy:
+- bio: `Not set`
+- gallery: `No gallery items yet`
+- recent projects: `No recent projects yet`
+- saved projects: `No saved projects yet`
 
-- [ ] **Step 3: Implement `FinalProfileScreen`**
+- [ ] **Step 4: Implement `FinalProfileScreen` with current final tokens**
 
-Use existing `FinalCharcoal`, `FinalCard`, `FinalRainbow`, `FinalWhite`, `FinalMuted` and approved logo asset. Render:
-- identity/avatar area using real available profile/session data
-- Bio & Social empty/real state
+Render:
+- identity/avatar area from available profile/session data
+- Bio & Social
 - Gallery
 - Recent Projects
 - Saved Projects
 - Schedule & Calendar secondary actions
 - Remember Me secondary action
-- Owner Profile and Owner Tools buttons only when their current server-authorized booleans are true
-- sign out as an account action, not a primary navigation destination
+- Owner Profile and Owner Tools buttons only when current server-authorized booleans are true
+- Sign out as an account action, never a primary destination
 
-- [ ] **Step 4: Replace Final `More(...)` call only**
+Use existing `FinalCharcoal`, `FinalCard`, `FinalRainbow`, `FinalWhite`, `FinalMuted` and the approved logo/chrome.
 
-In `FinalMainActivity`, replace the `FinalAppPage.PROFILE -> More(...)` final-shell call with `FinalProfileScreen(...)`. Do not delete legacy `MainActivity.kt` in this task; it remains non-launcher recovery code until separately cleaned up.
+- [ ] **Step 5: Replace only the Final shell `More(...)` call**
 
-Preserve all existing Owner authorization refresh/expiry checks and callbacks.
+In `FinalMainActivity`, replace `FinalAppPage.PROFILE -> More(...)` with `FinalProfileScreen(...)`. Preserve current Owner refresh/expiry checks and callbacks exactly. Do not delete legacy `MainActivity.kt` in this task; it remains non-launcher recovery code until a separate cleanup is reviewed.
 
-- [ ] **Step 5: Run tests/build and commit**
+- [ ] **Step 6: Run tests/build and commit**
 
 ```bash
 ./gradlew testDebugUnitTest --tests 'com.patsy.app.ui.finaldesign.*'
@@ -295,32 +300,35 @@ git add app/src/main/java/com/patsy/app/ui/finaldesign/FinalProfileScreen.kt app
 git commit -m "feat: align final Profile with locked layout"
 ```
 
+---
+
 ### Task 4: Add secondary Account/About/Settings/Remember Me routes without altering the five primary destinations
 
 **Files:**
 - Modify: `app/src/main/java/com/patsy/app/FinalMainActivity.kt`
 - Create: `app/src/main/java/com/patsy/app/ui/finaldesign/FinalSecondaryAccountScreens.kt`
-- Modify: `app/src/test/java/com/patsy/app/navigation/FinalShellNavigationTest.kt`
+- Modify: `app/src/test/java/com/patsy/app/ui/finaldesign/FinalVisualContractTest.kt`
 
 **Interfaces:**
-- Consumes: `FinalAccountMenuDestination`.
-- Produces: secondary `FinalAppPage` values `ACCOUNT`, `ABOUT`, `SETTINGS`, `REMEMBER_ME` and secondary screens.
+- Consumes: `FinalAccountMenuDestination`, existing `FinalVisualContract.primaryNavigation` and `FinalVisualContract.primaryNavigationDisplayLabels`.
+- Produces: secondary `FinalAppPage` values `ACCOUNT`, `ABOUT`, `SETTINGS`, `REMEMBER_ME`.
 
-- [ ] **Step 1: Add test that primary navigation remains five destinations**
-
-Keep/add an assertion against the existing primary navigation contract so adding secondary pages cannot expand the bottom bar:
+- [ ] **Step 1: Add exact regression test for the existing primary contract**
 
 ```kotlin
-@Test fun accountMenuPagesDoNotBecomePrimaryDestinations() {
+@Test fun secondaryAccountPagesCannotExpandPrimaryNavigation() {
     assertEquals(
-        listOf("Home", "THyNK", "PDMs", "Profile"),
-        FinalVisualContract.primaryVisibleTextLabels,
+        listOf("HOME", "THyNK", "CAMERA", "PATSY DMS", "PROFILE"),
+        FinalVisualContract.primaryNavigation,
     )
-    assertEquals(5, FinalVisualContract.primarySemanticDestinationCount)
+    assertEquals(
+        listOf("Home", "", "", "PDMs", "Profile"),
+        FinalVisualContract.primaryNavigationDisplayLabels,
+    )
 }
 ```
 
-If the existing visual contract exposes equivalent constants under different names, use those exact existing constants rather than adding duplicate truth.
+This test uses the exact constants that already exist in `FinalVisualContract.kt`; do not add duplicate navigation truth.
 
 - [ ] **Step 2: Add secondary page enum values and menu mapping**
 
@@ -331,23 +339,28 @@ Map:
 - Settings -> `FinalAppPage.SETTINGS`
 - Remember Me -> `FinalAppPage.REMEMBER_ME`
 
-For the shared bottom bar, all four new secondary pages have `selected = null` or the existing Profile selection behavior chosen by the locked visual contract; they are never new bottom buttons.
+None of these additions changes `FinalVisualContract.primaryNavigation` or `primaryNavigationDisplayLabels`.
 
 - [ ] **Step 3: Implement truthful secondary screens**
 
-`Account`: show only current session/account facts already available to the client (display name/username, masked email, email verification status) plus sign-out/account actions that already exist.
+`Account`: show only current session/account facts already available to the client, such as display name/username, masked email and email verification status, plus existing account actions.
 
-`About`: static app identity/version/legal/about copy only; no fabricated network/provider state.
+`About`: static Patsy app identity/version/about copy only; no fabricated provider/network state.
 
-`Settings`: expose only settings that are genuinely local/wired at implementation time. Missing settings appear disabled/unavailable rather than simulated.
+`Settings`: show only settings that are actually wired at implementation time. Unwired controls render disabled/unavailable and do not pretend to persist.
 
-`Remember Me`: if the production user-memory repository is not wired yet, show a clear unavailable state and route copy explaining that saved memories will appear here once the secure memory repository is connected. Do not conflate this page with login password storage.
+`Remember Me`: until the secure user-memory repository is genuinely wired, render exactly `Remember Me storage is not configured yet.` and do not expose fake saved memories. This page is separate from login keep-signed-in/session restoration.
 
-- [ ] **Step 4: Hoist menu state in FinalMainActivity**
+- [ ] **Step 4: Hoist one menu state in `FinalMainActivity`**
 
-Maintain one `accountMenuExpanded` state. Pass `onOpenAccountMenu` to Home, THyNK and Camera. Add the same top-right button to DMs/Profile/secondary screens using the reusable component. Selecting a menu item closes the menu and changes only the secondary page route.
+Maintain one `accountMenuExpanded` state. Pass `onOpenAccountMenu` to Home, THyNK and Camera, and use the same reusable button on Profile/DMs/secondary screens. Selecting an item closes the popup and changes the secondary page route.
 
-- [ ] **Step 5: Final verification**
+For the shared bottom bar:
+- `PROFILE`, `ACCOUNT`, `ABOUT`, `SETTINGS`, `REMEMBER_ME`, `OWNER_PROFILE`, `OWNER_TOOLS` select `FinalHomeDestination.PROFILE`.
+- no new bottom button is added.
+- `PROTECTED` keeps the current nullable selection behavior.
+
+- [ ] **Step 5: Run final verification**
 
 ```bash
 ./gradlew testDebugUnitTest --stacktrace
@@ -358,4 +371,4 @@ Expected: all exit 0.
 
 - [ ] **Step 6: Push and require fresh Patsy Consolidation CI**
 
-Report exact starting/ending SHA, changed files, RED/GREEN evidence, CI run, artifact IDs/digests and remaining device/backend limitations. Keep Draft and unmerged.
+Report exact starting SHA, ending SHA, changed files, RED/GREEN evidence, CI run, artifact IDs/digests and remaining device/backend limitations. Keep Draft and unmerged.
