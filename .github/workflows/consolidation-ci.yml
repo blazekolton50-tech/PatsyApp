@@ -56,7 +56,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app/src/main/java/com/patsy/app/thynk/ThynkStudioScreen.kt app/src/main/java/com/patsy/app/FinalMainActivity.kt app/src/main/java/com/patsy/app/ui/finaldesign/FinalProfileDmScreens.kt
+          git add app/src/main/java/com/patsy/app/thynk/ThynkStudioScreen.kt app/src/main/java/com/patsy/app/thynk/ThynkDesignEditorScreen.kt app/src/main/java/com/patsy/app/FinalMainActivity.kt app/src/main/java/com/patsy/app/ui/finaldesign/FinalProfileDmScreens.kt
           if ! git diff --cached --quiet; then
             git commit -m "feat: persist verified native integrations"
             git reset --hard HEAD
