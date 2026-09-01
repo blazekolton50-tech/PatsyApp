@@ -138,6 +138,28 @@ class StudioCanvasStateTest {
     }
 
     @Test
+    fun addingObjectAppendsAndSelectsUniqueIdentity() {
+        val background = canvasObject("background", locked = true)
+        val state = StudioCanvasState(1080, 1350, listOf(background))
+        val text = StudioCanvasObject(
+            id = "text-1",
+            type = StudioLayerType.TEXT,
+            label = "Text",
+            xPx = 120f,
+            yPx = 160f,
+            widthPx = 320f,
+            heightPx = 96f,
+        )
+
+        val added = reduceStudioCanvasState(state, StudioCanvasAction.AddObject(text))
+        val duplicate = reduceStudioCanvasState(added, StudioCanvasAction.AddObject(text.copy(label = "Duplicate")))
+
+        assertEquals(listOf("background", "text-1"), added.objects.map { it.id })
+        assertEquals("text-1", added.selectedObjectId)
+        assertEquals(added, duplicate)
+    }
+
+    @Test
     fun deletingSelectedUnlockedObjectClearsSelection() {
         val state = StudioCanvasState(
             1080,

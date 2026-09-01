@@ -22,6 +22,7 @@ data class StudioCanvasState(
 )
 
 sealed interface StudioCanvasAction {
+    data class AddObject(val canvasObject: StudioCanvasObject) : StudioCanvasAction
     data class Select(val objectId: String?) : StudioCanvasAction
     data class Move(
         val objectId: String,
@@ -58,6 +59,17 @@ fun reduceStudioCanvasState(
     state: StudioCanvasState,
     action: StudioCanvasAction,
 ): StudioCanvasState = when (action) {
+    is StudioCanvasAction.AddObject -> {
+        if (state.objects.any { it.id == action.canvasObject.id }) {
+            state
+        } else {
+            state.copy(
+                objects = state.objects + action.canvasObject,
+                selectedObjectId = action.canvasObject.id,
+            )
+        }
+    }
+
     is StudioCanvasAction.Select -> state.copy(
         selectedObjectId = action.objectId?.takeIf { candidate ->
             state.objects.any { it.id == candidate }
