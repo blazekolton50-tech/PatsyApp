@@ -19,6 +19,9 @@ fun dmMemberStateResultForStatus(status: Int): DmMemberStateResult = when {
     else -> DmMemberStateResult.Unavailable
 }
 
+fun shouldRefreshInboxAfterMemberState(result: DmMemberStateResult): Boolean =
+    result is DmMemberStateResult.Updated
+
 fun dmMemberStatePayload(threadId: String, archived: Boolean?): String = if (archived == null) {
     "{\"thread_id\":\"$threadId\",\"action\":\"mark_read\"}"
 } else {
