@@ -1,404 +1,445 @@
-# Patsy Current Build Status — 2026-09-01
+# Patsy Current Build Status — 2026-09-01 — ALL UPDATES
 
-## Purpose
+## Status
 
-This is the current source-of-truth handoff after reconciling the verified native GitHub line with the uploaded full THyNK Studio implementation and the newest owner-supplied Profile, Owner menu, Patsy DMs, shared-homebar, THyNK Design and THyNK Music visual references.
+This is the current build-status handoff for Draft PR #41 after the latest THyNK Panel separation, THyNK-IT adaptive creator foundation and APK verification work.
 
-Do not use the older 2026-08-31 status or earlier wrapper-only donor assumptions as the execution starting point.
+Newest authority:
+1. `docs/codex/PATSY_ALL_UPDATES_APK_HANDOFF_2026-09-01.md`
+2. `docs/codex/CODEX_NEXT_INSTRUCTION.txt`
+3. this file
+4. `docs/codex/PATSY_PAGE_VISUAL_LOCK_2026-09-01.md`
+5. THyNK-IT spec/plan/matrices
+6. older reconciliation/navigation/security files where they do not conflict with the above.
 
-Binding latest page lock:
-- `docs/codex/PATSY_PAGE_VISUAL_LOCK_2026-09-01.md`
+Repository: `blazekolton50-tech/PatsyApp`
+Branch: `chatgpt/codex-ready-2026-09-01`
+PR: #41 — OPEN / DRAFT / UNMERGED
+Production UI/runtime: Kotlin + Jetpack Compose
+Backend/security authority: Supabase
 
-## Authoritative native line
+Do not merge without explicit owner approval and physical-device QA.
 
-- Repository: `blazekolton50-tech/PatsyApp`
-- Branch: `chatgpt/codex-ready-2026-09-01`
-- Native implementation: Kotlin + Jetpack Compose
-- Verified parent code head: `78009aa63cdbdb0ae1d33a537ec14392f0b3380b`
-- Verified parent Draft PR: #39 — native Camera capture and THyNK handoff foundation
-- PR #41 is the current Draft Codex/reconciliation handoff branch
-- Do not merge without explicit owner approval and physical-device QA
+---
 
-## Last verified code CI before documentation-only reconciliation
+## Latest VERIFIED production-code APK build
+
+Exact verified code head:
+`eead11a39b71635f9ab9b84a5eacc443db04cd5c`
 
 Patsy Consolidation CI:
-- run number `206`
-- run id `33444861508`
-- exact code head `78009aa63cdbdb0ae1d33a537ec14392f0b3380b`
-- conclusion **SUCCESS**
-- unit tests PASS
-- debug APK PASS
-- release variant PASS
-- debug APK upload PASS
-- Android Studio ZIP build/upload PASS
+- run number: `370`
+- run id: `33558261200`
+- job id: `100024299400`
+- conclusion: **SUCCESS**
 
-Documentation commits above that code SHA do not by themselves re-verify Android code. Any later production-code slice must run fresh verification on its final head.
+Verified on that exact code head:
+- locked THyNK integration: PASS
+- native Camera integration: PASS
+- native THyNK Design editor host integration: PASS
+- live authenticated Profile route integration: PASS
+- truthful PDM presentation integration: PASS
+- live authenticated PDM route integration: PASS
+- full unit tests: PASS
+- debug APK build: PASS
+- release variant build: PASS
+- verified native-integration persistence: PASS
+- debug APK artifact upload: PASS
+- Android Studio project ZIP creation: PASS
+- Android Studio project ZIP upload: PASS
 
-## Latest page-design truth
+This establishes a **BUILDABLE TEST APK** line. It does not mean all planned production features/providers/device flows are complete.
 
-The newest visual references are now LOCKED DESIGN targets, not production-completion evidence.
+Documentation-only handoff commits may sit above the verified code head. Codex must always inspect the exact current HEAD and its newest CI before changing code or claiming a newer head is verified.
 
-### Profile
+---
 
-Current composition target includes:
-- centred approved Patsy wordmark
-- notification + top-right menu affordances
-- profile image with restrained rainbow ring and edit camera control
-- display name, handle, bio
-- real-data Projects / Followers / Following / Likes summary
-- Edit Profile
-- About Me
-- Quick Post / Creator Tools
-- Recent Projects
-- Saved Projects
-- permanent shared homebar
+## Production truth boundaries
 
-Reference counts, thumbnails, folders, verification/engagement indicators and other generated content are placeholders until backed by real account data.
+Never fake:
+- AI/provider generation;
+- music mastering/vocal processing;
+- audio/video/PDF export;
+- waveforms/meters without real source data;
+- storage/autosave success;
+- DMs/calls/read states;
+- Owner authority;
+- profile/social/project counts;
+- template/font/media verification;
+- production Patsy Rive.
 
-### Expanded Profile / Owner menu
+Provider-facing features without a real configured pipeline remain `NOT_CONFIGURED` or truthfully incomplete.
 
-Current large menu groups:
-- ACCOUNT: Scheduling, Calendar, Friends, Locked Media, THyNK Storage / Put-Away Portal
-- PREFERENCES: Settings, Account Info, Theme, Notifications
-- SUPPORT: Help & Support, About Patsy, Log Out
+React/Tailwind is donor/reference content only. Production remains native Android; no WebView shortcut and no second browser/backend authority.
 
-This menu does not confer Owner authority. Privileged actions remain capability-gated by the backend.
+---
 
-### Patsy DMs
+## Global app navigation — VERIFIED contract
 
-Current responsive target:
-- narrow phone: inbox → conversation
-- large phone/tablet/foldable/landscape: single split-view list + conversation
-- search, All/Unread/Friends/Groups/Archived filters
-- unread badges
-- group conversations
-- media messages
-- compose/attachment/emoji/send
-- privacy/retention explanation
-- call/video-call entry controls may exist but stay disabled / `NOT_CONFIGURED` until a real provider is integrated
+Global semantic destinations remain:
 
-Production DMs must use real Supabase membership/message/realtime/attachment/block/report/notification/retention/age contracts. No donor fake users, fake replies or local-only authority.
-
-### Shared homebar
-
-Newest geometry reference confirms:
-- Home · coloured THyNK · raised large + · PDMs · Profile
-- centre + = Camera semantically
-- no CAMERA caption
-- thin restrained rainbow separator with smooth raised centre arch
-- one shared implementation through authenticated nested pages
-
-## Full THyNK Studio reconciliation — current truth
-
-Directly inspected substantial donor/editor sources include:
-- `Thynk-Full-Ecosystem-Studio(1).html`
-- `Thynk-Full-Studio-Working(1).html`
-- `Thynk-Studio-Pro-Complete` builds
-- `FULL-INVENTORY.pdf`
-- `THyNK-MUSIC-EVERYTHING.pdf`
-- `THYNK-Music-Lab.tsx`
-- `Templates.tsx`
-- Gemini/React Publication/Magazine and Video editor source
-- 1110-item setup/material descriptions
-- `Thynk-Studio-Pro-Music.html`
-- `Unified-Patsy-Identical-Homebar.html`
-- `Patsy-Profile-Thynk-Fixed (1).html`
-
-The upload demonstrates a broader feature set than the earlier handoff counted: Design canvas tools/layers/rulers/guides/templates, Publication/Documents page/spread workflows, Video timeline/effect concepts, Music player/EQ/drum/piano/sampler/layers/effects workflows, templates, and autosave/version-history ideas.
-
-Binding reconciliation files:
-- `docs/codex/PATSY_PAGE_VISUAL_LOCK_2026-09-01.md`
-- `docs/superpowers/specs/2026-09-01-thynk-full-studio-reconciliation-design.md`
-- `docs/superpowers/plans/2026-09-01-thynk-full-studio-reconciliation.md`
-- `docs/codex/THYNK_FULL_STUDIO_CAPABILITY_MATRIX_2026-09-01.md`
-- `docs/codex/THYNK_FULL_STUDIO_CAPABILITY_MATRIX_2026-09-01.json`
-
-Every donor capability remains classified as:
-- `ALREADY_NATIVE`
-- `PORT_FROM_UPLOAD`
-- `REPLACE_PLACEHOLDER`
-- `GENUINELY_MISSING`
-
-Production architecture remains native Kotlin/Compose. Do not embed donor React/Tailwind/WebAudio runtime, browser persistence or donor backend.
-
-## Completed native foundations — do not redo
-
-### Auth / protected shell
-
-Already present:
-- Supabase auth/session transport foundation
-- encrypted session-token storage
-- Remember Me as session policy, not plaintext password storage
-- account bootstrap
-- centralized route/deep-link authorization
-- fail-closed age/protected account handling
-- server-backed Owner authorization foundation
-- no service-role/provider secret in Android
-
-Real-user physical-device auth remains unverified while no real signed-in end-to-end validation evidence has been recorded.
-
-### One authenticated primary navigation
-
-Semantic routes:
 `HOME · THyNK · CAMERA · PATSY DMS · PROFILE`
 
-Visible bar:
-`Home · [coloured THyNK only] · [large + only] · PDMs · Profile`
+Global visible app bar remains:
 
-Do not reintroduce page-owned primary bars or weaken auth/Owner/age gates.
+`Home · [coloured THyNK mark only] · [large + only] · PDMs · Profile`
 
-### Shared Studio editor core
+Rules:
+- centre `+` = Camera semantically;
+- no CAMERA caption;
+- retain approved rainbow separator / smooth raised centre arch;
+- keep route/age/Owner authorization stable;
+- do not replace global security route semantics with THyNK branded labels.
 
-Already present:
-- `StudioEditorState.kt`
-- `StudioToolCatalog.kt`
-- existing Studio state tests
-- THyNK category/routing foundation
+---
 
-These remain the integration targets. Do not create a second independent editor state model.
+## THyNK Panel — LOCKED DESIGN / separate contract
 
-### Media3 video foundation
+THyNK-area pages use the separate five-button panel, exact order:
 
-Already present:
-- `StudioVideoPlayerLogic.kt`
-- `StudioVideoPlayer.kt`
-- Media3 `1.8.1`
-- truthful EMPTY / LOADING / READY / FAILED state
-- video-editor handoff foundation
+1. `THyNK-ME`
+2. `THyNK Chats`
+3. `THyNK-IN!`
+4. `THyNK Music`
+5. `THyNK-IT`
 
-### Native Camera foundation
+`THyNK-IN!` is the centre THyNK Panel destination and opens the social/news feed.
 
-Already present and previously green:
-- photo capture
-- video capture
-- image import
-- video import
-- private FileProvider URIs
-- no broad storage permission
-- video handoff to Media3 editor
-- AI Image/AI Video remain `NOT_CONFIGURED`
+Source contract now intentionally separates:
+- `FinalVisualContract.primaryNavigation*` — global app navigation;
+- `FinalVisualContract.thynkPanelDisplayLabels` — THyNK-area panel.
 
-Physical-device external Camera handoff/return behavior still requires device QA.
+The previous temporary conflation of THyNK Panel labels with the app-wide bottom-nav labels has been corrected on the verified code head.
 
-## Locked THyNK architecture
+Remaining THyNK Panel work:
+- finish real THyNK-area panel rendering/routing where not yet wired;
+- ensure it appears on all relevant THyNK pages;
+- add matching approved page-header logos;
+- implement/persist the Settings rainbow active-state toggle as its own tested preference slice.
 
-Preserve these ten categories:
-1. Design & Templates
-2. Social & Content
-3. Photo & Image
-4. Video & Camera
-5. Documents & Business
-6. Homework & Study
-7. Presentations & Planning
-8. Collage & Creative
-9. THyNK Music
-10. AI & My Studio
+---
 
-Do not create a second THyNK home.
+## THyNK page-header logos — LOCKED DESIGN
 
-## THyNK Design / Image — revised state
+Use the matching approved supplied logo at the top of each main destination:
+- THyNK-ME → profile/THyNK-ME
+- THyNK Chats → chats/messaging
+- THyNK-IN! → social/news feed
+- THyNK Music → Music
+- THyNK-IT → adaptive creator/productivity
 
-The newest editing reference raises the visual/functional target to a professional multi-panel workspace.
+Do not recreate the approved logos with generic text/SVG/font approximations.
 
-### Already native
-- shared editor state/tool catalogue foundation
-- app routing/shell
-- native import foundations
+---
 
-### Port from upload / visual target
-- deterministic canvas transforms
-- select/move/resize/rotate
-- layers hide/lock/reorder/select
-- rulers/guides/grid/snap
-- align/distribute
-- Bring Forward / Send Backward
-- lock/group/duplicate/delete
-- Text / Elements / Stickers / Draw / Shapes / Frames / Background
-- real position/size/rotation/opacity properties
-- template category → subcategory → preview → customize/use flow
-- responsive phone trays/panels using the same underlying editor state
+## THyNK rainbow visual system — LOCKED DESIGN
 
-### Replace donor placeholders
-- external/fake images
-- fake template counts
-- browser persistence/export shortcuts
-- AI/background-removal/magic-resize buttons without real capability
-- manifest-only assets without verified bytes/origin
+THyNK pages use the same approved rainbow spectrum/language as the newest THyNK Panel and logos on the black/charcoal base with white primary controls/text.
 
-Do not simplify the production Design Space into a static preview card.
+Settings requirement:
+- ON → selected THyNK Panel destination retains rainbow-lit active state;
+- OFF → panel controls remain plain white with no persistent rainbow active state;
+- press again → re-enable.
 
-## Photo & Image
+Persistence is **NOT IMPLEMENTED / PARTIAL** until backed by real preference storage. Do not fake saved state.
 
-Port donor crop/adjust/filter/transform concepts through the shared native canvas/render/export architecture. CSS/browser-only effects are not production edits unless the native exported result contains the edit.
+---
 
-## Video & Camera — revised state
+## THyNK product architecture — newest lock
 
-### Already native
-- Camera capture/import/FileProvider
-- Media3 player foundation
+### THyNK-IT
 
-### Port from upload
-- timeline UX/state
-- filters
-- effects
-- transitions
-- text animations
-- overlays
+THyNK-IT is the adaptive creator/productivity umbrella.
 
-### Replace placeholders
-- browser `captureStream`
-- timed demo `MediaRecorder` export
-- fake export URLs
-- alert-only controls
+One shared native project/editor engine sits underneath. The visible workspace adapts according to project type:
+- tools and ordering;
+- panels/layout;
+- canvas/page mode;
+- default dimensions;
+- beginner shortcuts;
+- templates;
+- palette families;
+- typography families;
+- subject-specific presentation and helper actions.
 
-A real Android video export pipeline remains separate work and cannot be claimed from browser demo export behavior.
+Do not create a separate generic editor engine for every discipline.
 
-## Documents / Publication / Presentations
+### THyNK Music
 
-Port donor page/spread workflows as focused native page-model slices:
-- multi-page concepts
-- add/duplicate/delete/reorder
-- single/facing spreads
-- text/image frames
-- columns/gutters/guides/print-layout ideas
-- document/presentation templates
+THyNK Music owns music playback + music creation/editing.
+DJ Studio lives inside THyNK Music.
 
-Verified Android PDF/document export remains incomplete until real bytes are written from the native editable page model.
+### THyNK Video
 
-## THyNK Music — revised state
+THyNK Video owns video playback + video creation/editing.
+Social Reels/Shorts route to THyNK Video rather than duplicating video editing inside Social.
 
-Stable route IDs:
-1. `music-home`
-2. `create-music`
-3. `ai-music-generator`
-4. `track-editor`
-5. `mixer`
-6. `equalizer`
-7. `effects`
-8. `lyrics-vocals`
-9. `mastering`
-10. `export`
+---
 
-The newest Music editor reference establishes a professional multitrack target: timeline/ruler/playhead, track lanes, real waveform/MIDI/automation visuals, BPM/key/meters/master controls, transport, zoom, track operations and quick/audio editing controls.
+## THyNK-IT adaptive creator foundation — PARTIAL / native
 
-### Already native
-- ten-screen route foundation
-- native THyNK/Music screen foundation
+### `CreatorWorkspaceModels.kt` — implemented
 
-### Port from upload / target
-- player/transport controls
-- multitrack timeline state
-- track add/delete/reorder
-- vol/pan/mute/solo
-- split/trim/cut/copy/paste/delete/duplicate
-- fade in/out
-- reverse/stretch/pitch where genuinely implemented by the Android audio engine
-- visualizer driven by real audio
-- EQ UI/model
-- effects/automation model
-- drum sequencer
-- piano roll
-- sampler workflow
-- sound-library workflow
+Defines:
+- `CreatorStudioDestination { ADAPTIVE, MUSIC, VIDEO }`
+- `CreatorCanvasMode { FREEFORM, PAGE, SPREAD, DOCUMENT, SOCIAL }`
+- `CreatorWorld`
+- `CreatorProjectType`
+- `WorkspaceConfig`
 
-### Local sound-library candidate
+### `CreatorWorkspaceCatalog.kt` — implemented
 
-`music-clips-100-original (1).zip` contains 100 WAV assets grouped across kicks, snares, hats, claps, bass, synths, percussion, FX and loop styles.
+Current Creator Worlds:
+- Design & Graphics
+- Art & Illustration
+- Office Studio
+- Publishing
+- Journalism & Newsroom
+- Fashion & Textiles
+- Photography
+- Social Content
+- Branding & Advertising
+- Books & Writing
+- Comics & Storytelling
+- Interior Design
+- Architecture Concepts
+- Product Design
+- Pottery & Ceramics
+- Jewellery
+- Crafts & Making
+- Education & Study
+- Business & Entrepreneurship
+- Events
+- Portfolio & Showcase
+- THyNK Music
+- THyNK Video
 
-Status: `ASSET_PRESENT / PRODUCTION_VALIDATION_REQUIRED`.
+Stable project types now cover, among others:
+- Fashion collections, mood boards, garment sketches, technical flats, fabric boards, lookbooks, line sheets and sewing projects;
+- magazines, newspapers, zines, brochures, catalogues and book layouts;
+- Office documents, letters, CVs, reports, proposals, invoices, presentations, worksheets and planners;
+- Art drawing, illustration, concept art, collage, comic pages, character sheets, exhibition boards and portfolios;
+- Journalism front pages/articles/interviews/investigation boards/newsletters;
+- Photography;
+- social posts/stories/carousels/thumbnails/LinkedIn/Reels;
+- branding, writing, comics, interiors, architecture, product design, ceramics, jewellery, crafts, education, business, events and portfolios;
+- Music tracks/recording/mix/DJ set;
+- Video edits/film/Reel/documentary/music video.
 
-Preserve the files. Verify audio bytes/properties, provenance/license/originality, checksums/stable identity, duplicates and Android decode compatibility before production promotion.
+Routing metadata already marks:
+- Social Reel → VIDEO;
+- DJ Set → MUSIC.
 
-### Replace placeholders
-- random waveform data
-- WebAudio oscillator/demo stand-ins as production engine
-- mock export alerts
-- donor backend endpoints not backed by production services
+### `CreatorWorkspaceConfigs.kt` — implemented first configs
 
-### Genuinely missing / NOT_CONFIGURED until real pipeline exists
-- AI music generation
-- lyrics/vocal provider processing
-- mastering provider pipeline
-- unsupported WAV/MP3/OGG/AAC/FLAC/STEMS encoding/export
+Current concrete native workspace configurations:
+- Fashion Collection — IMAGE / FREEFORM / 1600×1200
+- Magazine — DOCUMENT / SPREAD / 2480×3508
+- CV / Resume — DOCUMENT / DOCUMENT / 2480×3508
+- Illustration — IMAGE / FREEFORM / 1600×1600
+- Instagram Post — IMAGE / SOCIAL / 1080×1080
 
-Choosing an export format is not export success.
+Each configuration defines ordered existing `StudioToolCatalog` IDs plus starter shortcut/template/palette/typography family IDs. This reuses the shared native editing engine.
 
-## Library / persistence
+### Next adaptive foundation tasks
 
-Port project-list, autosave, draft-restore and version-history workflow ideas onto native account-scoped storage/Supabase contracts. Do not port browser `localStorage` or introduce donor Express/Prisma/Spring persistence as a second backend.
+1. `CreatorWorkspaceTools.kt` — resolve ordered tool IDs against `StudioToolCatalog`; unknown IDs fail closed.
+2. `CreatorWorkspaceRouting.kt` — project type → ADAPTIVE / MUSIC / VIDEO while preserving stable legacy routes.
+3. `CreatorResourceCatalog.kt` — explicit `REFERENCE_ONLY / VERIFIED_METADATA / VERIFIED_ASSET` template/palette/typography metadata.
+4. `CreatorWorkspacePresentation.kt` — pure presentation model.
+5. carry `WorkspaceConfig` through actual native THyNK routing/editor entry.
+6. add Creator World/project selection UI.
+7. prove Fashion, Magazine, CV, Illustration and Instagram Post materially alter the native workspace using the same underlying engine.
 
-## Profile / Owner — revised state
+---
 
-Status: `PARTIAL` with `LOCKED DESIGN` composition.
+## THyNK Design / Creator editor — PARTIAL / substantial native progress
 
-Next production implementation must:
-- bind profile header/bio/stats to real user/project/social data
-- remove fake reference counts/badges/cards
-- route Quick Post/Creator Tools into shared THyNK flows
-- bind Recent Projects/Saved Projects to existing project/storage contracts
-- implement Edit Profile against real profile data
-- preserve expanded menu grouping
-- keep privileged Owner actions server-capability gated
-- persist Theme/Notifications/settings only when real preference storage exists
+Preserve the current real implementation.
 
-## Patsy DMs — revised state
+Implemented/tested:
+- `StudioCanvasState` reducer/state;
+- persistence mapper/snapshot support;
+- object/layer selection;
+- visibility/lock;
+- reorder/stacking;
+- duplicate/delete;
+- X/Y movement;
+- W/H resize through real `Resize` action;
+- rotation;
+- opacity;
+- canvas alignment LEFT / H-CENTRE / RIGHT / TOP / V-CENTRE / BOTTOM;
+- Position presenter;
+- Size presenter;
+- Alignment presenter;
+- Opacity presenter;
+- actual Compose wiring for Position/Size/Alignment/Opacity;
+- stable `DesignEntryPoint` mapping for Blank, Custom Size and template kinds.
 
-Status: `PARTIAL` with `LOCKED DESIGN` responsive layout.
+Remaining genuine work:
+- carry `DesignEntryPoint` / `WorkspaceConfig` through actual editor entry;
+- rulers/guides/grid/snap interaction;
+- distribution only after real multi-selection state exists;
+- deeper Text/Elements/Stickers/Draw/Frames/Background behavior where partial;
+- verified templates/assets;
+- real native render/export pipeline.
 
-Production work still required:
-- real inbox query
-- member/participant resolution
-- real message history
-- realtime lifecycle
-- unread reconciliation
-- attachments
-- groups
-- blocking/reporting
-- notifications
-- retention cleanup
-- protected/under-16 enforcement
-- responsive split-view
+AI/provider-dependent controls remain `NOT_CONFIGURED` until real capability exists.
 
-Call/video controls are visual-approved but `NOT_CONFIGURED` until real provider integration.
+---
 
-## Patsy / Rive truth gate
+## React/Tailwind donor library — REFERENCE_ONLY
 
-Native Rive host/runtime contracts exist, but the final authored production Patsy `.riv` is still not verified present and device-tested.
+May be expanded aggressively for:
+- Fashion workspaces;
+- Magazine/Newspaper/Zine layouts;
+- Art Studio;
+- Office Studio;
+- Journalism;
+- Sewing/Textiles;
+- Pottery/Ceramics;
+- Social content;
+- template families;
+- colour palettes;
+- typography pairings;
+- interaction/component references.
 
-Never substitute GIFs, sprites, PNG pose swaps or static bobbing for production Patsy.
+Never treat donor assets/fonts/templates as production-ready until real bytes, licensing/provenance, checksum/identity and supersession state are verified.
 
-## Supabase authority
+---
 
-Supabase remains authoritative for backend/security/storage truth. Do not weaken RLS/service authority or create client-side Owner/age bypasses to make donor UI easier to port.
+## THyNK Music — PARTIAL
+
+Already native foundations:
+- stable Music routes/screens;
+- shared THyNK shell;
+- existing native state/contracts.
+
+Direction:
+- Music player/library;
+- recording;
+- multitrack/DAW;
+- DJ Studio;
+- mixer/EQ/effects;
+- loops/samples/stems;
+- lyrics/vocals;
+- mastering only where real pipeline exists;
+- release preparation;
+- artwork handoff to THyNK-IT.
+
+`music-clips-100-original (1).zip` remains `ASSET_PRESENT / PRODUCTION_VALIDATION_REQUIRED` until audio bytes/properties, provenance/license/originality, stable checksums, duplicates and Android decode compatibility are verified.
+
+Never present random/fake waveform data as real audio.
+
+---
+
+## THyNK Video — PARTIAL
+
+Already native:
+- Camera photo/video capture/import foundation;
+- private FileProvider URIs;
+- Media3 player/editor handoff foundation.
+
+Target:
+- player/library;
+- timeline;
+- trim/split;
+- overlays/titles/captions;
+- transitions/effects/filters/colour/speed;
+- film/documentary/music-video;
+- Social Reel/Short handoff;
+- real export only when Android writes verified output bytes.
+
+Browser captureStream/MediaRecorder demos/fake URLs are not production implementation.
+
+---
+
+## Profile / menu / THyNK-ME — LOCKED DESIGN / real-data work only
+
+The approved Profile and dropdown/menu composition is already defined and must not be redesigned.
+
+Only finish/bind missing genuine behavior:
+- real profile data;
+- real stats or truthful empty/loading values;
+- project/library bindings;
+- real preferences when persistence exists;
+- Owner actions remain server-capability gated.
+
+---
+
+## Patsy DMs / THyNK Chats — PARTIAL
+
+Use real Supabase-backed:
+- membership/participants;
+- message history;
+- realtime lifecycle;
+- unread reconciliation;
+- attachments;
+- groups;
+- block/report;
+- notifications;
+- retention;
+- protected/under-16 rules.
+
+No fake users/messages/replies/read states. Call/video provider remains `NOT_CONFIGURED` until a real secure integration exists.
+
+---
+
+## Auth / Owner / device verification
+
+Native auth/security foundations remain authoritative:
+- Supabase session/auth transport;
+- encrypted session storage;
+- account bootstrap;
+- centralized route/age/Owner gates;
+- no service-role secret in Android.
+
+Still requires real physical-device end-to-end validation with actual configured Auth/user/profile/access rows:
+`login → restore → account bootstrap → Owner authorization`.
+
+---
+
+## Patsy / Rive — BLOCKED on verified authored production rig
+
+Native Rive host/runtime contracts exist.
+
+Final production Patsy `.riv` is not yet verified as a completed authored/device-tested production rig.
+
+Do not use GIFs, sprites, static PNG pose swaps, fake bobbing or fake `.riv` as substitutes.
+
+---
+
+## Physical-device QA still required
+
+A green CI APK does not replace device QA. Validate at minimum:
+- real login/session restore/bootstrap/Owner authorization;
+- external Android Camera photo/video return URI behavior;
+- Media3 playback and handoff;
+- global app navigation across target sizes;
+- THyNK Panel routing/visual QA once fully wired;
+- matching THyNK page-header logos;
+- THyNK rainbow setting once implemented;
+- autosave/restore once persistence is complete;
+- real DMs/realtime/retention;
+- real export pipelines as added;
+- production Patsy Rive when available.
+
+---
 
 ## Current execution order
 
-1. preserve/finalize reconciliation and page locks
-2. Design & Templates professional native port on shared `StudioEditorState` / `StudioToolCatalog`
-3. Photo/Image shared-canvas extensions
-4. Video timeline/effects extensions on existing Media3/Camera
-5. Documents/Publication/Presentations page-model slices
-6. THyNK Music professional multitrack/tool refinement + validated local sound-library intake
-7. Library/autosave/project persistence on native/Supabase contracts
-8. Profile real-data implementation + expanded menu alignment
-9. Patsy DMs real Supabase-backed inbox/conversation/realtime/retention + responsive split-view
-10. Put-Away Portal / Remember Me durable memory / under-16 end-to-end / provider integrations as independent slices
-11. consolidated Android CI + physical-device QA
-12. production Patsy Rive only when the actual authored `.riv` is verified
+1. Keep exact current head buildable: full CI / debug APK / release / artifact gate.
+2. Finish THyNK Panel rendering/routing + matching page-header logos while preserving the global app bar separately.
+3. Finish THyNK-IT adaptive foundation: tool resolver → unified routing → verified resource metadata → presentation → actual editor integration.
+4. Make Fashion, Magazine, CV, Illustration and Instagram Post visibly adapt the native shared editor.
+5. Social Reel → THyNK Video; DJ Set → THyNK Music.
+6. Continue Design entry carry-through + rulers/guides/grid/snap and other real shared-canvas behavior.
+7. Photo/Image extensions.
+8. THyNK Video timeline/effects/export work on Camera/Media3 truth boundaries.
+9. THyNK Music player/editor/DJ work on genuine audio state/processing.
+10. Verified templates/palettes/fonts + account-scoped autosave/project persistence.
+11. Real DMs, Put-Away Portal, Settings/preferences including THyNK rainbow toggle, under-16/provider slices.
+12. Physical-device QA.
+13. Production Patsy Rive only after the real authored `.riv` is verified.
 
-Asset verification remains fail-closed for actual production assets but must not block porting non-asset editor behavior already demonstrated in donor material.
-
-## Verification rule for every production-code slice
-
-- exact starting SHA
-- RED-before-GREEN test evidence
-- targeted tests
-- full unit suite
-- debug build
-- release build
-- fresh final-head CI
-- exact ending SHA
-- remaining device/provider/Rive limitations
-- confirm PR remains Draft and unmerged
-
-Stop on failure. Never merge automatically.
+For every code slice: record starting SHA, ending SHA, changed files, RED evidence, GREEN targeted tests, full unit tests, debug build, release build, exact final-head Actions run, artifact IDs where generated, remaining device/provider limitations, and confirm PR remains Draft/unmerged.
