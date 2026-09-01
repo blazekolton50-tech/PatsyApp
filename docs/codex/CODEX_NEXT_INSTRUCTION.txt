@@ -5,14 +5,14 @@ WORK ONLY IN:
 Repository: blazekolton50-tech/PatsyApp
 Branch: chatgpt/codex-ready-2026-09-01
 
-THIS BRANCH WAS CREATED FROM THE VERIFIED PR #39 CODE HEAD:
+This branch was created from verified PR #39 native code head:
 78009aa63cdbdb0ae1d33a537ec14392f0b3380b
 
-PR #39 remains Draft and stacked on Draft PR #38.
-DO NOT MERGE #38, #39, THIS BRANCH, OR MAIN WITHOUT EXPLICIT OWNER APPROVAL AND PHYSICAL-DEVICE QA.
+PR #39 remains Draft and is stacked on Draft PR #38.
+KEEP ALL WORK DRAFT AND UNMERGED.
+DO NOT MERGE TO MAIN WITHOUT EXPLICIT OWNER APPROVAL AND PHYSICAL-DEVICE QA.
 
-IMPORTANT:
-The branch contains newer handoff/documentation commits above the verified PR #39 code head. Before changing code, report the exact current HEAD and inspect the files listed below. Do not assume an old SHA is still HEAD.
+Before changing code, report the exact current HEAD. Documentation commits exist above the verified PR #39 code SHA.
 
 ==================================================
 READ FIRST — BINDING ORDER
@@ -24,44 +24,43 @@ READ FIRST — BINDING ORDER
 5. docs/superpowers/specs/2026-08-31-thynk-donor-consolidation-design.md
 6. docs/superpowers/plans/2026-08-31-thynk-donor-asset-intake.md
 7. docs/superpowers/plans/2026-08-31-thynk-canvas-import-png-export.md
-8. docs/superpowers/plans/2026-08-31-thynk-music-ten-screen-refinement.md
+8. docs/superpowers/plans/2026-09-01-thynk-design-templates-integration.md
+9. docs/superpowers/plans/2026-08-31-thynk-music-ten-screen-refinement.md
+10. docs/superpowers/plans/2026-09-01-profile-account-menu-alignment.md
 
-When an older plan says to work on PR #38 / chatgpt/thynk-music-apk-2026-08-31, OVERRIDE ONLY THAT BRANCH LOCATION with:
-chatgpt/codex-ready-2026-09-01
-
-Do not reinterpret the security/design requirements.
+Older plans that name `chatgpt/thynk-music-apk-2026-08-31` are technical plans from the prior stack. For this execution, override only their working branch with `chatgpt/codex-ready-2026-09-01`. Preserve their security, TDD and truthfulness requirements.
 
 ==================================================
 SOURCE PRECEDENCE
 ==================================================
-1. Current native Kotlin/Compose code on chatgpt/codex-ready-2026-09-01.
+1. Current native Kotlin/Compose code on `chatgpt/codex-ready-2026-09-01`.
 2. Checked-in design/navigation/auth/security locks.
 3. Live Supabase security/auth/storage truth.
-4. Latest owner-approved page/design requirements encoded in the 2026-09-01 status/intake docs.
+4. Latest owner-approved requirements encoded in the 2026-09-01 status/intake docs.
 5. Verified owner-supplied files with known bytes/provenance.
-6. Drive / AI Studio / Gemini / Replit / Canva / uploaded archive donor material.
+6. Drive / AI Studio / Gemini / Replit / Canva / archive donor material.
 7. Older prototypes only when they do not conflict with 1-6.
 
-DO NOT replace native Kotlin/Compose with React/Tailwind, Expo/React Native, Node/Express, browser Canvas/WebAudio, HTML WebViews or a stale Android ZIP.
+Never replace native Kotlin/Compose with React/Tailwind, Expo/React Native, Node/Express, browser Canvas/WebAudio, HTML WebViews or an older Android ZIP.
 
 ==================================================
-ABSOLUTELY DO NOT REDO THESE COMPLETED JOBS
+COMPLETED — DO NOT REDO
 ==================================================
-MEDIA3 VIDEO FOUNDATION — ALREADY PRESENT
+MEDIA3 VIDEO FOUNDATION:
 - StudioVideoPlayerLogic.kt exists.
 - StudioVideoPlayer.kt exists.
 - Media3 1.8.1 is integrated.
 - nested video-editor routing exists.
 - truthful EMPTY / LOADING / READY / FAILED media behavior exists.
 
-GLOBAL AUTHENTICATED PRIMARY NAVIGATION — ALREADY PRESENT IN CURRENT CODE
-- FinalMainActivity owns FinalPrimaryNavigationBar outside page content.
+GLOBAL AUTHENTICATED PRIMARY NAVIGATION:
+- FinalMainActivity owns the shared FinalPrimaryNavigationBar outside page content.
 - authenticated Home / THyNK / Camera / PDMs / Profile use the outer bar.
-- Owner Profile / Owner Tools map back to Profile in the shared bar.
+- Owner Profile / Owner Tools map to Profile in that shared bar.
 - Login / Set Password remain outside authenticated destination access.
-- do not reintroduce FinalHomeBottomNavigation or another page-owned primary bar.
+- never reintroduce a page-owned primary bottom bar.
 
-NATIVE CAMERA FOUNDATION — ALREADY PRESENT
+NATIVE CAMERA FOUNDATION:
 - PHOTO capture = NATIVE.
 - VIDEO capture = NATIVE.
 - IMPORT PHOTO = NATIVE.
@@ -70,9 +69,8 @@ NATIVE CAMERA FOUNDATION — ALREADY PRESENT
 - real video URI handoff to THyNK Media3 editor.
 - AI IMAGE / AI VIDEO remain NOT_CONFIGURED.
 
-PR #39 verification evidence at code head 78009aa63cdbdb0ae1d33a537ec14392f0b3380b:
-- Patsy Consolidation CI #206
-- run id 33444861508
+Verified parent evidence at `78009aa63cdbdb0ae1d33a537ec14392f0b3380b`:
+- Patsy Consolidation CI #206 / run 33444861508
 - SUCCESS
 - unit tests PASS
 - debug APK PASS
@@ -80,32 +78,33 @@ PR #39 verification evidence at code head 78009aa63cdbdb0ae1d33a537ec14392f0b338
 - debug APK upload PASS
 - Android Studio ZIP upload PASS
 
-Physical-device Camera validation is still pending. Do not confuse CI success with camera-hardware QA.
+Physical-device Camera validation is still pending.
 
 ==================================================
-LOCKED PRIMARY NAVIGATION
+LOCKED APP CHROME
 ==================================================
-Semantic destinations:
+Semantic bottom destinations:
 HOME · THyNK · CAMERA · PATSY DMS · PROFILE
 
-Visible bar:
+Visible bottom bar:
 Home · [coloured THyNK only] · [large + only] · PDMs · Profile
 
 Rules:
-- NO second small white THyNK subtitle.
-- NO CAMERA text underneath the centre +.
-- visible DM label = PDMs.
+- no second small white THyNK subtitle.
+- no CAMERA text below the centre +.
 - centre + remains Camera semantically.
-- large white + with approved rainbow ring/glow.
-- charcoal/black base and restrained rainbow wave/glow.
-- bar remains visible on authenticated nested THyNK/editor/Music pages.
-- Schedule and Calendar are secondary, never primary tabs.
-- never weaken auth/age/Owner routing to satisfy navigation UI.
+- black/charcoal base with restrained approved rainbow/neon wave/glow.
+- same outer bar remains visible throughout authenticated nested THyNK/editor/Music pages.
+- Schedule and Calendar are secondary only.
+- do not weaken auth/age/Owner gates.
+
+Top-right account menu order is locked:
+Account · About · Profile · Settings · Remember Me
 
 ==================================================
-LOCKED THyNK HOME — DO NOT REBUILD
+LOCKED THyNK ARCHITECTURE
 ==================================================
-Preserve these ten categories:
+Do not build a second THyNK home. Preserve:
 1. Design & Templates
 2. Social & Content
 3. Photo & Image
@@ -117,13 +116,9 @@ Preserve these ten categories:
 9. THyNK Music
 10. AI & My Studio
 
-Use the current ThynkStudioCatalog.kt item lists as the routing baseline.
-Do not create a second THyNK home.
+Use current `ThynkStudioCatalog.kt` labels as the routing baseline.
 
-==================================================
-LOCKED THyNK MUSIC ROUTES
-==================================================
-These IDs are stable and must remain unchanged:
+THyNK Music route IDs must remain exactly:
 music-home
 create-music
 ai-music-generator
@@ -135,169 +130,134 @@ lyrics-vocals
 mastering
 export
 
-Do NOT use the newly uploaded Gemini WebView Java/XML as production architecture.
-The Java wrapper only enables a WebView and loads MAIN_BUILT_MUSIC_PLAYER.html.
-The XML is only a WebView layout and also contains an invalid match_dirname layout-width value.
-Both are recorded as REJECTED in docs/codex/PATSY_SOURCE_INTAKE_2026-09-01.md.
+The uploaded Gemini Java/XML WebView wrapper is REJECTED as production architecture. Do not import it. The uploaded Android Studio THyNK Music ZIP is an older REFERENCE_ONLY recovery snapshot and must not replace the newer native branch.
 
 ==================================================
-EXECUTION ORDER — DEPENDENT JOBS MUST NOT BE PARALLELIZED
+EXECUTION ORDER — DO NOT PARALLELIZE DEPENDENT JOBS
 ==================================================
 
 JOB 1 — VERIFIED DONOR ASSET INTAKE FOUNDATION
-Execute the technical plan:
+Execute:
 docs/superpowers/plans/2026-08-31-thynk-donor-asset-intake.md
 
-BRANCH OVERRIDE:
-Run it on chatgpt/codex-ready-2026-09-01.
-Media3/global navigation prerequisites are already satisfied at the starting native code head; verify they are still present but do not reimplement them.
-
-Seed/audit the source decisions from:
+Use source decisions from:
 docs/codex/PATSY_SOURCE_INTAKE_2026-09-01.md
 
-Required behavior:
-- tests FIRST; observe intentional RED for new donor model contracts.
-- add manifest/truth model under com.patsy.app.studio.assets.
+Requirements:
+- tests first and observe intentional RED for new donor contracts.
+- add manifest/truth model under `com.patsy.app.studio.assets`.
 - add fail-closed promotion verifier.
-- known Drive/AI Studio/Replit/Canva/archive sources start REFERENCE_ONLY.
-- uploaded Android Studio THyNK Music ZIP starts REFERENCE_ONLY because it is older than current PR #39.
-- Gemini WebView Java/XML should be encoded as REJECTED/incompatible references, not production-ready assets.
-- do not copy wrapper HTML/archive dumps into the APK.
-- do not surface REFERENCE_ONLY or REJECTED records in production template pickers.
-- only VERIFIED records may be returned as production-ready.
-- verification requires real origin/license decision, actual bytes/native resource, checksum when bytes exist, and duplicate/supersession decision.
-- run unit tests + debug + release.
-- push and require fresh Patsy Consolidation CI GREEN before Job 2.
+- Drive/AI Studio/Replit/Canva/archive sources start REFERENCE_ONLY.
+- uploaded older Android Studio artifact starts REFERENCE_ONLY.
+- Gemini WebView Java/XML are REJECTED/incompatible references.
+- no wrapper/archive dump into APK.
+- only VERIFIED records may be production-ready.
+- verification requires approved origin/license, actual bytes or durable native resource, checksum when bytes exist, and duplicate/supersession decision.
+- unit + debug + release + fresh CI GREEN before Job 2.
 
 STOP ON FAILURE.
 
 JOB 2 — GENERIC THyNK CANVAS + ANDROID IMAGE IMPORT + REAL PNG EXPORT
-Only after Job 1 is genuinely GREEN, execute:
+Execute only after Job 1 is GREEN:
 docs/superpowers/plans/2026-08-31-thynk-canvas-import-png-export.md
-
-BRANCH OVERRIDE:
-Run on the SAME chatgpt/codex-ready-2026-09-01 line unless a new stacked branch is deliberately created and reported.
 
 Requirements:
 - central presets + validated custom size.
 - deterministic logical canvas/layer reducer.
-- explicit resize handles in UI.
+- explicit resize handles.
 - select / move / resize / rotate / flip / opacity / duplicate / delete / reorder.
 - bounded undo/redo.
 - Android OpenDocument image import with fail-closed MIME/readability/dimension/size validation.
-- PNG export renders from LOGICAL canvas dimensions, not a phone viewport screenshot.
+- PNG export from LOGICAL canvas dimensions, never a viewport screenshot.
 - export success only after real bytes are written and a real URI/path exists.
-- editable project state stays separate from export result.
-- do not duplicate the Media3 video architecture.
-- permanent outer navigation remains visible.
-- GREEN unit + debug + release + fresh CI before Job 3.
+- editable project state remains separate from export result.
+- do not duplicate Media3 video architecture.
+- permanent outer nav stays visible.
+- unit + debug + release + fresh CI GREEN before Job 3.
 
 STOP ON FAILURE.
 
 JOB 3 — DESIGN & TEMPLATES PRODUCTION INTEGRATION
-Only after Jobs 1-2 are GREEN.
-
-Before implementation, create a focused TDD plan under docs/superpowers/plans/ for this job and follow it.
+Execute only after Jobs 1-2 are GREEN:
+docs/superpowers/plans/2026-09-01-thynk-design-templates-integration.md
 
 Required outcome:
-- Design & Templates category opens the generic canvas/editor, not a separate competing editor.
-- retain current category entries: Posters, Flyers, Invitations, Cards, Menus, Price Lists, Signs, Certificates, Brochures, Labels, Blank Designs, Custom Size, Templates.
-- verified donor templates/assets may appear in the picker only through the donor manifest's production-ready results.
-- wrapper-only or unknown-license assets never appear as usable production templates.
-- Blank Design and Custom Size work with the central canvas-size model.
-- template selection creates editable project/layer state, not a flattened fake screenshot.
-- preserve exact locked Patsy/THyNK visual system.
-- build autosave/restore boundary for THyNK project state before/when leaving through the permanent main navigation; do not require a manual save just to navigate away.
-- keep export separate from editable autosaved project state.
-- tests first, then debug/release/CI.
-
-Known Drive template/asset references are listed in PATSY_SOURCE_INTAKE_2026-09-01.md. Exact owner-requested archive names that were NOT found in Drive must remain unverified; do not invent them.
+- Design & Templates opens the one generic canvas/editor.
+- preserve Posters, Flyers, Invitations, Cards, Menus, Price Lists, Signs, Certificates, Brochures, Labels, Blank Designs, Custom Size, Templates.
+- verified donor templates appear only through donor-manifest production-ready results.
+- REFERENCE_ONLY/REJECTED assets never appear usable.
+- Blank Design and Custom Size use central canvas-size model.
+- template selection creates editable layer/project state, not a fake flattened screenshot.
+- account-scoped local editable drafts restore on re-entry.
+- each committed semantic edit is persisted truthfully; failed saves keep in-memory edits and never claim success.
+- project persistence remains separate from PNG export.
+- unit + debug + release + fresh CI GREEN before Job 4.
 
 STOP ON FAILURE.
 
 JOB 4 — THyNK MUSIC TEN-SCREEN REFINEMENT
-Only after Jobs 1-3 are GREEN, execute the existing refinement plan:
+Execute only after Jobs 1-3 are GREEN:
 docs/superpowers/plans/2026-08-31-thynk-music-ten-screen-refinement.md
 
-Preserve stable route IDs.
-Use native Kotlin/Compose only.
-
-Music visual rules:
-- black/charcoal base.
-- white text.
-- restrained purple/rainbow accents.
-- compact DAW-like hierarchy.
-- permanent Patsy outer navigation remains visible.
-
-Music truth rules:
-- local UI controls may edit local configuration/state.
+Rules:
+- keep all ten stable IDs unchanged.
+- native Kotlin/Compose only.
+- black/charcoal + white + restrained purple/rainbow DAW-like hierarchy.
+- permanent Patsy outer navigation visible.
+- local controls may edit real local configuration/state.
 - real imported audio may drive real waveform/data displays when available.
-- never fabricate a waveform when no audio data exists.
+- never fabricate a waveform without audio data.
 - never simulate AI generation progress/success.
-- provider-backed generation remains NOT_CONFIGURED until genuinely wired.
-- vocal processing/mastering/DSP/audio export remain NOT_CONFIGURED until genuine pipelines exist.
-- choosing WAV/MP3/etc is not export success.
+- provider generation/mastering/vocal processing/DSP/audio export remain NOT_CONFIGURED until real pipelines are wired.
+- choosing a format is not export success.
 - no fake mastered track, stems or provider output.
 - do not import the Gemini HTML/WebView wrapper.
+- unit + debug + release + fresh CI GREEN before Job 5.
 
 STOP ON FAILURE.
 
 JOB 5 — PROFILE + ACCOUNT MENU ALIGNMENT
-Only after the main THyNK jobs above remain green.
+Execute only after Job 4 remains GREEN:
+docs/superpowers/plans/2026-09-01-profile-account-menu-alignment.md
 
-Create a focused TDD/visual-contract plan before implementation.
-
-Latest locked direction:
-Profile includes/aligns toward:
-- profile picture.
-- identity/bio details.
-- social links.
-- gallery/media.
-- recent projects.
-- saved projects.
-- Schedule and Calendar as secondary tools.
-- Remember Me.
-- Owner Profile / Owner Tools only when server authorization permits.
-
-Top-right account menu order/labels:
-Account
-About
-Profile
-Settings
-Remember Me
-
-Do not make More a sixth primary destination.
-Do not add Schedule/Calendar to bottom navigation.
-Do not weaken Owner access or account bootstrap.
-Preserve centered approved Patsy logo behavior and locked page chrome.
+Required outcome:
+- final Profile no longer uses legacy `More(...)` as its final UI.
+- Profile aligns to Identity, Bio & Social, Gallery, Recent Projects, Saved Projects, Schedule & Calendar, Remember Me.
+- absent content uses truthful empty states; no fake bio/gallery/projects.
+- account menu is exactly Account, About, Profile, Settings, Remember Me.
+- Account/About/Settings/Remember Me remain secondary pages; none becomes a sixth primary bottom destination.
+- Owner Profile/Owner Tools remain server-authorized and fail closed.
+- Remember Me page never becomes password storage; if secure memory storage is not wired, show it as unavailable.
+- keep centered approved Patsy logo and shared bottom bar.
+- unit + debug + release + fresh CI GREEN before Job 6.
 
 STOP ON FAILURE.
 
 JOB 6 — REMAINING PRODUCTION SLICES
-Treat each as a separate tested slice rather than one giant patch:
+Execute as separate tested slices, not one giant patch:
 A. Patsy DMs real Supabase-backed flow + retention behavior.
 B. Put-Away Portal/storage + project/media persistence.
-C. Remember Me user-memory review/update/delete behavior and account boundaries.
+C. Remember Me secure user-memory review/update/delete behavior.
 D. under-16/protected-mode end-to-end validation.
 E. provider integrations only when credentials/services are genuinely configured.
-F. production Patsy Rive only when the actual authored .riv is available.
+F. production Patsy Rive only when the actual authored `.riv` is available.
 
-Do not fake provider completion or production Rive.
+No fake provider completion. No fake production Rive.
 
 ==================================================
-PATSY / RIVE PRODUCTION CONTRACT
+PATSY / RIVE TRUTH GATE
 ==================================================
-Main app Patsy = realistic approved Patsy, one companion per page.
+Main app Patsy = realistic approved companion, one per page.
 Cartoon Patsy = PawMoji/stickers only.
 
-Existing Rive host/controller/runtime boundaries may be preserved and extended.
-Do NOT use GIFs, sprite swaps or static PNG bobbing as production animation.
-Do NOT claim walking, target-aware look/point, lip-sync, ears/tail, gestures or final visual rig as complete without the actual authored .riv and real-device proof.
+Preserve existing Rive host/controller/runtime boundaries.
+Do not use GIFs, sprite swaps or static PNG bobbing as production animation.
+Do not claim walking, target-aware look/point, lip-sync, ears/tail, gestures or final rig completion without the actual authored `.riv` and real-device evidence.
 
 ==================================================
-CURRENT BACKEND TRUTH — 2026-09-01
+CURRENT SUPABASE TRUTH — 2026-09-01
 ==================================================
-Connected Supabase project: ACTIVE_HEALTHY.
+Connected project: ACTIVE_HEALTHY.
 - 37 public tables; RLS enabled on all 37.
 - 10 private tables; RLS enabled on all 10.
 - 119 policies.
@@ -309,44 +269,27 @@ Connected Supabase project: ACTIVE_HEALTHY.
 - owner-authorize v1 active / JWT verified.
 - create-dm-thread v5 active / JWT verified.
 
-Real-user/device authentication is still unverified.
-Do NOT weaken RLS or create client-side Owner bypasses to make testing easier.
+Real-user/device authentication remains unverified.
+Never weaken RLS or create a client-side Owner bypass for testing.
 
 ==================================================
-FINAL VERIFICATION GATE
+REPORT AT EVERY JOB BOUNDARY
 ==================================================
-For EVERY job report:
 - exact starting SHA.
 - exact ending SHA.
 - exact changed files.
-- intentional RED tests and why they failed.
+- intentional RED test evidence and reason.
 - GREEN targeted tests.
 - GREEN full unit suite.
 - debug build result.
 - release build result.
 - exact GitHub Actions run/result on final head.
-- artifact IDs/digests when produced.
+- artifact IDs/digests when generated.
 - remaining device/provider/auth/Rive limitations.
-- confirmation that the PR/branch remains Draft and unmerged.
+- confirmation work remains Draft and unmerged.
 
-Before any merge request, physical-device QA must cover at minimum:
-- Login / Set Password / session restore.
-- Home against locked reference.
-- shared primary bar everywhere authenticated.
-- all 10 THyNK categories.
-- native Camera photo/video/import return behavior.
-- Media3 editor with real selected video.
-- generic Design canvas with real image import.
-- transforms + undo/redo.
-- real PNG export and logical dimensions.
-- verified template picker behavior.
-- all 10 THyNK Music screens.
-- PDMs.
-- Profile + account menu.
-- Owner Profile / Owner Tools gates.
-- under-16/protected boundary.
-- production Rive only if the actual authored asset exists.
+Before any merge request, physical-device QA must cover Login, Set Password, session restore, Home, shared primary navigation, all 10 THyNK categories, native Camera return behavior, Media3 with real video, Design canvas/import/transforms/undo-redo/real PNG export, verified template behavior, all 10 THyNK Music screens, PDMs, Profile/account menu, Owner gates, under-16/protected behavior, and production Rive only if the actual authored asset exists.
 
-DO NOT MERGE.
 STOP ON FAILURE.
-DO NOT START THE NEXT DEPENDENT JOB UNTIL THE CURRENT JOB IS GENUINELY GREEN.
+DO NOT START A DEPENDENT JOB UNTIL THE CURRENT JOB IS GENUINELY GREEN.
+DO NOT MERGE.
