@@ -25,8 +25,11 @@ import com.patsy.app.storage.ServerStorageDataService
 import com.patsy.app.storage.StorageServiceBindings
 import com.patsy.app.storage.SupabaseStorageDataTransport
 import com.patsy.app.studio.ServerStudioPersistenceService
+import com.patsy.app.studio.ServerStudioProjectService
 import com.patsy.app.studio.StudioPersistenceBindings
+import com.patsy.app.studio.StudioProjectBindings
 import com.patsy.app.studio.SupabaseStudioPersistenceTransport
+import com.patsy.app.studio.SupabaseStudioProjectTransport
 
 class PatsyApplication : Application() {
     override fun onCreate() {
@@ -99,6 +102,13 @@ class PatsyApplication : Application() {
         StudioPersistenceBindings.service = ServerStudioPersistenceService(
             sessionStore = sessionStore,
             transport = SupabaseStudioPersistenceTransport(
+                baseUrl = BuildConfig.SUPABASE_URL,
+                publishableKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
+            ),
+        )
+        StudioProjectBindings.service = ServerStudioProjectService(
+            sessionStore = sessionStore,
+            transport = SupabaseStudioProjectTransport(
                 baseUrl = BuildConfig.SUPABASE_URL,
                 publishableKey = BuildConfig.SUPABASE_PUBLISHABLE_KEY,
             ),
