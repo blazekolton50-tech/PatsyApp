@@ -27,13 +27,17 @@ class FinalVisualContractTest {
             listOf("HOME", "THyNK", "CAMERA", "PATSY DMS", "PROFILE"),
             FinalVisualContract.primaryNavigation,
         )
+        assertEquals(
+            listOf("Home", "", "", "PDMs", "Profile"),
+            FinalVisualContract.primaryNavigationDisplayLabels,
+        )
     }
 
     @Test
     fun `THyNK panel uses the five locked branded destinations`() {
         assertEquals(
             listOf("THyNK-ME", "THyNK Chats", "THyNK-IN!", "THyNK Music", "THyNK-IT"),
-            FinalVisualContract.primaryNavigationDisplayLabels,
+            FinalVisualContract.thynkPanelDisplayLabels,
         )
     }
 
