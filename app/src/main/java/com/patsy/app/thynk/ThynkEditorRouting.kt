@@ -16,6 +16,16 @@ private val designEditorItems = setOf(
     "TEMPLATES",
 )
 
+enum class ThynkEditorKind {
+    DESIGN,
+    VIDEO,
+}
+
+data class ThynkEditorDestination(
+    val categoryId: String,
+    val kind: ThynkEditorKind,
+)
+
 internal fun editorPageForThynkItem(item: String): String? = when {
     item in designEditorItems -> "design-editor"
     item in setOf(
@@ -32,5 +42,11 @@ internal fun editorPageForThynkItem(item: String): String? = when {
         "LOOP",
         "ASPECT RESIZER",
     ) -> "video-editor"
+    else -> null
+}
+
+internal fun editorDestinationForPage(pageId: String): ThynkEditorDestination? = when (pageId) {
+    "design-editor" -> ThynkEditorDestination("design", ThynkEditorKind.DESIGN)
+    "video-editor" -> ThynkEditorDestination("video", ThynkEditorKind.VIDEO)
     else -> null
 }
