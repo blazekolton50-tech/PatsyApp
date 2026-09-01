@@ -6,7 +6,9 @@ import com.patsy.app.auth.StoredAuthSession
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
+import org.json.JSONObject
 
 class DmMemberStateServiceTest {
     private val session = PublicSession(
@@ -69,6 +71,22 @@ class DmMemberStateServiceTest {
         assertIs<DmMemberStateResult.Unauthorized>(dmMemberStateResultForStatus(403))
         assertIs<DmMemberStateResult.Unavailable>(dmMemberStateResultForStatus(400))
         assertIs<DmMemberStateResult.Unavailable>(dmMemberStateResultForStatus(500))
+    }
+
+    @Test
+    fun markReadPayloadContainsOnlyThreadAndAction() {
+        val payload = JSONObject(dmMemberStatePayload("00000000-0000-0000-0000-000000000010", archived = null))
+        assertEquals("00000000-0000-0000-0000-000000000010", payload.getString("thread_id"))
+        assertEquals("mark_read", payload.getString("action"))
+        assertTrue(!payload.has("archived"))
+    }
+
+    @Test
+    fun archivePayloadCarriesExplicitRequestedBoolean() {
+        val payload = JSONObject(dmMemberStatePayload("00000000-0000-0000-0000-000000000020", archived = false))
+        assertEquals("00000000-0000-0000-0000-000000000020", payload.getString("thread_id"))
+        assertEquals("set_archived", payload.getString("action"))
+        assertEquals(false, payload.getBoolean("archived"))
     }
 }
 
