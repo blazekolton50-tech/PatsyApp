@@ -17,6 +17,8 @@ private val adaptiveWorkspaceConfigs = listOf(
         beginnerShortcutIds = listOf(
             "fashion-mood-board", "fashion-garments", "fashion-swatches",
             "fashion-fabrics", "fashion-measurements", "fashion-lookbook",
+            "fashion-pattern-cad", "fashion-sketch-3d", "fashion-layer-mixer",
+            "fashion-materials-lab", "fashion-production",
         ),
         templateFamilyIds = listOf("fashion-collection", "fashion-lookbook", "fashion-mood-board"),
         paletteFamilyIds = listOf("fashion-seasonal", "fashion-luxury", "fashion-streetwear"),
