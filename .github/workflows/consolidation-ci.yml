@@ -38,6 +38,8 @@ jobs:
         run: python3 scripts/apply_thynk_page_completeness.py
       - name: Apply native THyNK Fashion workspace
         run: python3 scripts/apply_thynk_fashion_workspace.py
+      - name: Apply native THyNK recording workspace
+        run: python3 scripts/apply_thynk_recording_workspace.py
       - name: Apply locked nine THyNK Music workspaces
         run: python3 scripts/apply_thynk_music_nine_workspaces.py
       - name: Apply live authenticated Profile route
