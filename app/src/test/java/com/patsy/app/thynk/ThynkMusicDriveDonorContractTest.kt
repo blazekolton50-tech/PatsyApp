@@ -31,6 +31,14 @@ class ThynkMusicDriveDonorContractTest {
     }
 
     @Test
+    fun `audio import and playback are now real native capabilities`() {
+        val capability = ThynkMusicDriveDonorContract.capability("audio-import-playback")!!
+        assertEquals(DriveDonorReadiness.NATIVE_PRESENT, capability.readiness)
+        assertTrue(capability.nativeTarget.contains("ThynkAudioImportCard"))
+        assertTrue(capability.nativeTarget.contains("Media3"))
+    }
+
+    @Test
     fun `mock stem and export endpoints are never promoted as native complete`() {
         val providerDependentIds = listOf("stem-separation", "mixdown-export")
         assertTrue(
