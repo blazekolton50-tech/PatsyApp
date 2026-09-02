@@ -12,10 +12,10 @@ class ThynkPanelEntryWiringContractTest {
 
         assertTrue(activity.contains("ThynkPrimaryNavigationBar("))
         assertTrue(activity.contains("var thynkEntry by remember"))
-        assertTrue(activity.contains("ThynkPanelDestination.MUSIC ->"))
-        assertTrue(activity.contains("thynkEntry = ThynkStudioEntry.MUSIC"))
-        assertTrue(activity.contains("ThynkPanelDestination.IT ->"))
-        assertTrue(activity.contains("thynkEntry = ThynkStudioEntry.IT"))
+        assertTrue(activity.contains("fun navigateThynk(entry: ThynkStudioEntry)"))
+        assertTrue(activity.contains("thynkEntry = entry"))
+        assertTrue(activity.contains("ThynkPanelDestination.MUSIC -> navigateThynk(ThynkStudioEntry.MUSIC)"))
+        assertTrue(activity.contains("ThynkPanelDestination.IT -> navigateThynk(ThynkStudioEntry.IT)"))
         assertTrue(activity.contains("ThynkStudioScreen(\n                                        entry = thynkEntry,"))
 
         assertTrue(studio.contains("entry: ThynkStudioEntry"))
