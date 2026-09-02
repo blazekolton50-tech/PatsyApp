@@ -55,6 +55,8 @@ import com.patsy.app.ui.finaldesign.FinalCharcoal
 import com.patsy.app.ui.finaldesign.FinalMuted
 import com.patsy.app.ui.finaldesign.FinalRainbow
 import com.patsy.app.ui.finaldesign.FinalWhite
+import com.patsy.app.ui.finaldesign.ThynkDestinationLogo
+import com.patsy.app.ui.finaldesign.ThynkPanelDestination
 import com.patsy.app.studio.StudioEditorState
 import com.patsy.app.studio.StudioVideoPlayer
 import com.patsy.app.studio.reduceStudioState
@@ -81,6 +83,7 @@ fun ThynkStudioScreen(
     Column(Modifier.fillMaxSize().background(FinalCharcoal)) {
         ThynkHeader(
             chrome = chrome,
+            destination = ThynkWorkspaceNavigation.topLogoDestination(route),
             onBack = { route = ThynkWorkspaceNavigation.back(route) },
             onHome = onHome,
         )
@@ -129,6 +132,7 @@ fun ThynkStudioScreen(
 @Composable
 private fun ThynkHeader(
     chrome: ThynkWorkspaceChrome,
+    destination: ThynkPanelDestination,
     onBack: () -> Unit,
     onHome: () -> Unit,
 ) {
@@ -140,10 +144,8 @@ private fun ThynkHeader(
             }
         }
         if (!chrome.showOverflowHome) {
-            Image(
-                painter = painterResource(R.drawable.patsy_logo_official_white),
-                contentDescription = "Patsy",
-                contentScale = ContentScale.Fit,
+            ThynkDestinationLogo(
+                destination = destination,
                 modifier = Modifier.align(Alignment.Center).width(104.dp).height(48.dp),
             )
         }
