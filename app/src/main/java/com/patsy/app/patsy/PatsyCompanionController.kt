@@ -8,7 +8,6 @@ import com.patsy.app.patsy.rig.PatsyRigViseme
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 
-/** A UI target expressed as normalised coordinates inside the full companion surface. */
 data class PatsyCompanionTarget(
     val normalizedX: Float,
     val normalizedY: Float,
@@ -28,6 +27,16 @@ enum class PatsyCompanionMode {
     EXPANDING,
 }
 
+enum class PatsyCompanionEffectKind {
+    RISING_RAINBOW_GLITTER,
+}
+
+data class PatsyCompanionEffect(
+    val kind: PatsyCompanionEffectKind,
+    val assetName: String,
+    val playbackSpeed: Float,
+)
+
 data class PatsyCompanionState(
     val mode: PatsyCompanionMode = PatsyCompanionMode.IDLE,
     val pose: PatsyRigPose = PatsyRigPose(
@@ -42,12 +51,14 @@ data class PatsyCompanionState(
 /**
  * App-owned companion movement controller.
  *
- * Big Patsy is scale 1.0 (300 visual units) and Mini Patsy is scale 0.5 (150 visual units).
- * The same Patsy rig is used at every size. No alternate mini sprite/artboard is introduced.
+ * Big = 300 visual units / scale 1.0. Mini = 150 visual units / scale 0.5.
+ * Shrink lasts exactly 0.8 s and the mission run lasts exactly 0.4 s.
+ * The same Patsy rig is used throughout; no second mini sprite/artboard is introduced.
  */
 class PatsyCompanionController(
     private val rig: PatsyRigCoordinator,
     private val onStateChanged: (PatsyCompanionState) -> Unit = {},
+    private val onEffectRequested: (PatsyCompanionEffect) -> Unit = {},
     private val frameWait: suspend (Long) -> Unit = { delay(it) },
 ) {
     var state: PatsyCompanionState = PatsyCompanionState()
@@ -57,7 +68,6 @@ class PatsyCompanionController(
         rig.render(state.pose)
     }
 
-    /** Shrink to Mini over exactly 0.8 s, travel beside [target], then point while remaining small. */
     suspend fun guideTo(target: PatsyCompanionTarget) {
         val normalisedTarget = target.normalised()
         if (state.pose.reducedMotion) {
@@ -77,6 +87,7 @@ class PatsyCompanionController(
             return
         }
 
+        onEffectRequested(CANONICAL_SHRINK_EFFECT)
         animateScale(
             destination = HELPER_SCALE,
             mode = PatsyCompanionMode.SHRINKING,
@@ -89,7 +100,9 @@ class PatsyCompanionController(
         animatePosition(
             destination = anchor,
             mode = PatsyCompanionMode.TRAVELLING,
-            motion = PatsyRigMotion.WALK,
+            motion = PatsyRigMotion.RUN,
+            frames = MISSION_RUN_FRAMES,
+            frameMillis = MISSION_RUN_FRAME_MILLIS,
         )
 
         render(
@@ -111,7 +124,6 @@ class PatsyCompanionController(
         rig.retriggerAction(PatsyRigMotion.POINT)
     }
 
-    /** Walk back while small, expand to Big, and fully reset transient attention/speech state. */
     suspend fun returnHome() {
         if (state.pose.reducedMotion) {
             render(PatsyCompanionMode.IDLE, neutralHomePose(reducedMotion = true))
@@ -130,10 +142,18 @@ class PatsyCompanionController(
                 speechEnergy = 0f,
             ),
         )
+        val home = PatsyCompanionTarget(REST_STAGE_X, REST_STAGE_Y)
+        val distance = kotlin.math.abs(home.normalizedX - state.pose.stageX) +
+            kotlin.math.abs(home.normalizedY - state.pose.stageY)
+        val returnFrames = (MIN_RETURN_FRAMES + distance * EXTRA_RETURN_FRAMES)
+            .roundToInt()
+            .coerceAtLeast(MIN_RETURN_FRAMES)
         animatePosition(
-            destination = PatsyCompanionTarget(REST_STAGE_X, REST_STAGE_Y),
+            destination = home,
             mode = PatsyCompanionMode.RETURNING,
             motion = PatsyRigMotion.WALK,
+            frames = returnFrames,
+            frameMillis = RETURN_FRAME_MILLIS,
         )
         animateScale(
             destination = FULL_SCALE,
@@ -180,14 +200,12 @@ class PatsyCompanionController(
         destination: PatsyCompanionTarget,
         mode: PatsyCompanionMode,
         motion: PatsyRigMotion,
+        frames: Int,
+        frameMillis: Long,
     ) {
         val startX = state.pose.stageX
         val startY = state.pose.stageY
-        val distance = kotlin.math.abs(destination.normalizedX - startX) +
-            kotlin.math.abs(destination.normalizedY - startY)
-        val frames = (MIN_TRAVEL_FRAMES + distance * EXTRA_TRAVEL_FRAMES)
-            .roundToInt()
-            .coerceAtLeast(MIN_TRAVEL_FRAMES)
+        val facing = if (destination.normalizedX < startX) -1f else 1f
 
         repeat(frames) { index ->
             val progress = (index + 1).toFloat() / frames.toFloat()
@@ -196,7 +214,8 @@ class PatsyCompanionController(
                 mode,
                 state.pose.copy(
                     motion = motion,
-                    motionSpeed = 0.72f,
+                    motionSpeed = if (motion == PatsyRigMotion.RUN) 1f else 0.72f,
+                    facing = facing,
                     stageX = lerp(startX, destination.normalizedX, eased),
                     stageY = lerp(startY, destination.normalizedY, eased),
                     stageScale = HELPER_SCALE,
@@ -206,7 +225,7 @@ class PatsyCompanionController(
                     speechEnergy = 0f,
                 ),
             )
-            frameWait(TRAVEL_FRAME_MILLIS)
+            frameWait(frameMillis)
         }
     }
 
@@ -220,11 +239,7 @@ class PatsyCompanionController(
         val start = state.pose.stageScale
         repeat(frames) { index ->
             val progress = (index + 1).toFloat() / frames.toFloat()
-            val eased = if (mode == PatsyCompanionMode.SHRINKING) {
-                easeOutCubic(progress)
-            } else {
-                smoothStep(progress)
-            }
+            val eased = if (mode == PatsyCompanionMode.SHRINKING) easeOutCubic(progress) else smoothStep(progress)
             render(
                 mode,
                 state.pose.copy(
@@ -239,11 +254,7 @@ class PatsyCompanionController(
 
     private fun guideAnchor(target: PatsyCompanionTarget): PatsyCompanionTarget {
         val targetOnRight = target.normalizedX >= 0.5f
-        val x = if (targetOnRight) {
-            target.normalizedX - GUIDE_SIDE_OFFSET
-        } else {
-            target.normalizedX + GUIDE_SIDE_OFFSET
-        }
+        val x = if (targetOnRight) target.normalizedX - GUIDE_SIDE_OFFSET else target.normalizedX + GUIDE_SIDE_OFFSET
         return PatsyCompanionTarget(
             normalizedX = x.coerceIn(STAGE_EDGE_MARGIN, 1f - STAGE_EDGE_MARGIN),
             normalizedY = target.normalizedY.coerceIn(STAGE_TOP_MARGIN, STAGE_BOTTOM_MARGIN),
@@ -269,8 +280,7 @@ class PatsyCompanionController(
         return 1f - (inverse * inverse * inverse)
     }
 
-    private fun lerp(start: Float, end: Float, progress: Float): Float =
-        start + (end - start) * progress
+    private fun lerp(start: Float, end: Float, progress: Float): Float = start + (end - start) * progress
 
     private companion object {
         const val REST_STAGE_X = 0.50f
@@ -285,11 +295,18 @@ class PatsyCompanionController(
         const val STAGE_BOTTOM_MARGIN = 0.86f
         const val SHRINK_FRAMES = 10
         const val SHRINK_FRAME_MILLIS = 80L
+        const val MISSION_RUN_FRAMES = 10
+        const val MISSION_RUN_FRAME_MILLIS = 40L
         const val EXPAND_FRAMES = 10
         const val EXPAND_FRAME_MILLIS = 60L
-        const val MIN_TRAVEL_FRAMES = 8
-        const val EXTRA_TRAVEL_FRAMES = 18f
-        const val TRAVEL_FRAME_MILLIS = 16L
+        const val MIN_RETURN_FRAMES = 8
+        const val EXTRA_RETURN_FRAMES = 18f
+        const val RETURN_FRAME_MILLIS = 16L
+        val CANONICAL_SHRINK_EFFECT = PatsyCompanionEffect(
+            kind = PatsyCompanionEffectKind.RISING_RAINBOW_GLITTER,
+            assetName = "video4635308202773325454.mp4",
+            playbackSpeed = 8f,
+        )
     }
 }
 
