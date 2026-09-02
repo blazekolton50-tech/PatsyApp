@@ -69,6 +69,12 @@ object ThynkMusicDriveDonorContract {
             nativeTarget = "NativeThynkAudioRecorder / ThynkRecordingWorkspaceScreen",
         ),
         ThynkMusicDriveCapability(
+            id = "audio-import-playback",
+            sourceDriveFileId = studioProDriveFileId,
+            readiness = DriveDonorReadiness.NATIVE_PRESENT,
+            nativeTarget = "ThynkAudioImportCard / Android media picker / Media3",
+        ),
+        ThynkMusicDriveCapability(
             id = "project-persistence",
             sourceDriveFileId = fullStackDriveFileId,
             readiness = DriveDonorReadiness.NATIVE_PRESENT,
