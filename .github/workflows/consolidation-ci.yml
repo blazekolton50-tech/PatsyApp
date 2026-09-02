@@ -32,7 +32,7 @@ jobs:
       - name: Apply native Camera integration
         run: python3 scripts/apply_camera_native_integration.py
       - name: Apply native THyNK Design editor host
-        run: python3 scripts/apply_thynk_design_editor_integration.py
+        run: python3 scripts/apply_thynk_design_editor_integration_compat.py
       - name: Apply live authenticated Profile route
         run: python3 scripts/apply_live_profile_route.py
       - name: Apply truthful PDM presentation
