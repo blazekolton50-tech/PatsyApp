@@ -13,6 +13,7 @@ export interface TargetMeasurement {
 }
 
 const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
+const stable = (value: number) => Math.round(value * 1_000_000) / 1_000_000;
 
 export function measureTarget(
   element: HTMLElement,
@@ -27,15 +28,15 @@ export function measureTarget(
 
   const centerX = rect.left + rect.width / 2;
   const centerY = rect.top + rect.height / 2;
-  const normalizedX = clamp01(centerX / viewport.width);
-  const normalizedY = clamp01(centerY / viewport.height);
+  const normalizedX = stable(clamp01(centerX / viewport.width));
+  const normalizedY = stable(clamp01(centerY / viewport.height));
 
   return {
     xPx: centerX,
     yPx: centerY,
     normalizedX,
     normalizedY,
-    lookX: normalizedX * 2 - 1,
-    lookY: normalizedY * 2 - 1,
+    lookX: stable(normalizedX * 2 - 1),
+    lookY: stable(normalizedY * 2 - 1),
   };
 }
