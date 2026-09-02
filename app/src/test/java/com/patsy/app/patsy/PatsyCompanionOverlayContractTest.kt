@@ -23,6 +23,17 @@ class PatsyCompanionOverlayContractTest {
         assertTrue(overlay.contains("R.drawable.patsy_generated_main"))
     }
 
+    @Test
+    fun `quick shrink uses the existing one Patsy overlay and starts mission only after shrink`() {
+        val controller = source("app/src/main/java/com/patsy/app/patsy/PatsyCompanionController.kt")
+        val overlay = source("app/src/main/java/com/patsy/app/patsy/ui/PatsyCompanionOverlay.kt")
+
+        assertTrue(controller.contains("suspend fun shrinkForMission()"))
+        assertTrue(overlay.contains("data class QuickShrink"))
+        assertTrue(overlay.contains("controller.shrinkForMission()"))
+        assertTrue(overlay.contains("command.onMissionStart()"))
+    }
+
     private fun source(path: String): String {
         val candidates = sequenceOf(File(path), File("../$path"))
         return candidates.firstOrNull(File::isFile)?.readText()
