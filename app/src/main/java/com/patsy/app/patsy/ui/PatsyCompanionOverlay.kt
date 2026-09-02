@@ -27,6 +27,7 @@ import com.patsy.app.patsy.rig.rive.PatsyRiveRuntimeAdapter
 /** Commands that can move the one app-wide Patsy companion over the current page. */
 sealed interface PatsyCompanionCommand {
     data class GuideTo(val target: PatsyCompanionTarget) : PatsyCompanionCommand
+    data class QuickShrink(val onMissionStart: () -> Unit) : PatsyCompanionCommand
     data object ReturnHome : PatsyCompanionCommand
 }
 
@@ -62,6 +63,10 @@ fun PatsyCompanionOverlay(
     LaunchedEffect(command) {
         when (command) {
             is PatsyCompanionCommand.GuideTo -> controller.guideTo(command.target)
+            is PatsyCompanionCommand.QuickShrink -> {
+                controller.shrinkForMission()
+                command.onMissionStart()
+            }
             PatsyCompanionCommand.ReturnHome -> controller.returnHome()
             null -> return@LaunchedEffect
         }
