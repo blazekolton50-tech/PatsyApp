@@ -105,17 +105,16 @@ fun FinalProfileScreen(
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         item {
-            Row(
-                Modifier.fillMaxWidth().padding(top = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text("PROFILE", color = FinalWhite, fontSize = 24.sp, fontWeight = FontWeight.Black)
-                Spacer(Modifier.weight(1f))
+            Box(Modifier.fillMaxWidth().padding(top = 10.dp).height(60.dp)) {
+                ThynkDestinationLogo(
+                    destination = ThynkPanelDestination.ME,
+                    modifier = Modifier.align(Alignment.Center).width(132.dp).height(58.dp),
+                )
                 Text(
                     text = if (menuOpen) "×" else "☰",
                     color = FinalWhite,
                     fontSize = 26.sp,
-                    modifier = Modifier.clickable { menuOpen = !menuOpen }.padding(8.dp),
+                    modifier = Modifier.align(Alignment.CenterEnd).clickable { menuOpen = !menuOpen }.padding(8.dp),
                 )
             }
         }
@@ -269,9 +268,9 @@ fun FinalPatsyDmScreen(
                 filter = filter,
                 onFilter = { filter = it },
                 onThread = {
-                        selectedThreadId = it
-                        onThreadSelected(it)
-                    },
+                    selectedThreadId = it
+                    onThreadSelected(it)
+                },
                 modifier = Modifier.fillMaxSize(),
             )
         } else {
@@ -300,7 +299,10 @@ private fun DmInboxPane(
     modifier: Modifier,
 ) {
     Column(modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("PATSY DMs", color = FinalWhite, fontSize = 26.sp, fontWeight = FontWeight.Black)
+        ThynkDestinationLogo(
+            destination = ThynkPanelDestination.CHATS,
+            modifier = Modifier.align(Alignment.CenterHorizontally).width(150.dp).height(58.dp),
+        )
         Text("Your conversations 💜", color = FinalMuted, fontSize = 13.sp)
         OutlinedTextField(
             value = search,
