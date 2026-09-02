@@ -21,6 +21,13 @@ class ThynkMusicDriveDonorContractTest {
     }
 
     @Test
+    fun `microphone recording is now a real native capability`() {
+        val capability = ThynkMusicDriveDonorContract.capability("microphone-recording")!!
+        assertEquals(DriveDonorReadiness.NATIVE_PRESENT, capability.readiness)
+        assertTrue(capability.nativeTarget.contains("NativeThynkAudioRecorder"))
+    }
+
+    @Test
     fun `mock stem and export endpoints are never promoted as native complete`() {
         val providerDependentIds = listOf("stem-separation", "mixdown-export")
         assertTrue(
