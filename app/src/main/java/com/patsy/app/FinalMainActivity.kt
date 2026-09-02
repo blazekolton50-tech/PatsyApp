@@ -419,10 +419,7 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
                                                     ownerToolsGrant,
                                                     OwnerCapability.VIEW_OWNER_TOOLS,
                                                 ),
-                                                onQuickAction = {
-                                                    thynkEntry = ThynkStudioEntry.IT
-                                                    navigate(FinalHomeDestination.THYNK)
-                                                },
+                                                onQuickAction = { page = FinalAppPage.THYNK },
                                                 onOpenOwnerProfile = {
                                                     scope.launch {
                                                         val refreshed = refreshOwnerAccess().first
