@@ -15,6 +15,10 @@ enum class ThynkStudioEntry {
 internal sealed interface ThynkWorkspaceRoute {
     data object Hub : ThynkWorkspaceRoute
     data class Category(val categoryId: String) : ThynkWorkspaceRoute
+    data class Tool(
+        val categoryId: String,
+        val item: String,
+    ) : ThynkWorkspaceRoute
     data class Music(val pageId: String) : ThynkWorkspaceRoute
     data class Editor(
         val pageId: String,
@@ -48,9 +52,19 @@ internal object ThynkWorkspaceNavigation {
         ThynkStudioEntry.MUSIC -> ThynkWorkspaceRoute.Music("music-home")
     }
 
+    fun openItItem(categoryId: String, item: String): ThynkWorkspaceRoute {
+        val editorPage = editorPageForThynkItem(item)
+        return if (editorPage != null && studioEntryForEditorPage(editorPage) == ThynkStudioEntry.IT) {
+            ThynkWorkspaceRoute.Editor(pageId = editorPage, categoryId = categoryId)
+        } else {
+            ThynkWorkspaceRoute.Tool(categoryId = categoryId, item = item)
+        }
+    }
+
     fun topLogoDestination(route: ThynkWorkspaceRoute): ThynkPanelDestination = when (route) {
         is ThynkWorkspaceRoute.Music -> ThynkPanelDestination.MUSIC
-        is ThynkWorkspaceRoute.Category -> ThynkPanelDestination.IT
+        is ThynkWorkspaceRoute.Category,
+        is ThynkWorkspaceRoute.Tool -> ThynkPanelDestination.IT
         is ThynkWorkspaceRoute.Editor -> when (studioEntryForEditorPage(route.pageId)) {
             ThynkStudioEntry.MUSIC -> ThynkPanelDestination.MUSIC
             ThynkStudioEntry.IT,
@@ -63,7 +77,8 @@ internal object ThynkWorkspaceNavigation {
         is ThynkWorkspaceRoute.Editor -> true
         is ThynkWorkspaceRoute.Music -> route.pageId in musicEditingBoardPageIds
         ThynkWorkspaceRoute.Hub,
-        is ThynkWorkspaceRoute.Category -> false
+        is ThynkWorkspaceRoute.Category,
+        is ThynkWorkspaceRoute.Tool -> false
     }
 
     fun chrome(route: ThynkWorkspaceRoute): ThynkWorkspaceChrome {
@@ -79,6 +94,7 @@ internal object ThynkWorkspaceNavigation {
 
     fun back(route: ThynkWorkspaceRoute): ThynkWorkspaceRoute = when (route) {
         is ThynkWorkspaceRoute.Editor -> ThynkWorkspaceRoute.Category(route.categoryId)
+        is ThynkWorkspaceRoute.Tool -> ThynkWorkspaceRoute.Category(route.categoryId)
         is ThynkWorkspaceRoute.Music -> when (route.pageId) {
             "music-home" -> route
             "video-player", "video-editor" -> ThynkWorkspaceRoute.Music("video-home")
