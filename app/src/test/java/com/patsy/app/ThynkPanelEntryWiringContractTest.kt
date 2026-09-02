@@ -23,6 +23,20 @@ class ThynkPanelEntryWiringContractTest {
         assertTrue(studio.contains("LaunchedEffect(entry)"))
     }
 
+    @Test
+    fun `generic creator entry resets to THyNK IT instead of inheriting Music`() {
+        val activity = source("app/src/main/java/com/patsy/app/FinalMainActivity.kt")
+
+        assertTrue(activity.contains("fun navigateThynk(entry: ThynkStudioEntry)"))
+        assertTrue(
+            activity.contains(
+                "if (destination == FinalHomeDestination.THYNK) {\n            navigateThynk(ThynkStudioEntry.IT)\n            return\n        }",
+            ),
+        )
+        assertTrue(activity.contains("ThynkPanelDestination.MUSIC -> navigateThynk(ThynkStudioEntry.MUSIC)"))
+        assertTrue(activity.contains("ThynkPanelDestination.IT -> navigateThynk(ThynkStudioEntry.IT)"))
+    }
+
     private fun source(path: String): String {
         val candidates = sequenceOf(File(path), File("../$path"))
         return candidates.firstOrNull(File::isFile)?.readText()
