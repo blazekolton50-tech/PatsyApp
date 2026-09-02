@@ -94,7 +94,7 @@ object ThynkMusicCatalog {
         ThynkMusicPage("music-home", "THyNK Music", "Music, video, recording and media production."),
         ThynkMusicPage("create-music", "Create Music", "Start a new original track.", "NOT_CONFIGURED"),
         ThynkMusicPage("ai-music-generator", "AI Music Generator", "Generate original music through a configured provider.", "NOT_CONFIGURED"),
-        ThynkMusicPage("recording", "Recording", "Record vocals and audio when the native capture pipeline is connected.", "NOT_CONFIGURED"),
+        ThynkMusicPage("recording", "Recording", "Record a real local microphone take as AAC audio in an .m4a file.", "LOCAL_NATIVE"),
         ThynkMusicPage("track-editor", "Track Editor", "Arrange, trim and shape tracks."),
 
         // Exactly nine owner-approved production workspaces.
