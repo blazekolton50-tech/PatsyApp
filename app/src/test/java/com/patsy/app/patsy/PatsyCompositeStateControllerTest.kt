@@ -44,6 +44,41 @@ class PatsyCompositeStateControllerTest {
     }
 
     @Test
+    fun emptySpeechMeansNoNewSpeechAndDoesNotStopActiveSpeech() {
+        val runtime = RecordingRuntime()
+        val speech = RecordingSpeechRuntime()
+        val controller = PatsyCompositeStateController(
+            rig = PatsyRigCoordinator(runtime),
+            speechRuntime = speech,
+        )
+
+        controller.dispatch(
+            PatsyCompositeCommand(
+                bodyState = "sitting",
+                expressionPreset = "curious",
+                speechText = "Still talking",
+            )
+        )
+        controller.dispatch(
+            PatsyCompositeCommand(
+                bodyState = "walking",
+                expressionPreset = "curious",
+                speechText = "",
+            )
+        )
+
+        assertEquals(listOf("Still talking"), speech.startedTexts)
+        assertEquals(0, speech.stopCount)
+        assertEquals("Still talking", controller.state.speechText)
+        assertTrue(controller.state.pose.talking)
+        assertEquals(PatsyRigMotion.WALK, controller.state.pose.motion)
+        assertEquals(
+            PatsyRigValue.Boolean(true),
+            runtime.latestValues()[PatsyRigContractV1.Property.SPEECH_TALKING],
+        )
+    }
+
+    @Test
     fun fullNeutralResetStopsTransientLayersAndRestoresNeutralIdlePose() {
         val runtime = RecordingRuntime()
         val speech = RecordingSpeechRuntime()
