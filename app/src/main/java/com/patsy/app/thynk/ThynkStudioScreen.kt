@@ -110,10 +110,16 @@ fun ThynkStudioScreen(
                         }
                     }
                 }
-                is ThynkWorkspaceRoute.Tool -> ThynkToolScreen(
-                    categoryId = current.categoryId,
-                    item = current.item,
-                )
+                is ThynkWorkspaceRoute.Tool -> {
+                    if (current.categoryId == "fashion") {
+                        FashionWorkspaceScreen(initialItem = current.item)
+                    } else {
+                        ThynkToolScreen(
+                            categoryId = current.categoryId,
+                            item = current.item,
+                        )
+                    }
+                }
                 is ThynkWorkspaceRoute.Music -> ThynkMusicScreen(
                     pageId = current.pageId,
                     onOpenPage = { route = ThynkWorkspaceRoute.Music(it) },
