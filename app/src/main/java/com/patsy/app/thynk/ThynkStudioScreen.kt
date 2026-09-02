@@ -120,10 +120,20 @@ fun ThynkStudioScreen(
                         )
                     }
                 }
-                is ThynkWorkspaceRoute.Music -> ThynkMusicScreen(
-                    pageId = current.pageId,
-                    onOpenPage = { route = ThynkWorkspaceRoute.Music(it) },
+                is ThynkWorkspaceRoute.Tool -> ThynkToolScreen(
+                    categoryId = current.categoryId,
+                    item = current.item,
                 )
+                is ThynkWorkspaceRoute.Music -> {
+                    if (current.pageId == "recording") {
+                        ThynkRecordingWorkspaceScreen()
+                    } else {
+                        ThynkMusicScreen(
+                            pageId = current.pageId,
+                            onOpenPage = { route = ThynkWorkspaceRoute.Music(it) },
+                        )
+                    }
+                }
                 is ThynkWorkspaceRoute.Editor -> when (editorDestinationForPage(current.pageId)?.kind) {
                     ThynkEditorKind.DESIGN -> ThynkDesignEditorScreen()
                     ThynkEditorKind.VIDEO -> ThynkVideoEditorScreen()
