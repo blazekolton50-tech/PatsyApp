@@ -518,7 +518,9 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
                         FinalAppPage.OWNER_PROFILE,
                         FinalAppPage.OWNER_TOOLS -> ThynkPanelDestination.ME
                         FinalAppPage.CREATE,
-                        else -> null
+                        FinalAppPage.LOGIN,
+                        FinalAppPage.DEBUG_SET_PASSWORD,
+                        FinalAppPage.PROTECTED -> null
                     }
                     ThynkPrimaryNavigationBar(
                         selected = selectedPanelDestination,
