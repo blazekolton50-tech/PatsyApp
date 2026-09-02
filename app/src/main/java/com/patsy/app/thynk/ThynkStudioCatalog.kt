@@ -14,6 +14,21 @@ data class ThynkMusicPage(
     val providerState: String = "LOCAL_UI",
 )
 
+/** Owner-locked production workspace set. Arrangement/Timeline is shared and is not page ten. */
+object ThynkMusicLockedWorkspaces {
+    val ids = listOf(
+        "mixer",
+        "effects",
+        "equalizer",
+        "lyrics-vocals",
+        "dj-studio",
+        "beats-sampler",
+        "piano-roll",
+        "ai-tools",
+        "mastering",
+    )
+}
+
 object ThynkStudioCatalog {
     val categories = listOf(
         ThynkCategory(
@@ -35,12 +50,6 @@ object ThynkStudioCatalog {
             listOf("EDIT PHOTO", "CROP", "RESIZE", "ROTATE", "FLIP", "CUTOUT", "REMOVE BACKGROUND", "REMOVE OBJECT", "FILTERS", "RETOUCH", "COLOR CORRECTION", "FRAMES"),
         ),
         ThynkCategory(
-            "video",
-            "VIDEO & CAMERA",
-            "Shoot, edit and produce video.",
-            listOf("VIDEO EDITOR", "TRIM & CUT", "SPLIT", "TRANSITIONS", "SUBTITLES", "OVERLAYS", "GREEN SCREEN", "VIDEO FILTERS", "SLOW MOTION", "SLIDESHOW", "LOOP", "ASPECT RESIZER"),
-        ),
-        ThynkCategory(
             "documents",
             "DOCUMENTS & BUSINESS",
             "Build useful documents and business materials.",
@@ -59,16 +68,16 @@ object ThynkStudioCatalog {
             listOf("PRESENTATION", "PITCH DECK", "LESSON PLAN", "MOOD BOARD", "ROADMAP", "MEETING DECK", "PORTFOLIO", "SWOT ANALYSIS", "CALENDAR", "GOAL TRACKER", "KANBAN BOARD", "WEEKLY PLANNER"),
         ),
         ThynkCategory(
+            "fashion",
+            "FASHION & TEXTILES",
+            "Pattern, sketch, layer, material and production tools from the native THyNK-IT fashion pipeline.",
+            listOf("PATTERN CAD", "3D SKETCH", "LAYER MIXER", "MATERIALS LAB", "PRODUCTION"),
+        ),
+        ThynkCategory(
             "collage",
             "COLLAGE & CREATIVE",
             "Play, experiment and build creative layouts.",
             listOf("PHOTO COLLAGE", "SCRAPBOOK", "MOOD COLLAGE", "POLAROID WALL", "MEME BUILDER", "STICKER COLLAGE", "MAGAZINE CUTOUT", "GRID COLLAGE", "FREESTYLE BOARD", "SHAPE COLLAGE", "LAYERED ART", "MEMORY WALL"),
-        ),
-        ThynkCategory(
-            "music",
-            "THyNK MUSIC",
-            "Create, record, edit, mix and master music.",
-            listOf("CREATE MUSIC", "AI MUSIC GENERATOR", "RECORD", "TRACK EDITOR", "MIXER", "MASTERING", "LOOPS & SAMPLES", "STEMS", "SOUND EFFECTS", "LYRICS & VOCALS", "IMPORT AUDIO", "MY MUSIC"),
         ),
         ThynkCategory(
             "ai",
@@ -81,15 +90,29 @@ object ThynkStudioCatalog {
 
 object ThynkMusicCatalog {
     val pages = listOf(
-        ThynkMusicPage("music-home", "THyNK Music", "Create. Record. Edit. Mix. Master."),
+        // Entry and compatibility routes remain available, but are not additional production workspaces.
+        ThynkMusicPage("music-home", "THyNK Music", "Music, video, recording and media production."),
         ThynkMusicPage("create-music", "Create Music", "Start a new original track.", "NOT_CONFIGURED"),
         ThynkMusicPage("ai-music-generator", "AI Music Generator", "Generate original music through a configured provider.", "NOT_CONFIGURED"),
+        ThynkMusicPage("recording", "Recording", "Record a real local microphone take as AAC audio in an .m4a file.", "LOCAL_NATIVE"),
         ThynkMusicPage("track-editor", "Track Editor", "Arrange, trim and shape tracks."),
-        ThynkMusicPage("mixer", "Mixer", "Balance tracks, pan and levels."),
-        ThynkMusicPage("equalizer", "Equalizer", "Shape frequency balance."),
-        ThynkMusicPage("effects", "Effects", "Apply local effect settings and prepare processing."),
-        ThynkMusicPage("lyrics-vocals", "Lyrics & Vocals", "Write and organise lyrics and vocal ideas.", "NOT_CONFIGURED"),
-        ThynkMusicPage("mastering", "Mastering", "Finalize through a configured mastering provider.", "NOT_CONFIGURED"),
-        ThynkMusicPage("export", "Export", "Choose output settings; real file export must be verified.", "NOT_CONFIGURED"),
+
+        // Exactly nine owner-approved production workspaces.
+        ThynkMusicPage("mixer", "Mixer / Master Console", "Channel strips, master controls and shared arrangement."),
+        ThynkMusicPage("effects", "Effects Rack", "Hardware-style effect routing and performance controls."),
+        ThynkMusicPage("equalizer", "Equaliser", "Multi-band EQ and truthful analysis controls."),
+        ThynkMusicPage("lyrics-vocals", "Vocal Studio", "Recording, pitch, harmony, takes and vocal controls.", "NOT_CONFIGURED"),
+        ThynkMusicPage("dj-studio", "DJ Studio", "Dual-deck performance, cue, mix and project controls.", "NOT_CONFIGURED"),
+        ThynkMusicPage("beats-sampler", "Beats Sampler", "16-pad sampler, sequence and shaping workspace.", "NOT_CONFIGURED"),
+        ThynkMusicPage("piano-roll", "Piano Roll / MIDI", "MIDI note grid, velocity and instrument workspace."),
+        ThynkMusicPage("ai-tools", "AI Tools Suite", "Six production AI tool areas with truthful provider states.", "NOT_CONFIGURED"),
+        ThynkMusicPage("mastering", "Mastering & Export", "Master bus, loudness, format and export controls.", "NOT_CONFIGURED"),
+
+        // Existing compatibility/media routes remain reachable but are not counted in the nine.
+        ThynkMusicPage("auto-tuner", "Auto-Tuner", "Pitch-correction controls require a verified audio processing engine.", "NOT_CONFIGURED"),
+        ThynkMusicPage("video-home", "Video", "Play, import and edit video inside the THyNK Music media family."),
+        ThynkMusicPage("video-player", "Video Player", "Play a real selected video with the native Media3 foundation."),
+        ThynkMusicPage("video-editor", "Video Editor", "Edit a real selected video with the shared native Media3 editor."),
+        ThynkMusicPage("export", "Export", "Compatibility export route; production mastering/export lives in Mastering & Export.", "NOT_CONFIGURED"),
     )
 }

@@ -3,12 +3,15 @@ package com.patsy.app.patsy.rig
 /**
  * Names and value ranges shared by the Android app and the authored Patsy Rive file.
  *
- * This is a dependency-neutral contract. It deliberately does not import the Rive runtime and
- * does not imply that a production .riv asset has been authored yet.
+ * Canonical 2 September baseline: artboard `Patsy`, 720x720 transparent. The app/runtime
+ * contract remains dependency-neutral and does not claim that a final production .riv exists.
  */
 object PatsyRigContractV1 {
     const val VERSION = 1
-    const val ARTBOARD = "PatsyAssistant"
+    const val ARTBOARD = "Patsy"
+    const val ARTBOARD_WIDTH = 720
+    const val ARTBOARD_HEIGHT = 720
+    const val ARTBOARD_TRANSPARENT = true
     const val STATE_MACHINE = "PatsyAssistantMachine"
     const val VIEW_MODEL = "PatsyAssistantVM"
     const val DEFAULT_VIEW_MODEL_INSTANCE = "Default"
@@ -47,18 +50,18 @@ object PatsyRigContractV1 {
         const val SPEECH_ENERGY = "speech/energy"
     }
 
-    /** Rive Enum values; spelling and case are part of the asset/runtime ABI. */
     object MotionValue {
         const val IDLE = "idle"
         const val WALK = "walk"
+        const val RUN = "run"
         const val SIT = "sit"
         const val LIE = "lie"
+        const val STAND = "stand"
         const val JUMP = "jump"
         const val WAVE = "wave"
         const val POINT = "point"
     }
 
-    /** Rive Enum values; spelling and case are part of the asset/runtime ABI. */
     object ExpressionValue {
         const val NEUTRAL = "neutral"
         const val CHEEKY = "cheeky"
@@ -70,7 +73,6 @@ object PatsyRigContractV1 {
         const val SLEEPY = "sleepy"
     }
 
-    /** Rive Enum values; spelling and case are part of the asset/runtime ABI. */
     object VisemeValue {
         const val REST = "rest"
         const val A = "a"
@@ -116,8 +118,10 @@ object PatsyRigContractV1 {
 enum class PatsyRigMotion(val riveValue: String) {
     IDLE(PatsyRigContractV1.MotionValue.IDLE),
     WALK(PatsyRigContractV1.MotionValue.WALK),
+    RUN(PatsyRigContractV1.MotionValue.RUN),
     SIT(PatsyRigContractV1.MotionValue.SIT),
     LIE(PatsyRigContractV1.MotionValue.LIE),
+    STAND(PatsyRigContractV1.MotionValue.STAND),
     JUMP(PatsyRigContractV1.MotionValue.JUMP),
     WAVE(PatsyRigContractV1.MotionValue.WAVE),
     POINT(PatsyRigContractV1.MotionValue.POINT),
@@ -147,7 +151,6 @@ enum class PatsyRigViseme(val riveValue: String) {
     SZ(PatsyRigContractV1.VisemeValue.SZ),
 }
 
-/** A complete desired character state. Normalised controls are clamped before dispatch. */
 data class PatsyRigPose(
     val motion: PatsyRigMotion = PatsyRigMotion.IDLE,
     val motionSpeed: Float = 0f,

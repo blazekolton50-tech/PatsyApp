@@ -39,28 +39,37 @@ import com.patsy.app.navigation.FinalShellNavigation
 import com.patsy.app.navigation.NavigationDecision
 import com.patsy.app.navigation.ShellDestination
 import com.patsy.app.navigation.ShellNavigationGate
+import com.patsy.app.patsy.PatsyCompanionTarget
+import com.patsy.app.patsy.ui.PatsyCompanionCommand
+import com.patsy.app.patsy.ui.PatsyCompanionOverlay
 import com.patsy.app.security.FailClosedOwnerAuthorizationGate
 import com.patsy.app.security.FinalOwnerAccessPolicy
 import com.patsy.app.security.OwnerAuthorizationDecision
 import com.patsy.app.security.OwnerCapability
+import com.patsy.app.thynk.NativeCameraHub
+import com.patsy.app.thynk.ThynkStudioEntry
+import com.patsy.app.thynk.ThynkStudioScreen
 import com.patsy.app.ui.finaldesign.FinalCharcoal
 import com.patsy.app.ui.finaldesign.FinalDebugSetPasswordRoute
 import com.patsy.app.ui.finaldesign.FinalHomeDestination
 import com.patsy.app.ui.finaldesign.FinalHomeScreen
 import com.patsy.app.ui.finaldesign.FinalLoginRoute
-import com.patsy.app.ui.finaldesign.FinalPrimaryNavigationBar
+import com.patsy.app.ui.finaldesign.FinalPatsyDmScreen
+import com.patsy.app.ui.finaldesign.FinalPatsyDmLiveRoute
+import com.patsy.app.ui.finaldesign.FinalProfileScreen
+import com.patsy.app.ui.finaldesign.FinalProfileLiveRoute
 import com.patsy.app.ui.finaldesign.FinalVisualContract
 import com.patsy.app.ui.finaldesign.FinalWhite
+import com.patsy.app.ui.finaldesign.ThynkPanelDestination
+import com.patsy.app.ui.finaldesign.ThynkPrimaryNavigationBar
 import com.patsy.app.thynk.LockedCameraHub
-import com.patsy.app.thynk.ThynkStudioScreen
+import com.patsy.app.ui.finaldesign.finalDmScreenState
+import com.patsy.app.ui.finaldesign.finalProfileScreenState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * SAVE MAIN APP / LOCK IN SAVE launcher for the three FINAL approved pages.
- *
- * The legacy MainActivity remains in the branch for the still-unmigrated secondary pages, but this
- * activity is the launcher so Login, Set Password and Home use the final visual contract now.
+ * SAVE MAIN APP / LOCK IN SAVE launcher for the FINAL authenticated app shell.
  */
 class FinalMainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -102,7 +111,18 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
     var ownerProfileGrant by remember { mutableStateOf<OwnerAuthorizationDecision.Allowed?>(null) }
     var ownerToolsGrant by remember { mutableStateOf<OwnerAuthorizationDecision.Allowed?>(null) }
     var ownerAccessChecked by remember { mutableStateOf(false) }
+    var editingBoardActive by remember { mutableStateOf(false) }
+    var thynkEntry by remember { mutableStateOf(ThynkStudioEntry.IT) }
+    var patsyCommand by remember { mutableStateOf<PatsyCompanionCommand?>(null) }
     val scope = rememberCoroutineScope()
+
+    fun guidePatsyTo(target: PatsyCompanionTarget) {
+        patsyCommand = PatsyCompanionCommand.GuideTo(target)
+    }
+
+    fun returnPatsyHome() {
+        patsyCommand = PatsyCompanionCommand.ReturnHome
+    }
 
     fun clearOwnerAccess(checked: Boolean) {
         ownerProfileGrant = null
@@ -148,6 +168,8 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
         debugPreview = isDebugPreview
         bootstrapResult = null
         bootstrapLoading = !isDebugPreview
+        editingBoardActive = false
+        thynkEntry = ThynkStudioEntry.IT
         clearOwnerAccess(checked = isDebugPreview)
         page = FinalAppPage.HOME
     }
@@ -160,15 +182,41 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
             bootstrapResult = null
             bootstrapLoading = false
             debugPreview = false
+            editingBoardActive = false
+            thynkEntry = ThynkStudioEntry.IT
             clearOwnerAccess(checked = false)
             page = FinalAppPage.LOGIN
         }
     }
 
-    fun navigate(destination: FinalHomeDestination) {
+    fun navigateThynk(entry: ThynkStudioEntry) {
+        editingBoardActive = false
+        thynkEntry = entry
         if (debugPreview) {
-            // Debug APK preview only. This bypass never grants backend or Owner capabilities and
-            // cannot exist in the release implementation of DebugTestAccess.
+            page = FinalAppPage.THYNK
+            return
+        }
+
+        val account = (bootstrapResult as? AccountBootstrapResult.Available)?.account
+        if (account == null) {
+            page = FinalAppPage.PROTECTED
+            return
+        }
+
+        page = when (FinalShellNavigation.authorize(FinalHomeDestination.THYNK, account)) {
+            is NavigationDecision.Allowed -> FinalAppPage.THYNK
+            is NavigationDecision.Denied -> FinalAppPage.PROTECTED
+        }
+    }
+
+    fun navigate(destination: FinalHomeDestination) {
+        returnPatsyHome()
+        if (destination == FinalHomeDestination.THYNK) {
+            navigateThynk(ThynkStudioEntry.IT)
+            return
+        }
+        editingBoardActive = false
+        if (debugPreview) {
             page = destination.toPage()
             return
         }
@@ -182,6 +230,16 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
         page = when (FinalShellNavigation.authorize(destination, account)) {
             is NavigationDecision.Allowed -> destination.toPage()
             is NavigationDecision.Denied -> FinalAppPage.PROTECTED
+        }
+    }
+
+    fun navigatePanel(destination: ThynkPanelDestination) {
+        when (destination) {
+            ThynkPanelDestination.ME -> navigate(FinalHomeDestination.PROFILE)
+            ThynkPanelDestination.CHATS -> navigate(FinalHomeDestination.PATSY_DMS)
+            ThynkPanelDestination.IN -> navigate(FinalHomeDestination.HOME)
+            ThynkPanelDestination.MUSIC -> navigateThynk(ThynkStudioEntry.MUSIC)
+            ThynkPanelDestination.IT -> navigateThynk(ThynkStudioEntry.IT)
         }
     }
 
@@ -247,10 +305,21 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
         if (initialDeepLink.isNullOrBlank() || debugPreview) return@LaunchedEffect
         val account = (bootstrapResult as? AccountBootstrapResult.Available)?.account
             ?: return@LaunchedEffect
-        page = when (val decision = ShellNavigationGate.resolveDeepLink(initialDeepLink, account)) {
-            is NavigationDecision.Allowed -> decision.route.destination.toFinalPage() ?: FinalAppPage.PROTECTED
-            is NavigationDecision.Denied -> FinalAppPage.PROTECTED
+        when (val decision = ShellNavigationGate.resolveDeepLink(initialDeepLink, account)) {
+            is NavigationDecision.Allowed -> {
+                val deepLinkedPage = decision.route.destination.toFinalPage() ?: FinalAppPage.PROTECTED
+                if (deepLinkedPage == FinalAppPage.THYNK) {
+                    navigateThynk(ThynkStudioEntry.IT)
+                } else {
+                    page = deepLinkedPage
+                }
+            }
+            is NavigationDecision.Denied -> page = FinalAppPage.PROTECTED
         }
+    }
+
+    LaunchedEffect(page) {
+        if (page != FinalAppPage.THYNK) editingBoardActive = false
     }
 
     LaunchedEffect(page, ownerProfileGrant?.authorizationId, ownerToolsGrant?.authorizationId) {
@@ -283,180 +352,242 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
         ),
     ) {
         Surface(Modifier.fillMaxSize(), color = FinalCharcoal) {
-            Column(Modifier.fillMaxSize().background(FinalCharcoal)) {
+            Box(Modifier.fillMaxSize()) {
+                Column(Modifier.fillMaxSize().background(FinalCharcoal)) {
                 Box(Modifier.weight(1f).fillMaxWidth()) {
                     when (page) {
-                FinalAppPage.LOGIN -> FinalLoginRoute(
-                    authGateway = authGateway,
-                    debugTestAccess = debugTestAccess,
-                    rememberMeCoordinator = rememberMeCoordinator,
-                    onAuthenticated = ::acceptSession,
-                    onNeedDebugPasswordSetup = { keepSignedIn ->
-                        pendingKeepSignedIn = keepSignedIn
-                        page = FinalAppPage.DEBUG_SET_PASSWORD
-                    },
-                )
+                        FinalAppPage.LOGIN -> FinalLoginRoute(
+                            authGateway = authGateway,
+                            debugTestAccess = debugTestAccess,
+                            rememberMeCoordinator = rememberMeCoordinator,
+                            onAuthenticated = ::acceptSession,
+                            onNeedDebugPasswordSetup = { keepSignedIn ->
+                                pendingKeepSignedIn = keepSignedIn
+                                page = FinalAppPage.DEBUG_SET_PASSWORD
+                            },
+                        )
 
-                FinalAppPage.DEBUG_SET_PASSWORD -> FinalDebugSetPasswordRoute(
-                    keepSignedIn = pendingKeepSignedIn,
-                    debugTestAccess = debugTestAccess,
-                    onAuthenticated = ::acceptSession,
-                    onBack = { page = FinalAppPage.LOGIN },
-                )
+                        FinalAppPage.DEBUG_SET_PASSWORD -> FinalDebugSetPasswordRoute(
+                            keepSignedIn = pendingKeepSignedIn,
+                            debugTestAccess = debugTestAccess,
+                            onAuthenticated = ::acceptSession,
+                            onBack = { page = FinalAppPage.LOGIN },
+                        )
 
-                FinalAppPage.HOME -> when {
-                    debugPreview -> FinalHomeScreen(onNavigate = ::navigate)
-                    bootstrapLoading -> FinalProtectedAccessState(
-                        message = "Checking your account securely…",
-                        onSignOut = ::signOut,
-                    )
-                    else -> {
-                        val account = (bootstrapResult as? AccountBootstrapResult.Available)?.account
-                        if (
-                            account != null &&
-                            FinalShellNavigation.authorize(FinalHomeDestination.HOME, account) is NavigationDecision.Allowed
-                        ) {
-                            FinalHomeScreen(onNavigate = ::navigate)
-                        } else {
-                            FinalProtectedAccessState(
-                                message = "We couldn't securely verify access to this area. Your account stays protected.",
+                        FinalAppPage.HOME -> when {
+                            debugPreview -> FinalHomeScreen(
+                                onNavigate = ::navigate,
+                                onOpenThynkMusic = { navigateThynk(ThynkStudioEntry.MUSIC) },
+                                onOpenThynkIt = { navigateThynk(ThynkStudioEntry.IT) },
+                                onAskPatsy = {
+                                    guidePatsyTo(PatsyCompanionTarget(0.50f, 0.16f))
+                                },
+                            )
+                            bootstrapLoading -> FinalProtectedAccessState(
+                                message = "Checking your account securely…",
                                 onSignOut = ::signOut,
                             )
+                            else -> {
+                                val account = (bootstrapResult as? AccountBootstrapResult.Available)?.account
+                                if (
+                                    account != null &&
+                                    FinalShellNavigation.authorize(FinalHomeDestination.HOME, account) is NavigationDecision.Allowed
+                                ) {
+                                    FinalHomeScreen(
+                                onNavigate = ::navigate,
+                                onOpenThynkMusic = { navigateThynk(ThynkStudioEntry.MUSIC) },
+                                onOpenThynkIt = { navigateThynk(ThynkStudioEntry.IT) },
+                                onAskPatsy = {
+                                    guidePatsyTo(PatsyCompanionTarget(0.50f, 0.16f))
+                                },
+                            )
+                                } else {
+                                    FinalProtectedAccessState(
+                                        message = "We couldn't securely verify access to this area. Your account stays protected.",
+                                        onSignOut = ::signOut,
+                                    )
+                                }
+                            }
                         }
-                    }
-                }
 
-                FinalAppPage.THYNK,
-                FinalAppPage.CREATE,
-                FinalAppPage.DMS,
-                FinalAppPage.PROFILE -> {
-                    val selectedDestination = page.toDestination()
-                    val account = (bootstrapResult as? AccountBootstrapResult.Available)?.account
-                    val authorized = debugPreview || (
-                        account != null &&
-                            FinalShellNavigation.authorize(selectedDestination, account) is NavigationDecision.Allowed
-                        )
-                    if (!authorized) {
-                        FinalProtectedAccessState(
-                            message = "This area isn't available for this account.",
+                        FinalAppPage.THYNK,
+                        FinalAppPage.CREATE,
+                        FinalAppPage.DMS,
+                        FinalAppPage.PROFILE -> {
+                            val selectedDestination = page.toDestination()
+                            val account = (bootstrapResult as? AccountBootstrapResult.Available)?.account
+                            val authorized = debugPreview || (
+                                account != null &&
+                                    FinalShellNavigation.authorize(selectedDestination, account) is NavigationDecision.Allowed
+                                )
+                            if (!authorized) {
+                                FinalProtectedAccessState(
+                                    message = "This area isn't available for this account.",
+                                    onSignOut = ::signOut,
+                                )
+                            } else {
+                                when (page) {
+                                    FinalAppPage.THYNK -> ThynkStudioScreen(
+                                        entry = thynkEntry,
+                                        onEditingBoardChanged = { editingBoardActive = it },
+                                        onHome = {
+                                            editingBoardActive = false
+                                            navigate(FinalHomeDestination.HOME)
+                                        },
+                                    )
+                                    FinalAppPage.CREATE -> NativeCameraHub(onOpenThynk = { navigate(FinalHomeDestination.THYNK) })
+                                    FinalAppPage.DMS -> {
+                                        val activeSession = session
+                                        if (activeSession == null) {
+                                            FinalProtectedAccessState(
+                                                message = "Patsy DMs require a verified signed-in session.",
+                                                onSignOut = ::signOut,
+                                            )
+                                        } else {
+                                            FinalPatsyDmLiveRoute(
+                                                session = activeSession,
+                                                onUnauthorized = { page = FinalAppPage.PROTECTED },
+                                            )
+                                        }
+                                    }
+                                    FinalAppPage.PROFILE -> {
+                                        val activeSession = session
+                                        if (activeSession == null) {
+                                            FinalProtectedAccessState(
+                                                message = "Your profile requires a verified signed-in session.",
+                                                onSignOut = ::signOut,
+                                            )
+                                        } else {
+                                            FinalProfileLiveRoute(
+                                                session = activeSession,
+                                                emailVerified = activeSession.emailVerified,
+                                                ownerAccessChecked = ownerAccessChecked,
+                                                canViewOwnerProfile = FinalOwnerAccessPolicy.canOpen(
+                                                    ownerProfileGrant,
+                                                    OwnerCapability.VIEW_OWNER_PROFILE,
+                                                ),
+                                                canViewOwnerTools = FinalOwnerAccessPolicy.canOpen(
+                                                    ownerToolsGrant,
+                                                    OwnerCapability.VIEW_OWNER_TOOLS,
+                                                ),
+                                                onQuickAction = { navigate(FinalHomeDestination.THYNK) },
+                                                onOpenOwnerProfile = {
+                                                    scope.launch {
+                                                        val refreshed = refreshOwnerAccess().first
+                                                        if (
+                                                            FinalOwnerAccessPolicy.canOpen(
+                                                                refreshed,
+                                                                OwnerCapability.VIEW_OWNER_PROFILE,
+                                                            )
+                                                        ) {
+                                                            page = FinalAppPage.OWNER_PROFILE
+                                                        }
+                                                    }
+                                                },
+                                                onOpenOwnerTools = {
+                                                    scope.launch {
+                                                        val refreshed = refreshOwnerAccess().second
+                                                        if (
+                                                            FinalOwnerAccessPolicy.canOpen(
+                                                                refreshed,
+                                                                OwnerCapability.VIEW_OWNER_TOOLS,
+                                                            )
+                                                        ) {
+                                                            page = FinalAppPage.OWNER_TOOLS
+                                                        }
+                                                    }
+                                                },
+                                                onUnauthorized = { page = FinalAppPage.PROTECTED },
+                                                onSignOut = ::signOut,
+                                            )
+                                        }
+                                    }
+                                    else -> Unit
+                                }
+                            }
+                        }
+
+                        FinalAppPage.OWNER_PROFILE -> {
+                            if (
+                                FinalOwnerAccessPolicy.canOpen(
+                                    ownerProfileGrant,
+                                    OwnerCapability.VIEW_OWNER_PROFILE,
+                                )
+                            ) {
+                                OwnerProfile(
+                                    profile = session?.let {
+                                        Profile(
+                                            displayName = it.username,
+                                            username = it.username,
+                                            email = it.maskedEmail,
+                                        )
+                                    },
+                                    back = { page = FinalAppPage.PROFILE },
+                                )
+                            } else {
+                                OwnerAccessDenied { page = FinalAppPage.PROFILE }
+                            }
+                        }
+
+                        FinalAppPage.OWNER_TOOLS -> {
+                            if (
+                                FinalOwnerAccessPolicy.canOpen(
+                                    ownerToolsGrant,
+                                    OwnerCapability.VIEW_OWNER_TOOLS,
+                                )
+                            ) {
+                                OwnerTools { page = FinalAppPage.PROFILE }
+                            } else {
+                                OwnerAccessDenied { page = FinalAppPage.PROFILE }
+                            }
+                        }
+
+                        FinalAppPage.PROTECTED -> FinalProtectedAccessState(
+                            message = "This area isn't available until secure account access is verified.",
                             onSignOut = ::signOut,
                         )
-                    } else {
-                        when (page) {
-                                    FinalAppPage.THYNK -> ThynkStudioScreen()
-                                    FinalAppPage.CREATE -> LockedCameraHub()
-                                    FinalAppPage.DMS -> Dms()
-                                    FinalAppPage.PROFILE -> More(
-                                        profile = session?.let {
-                                            Profile(
-                                                displayName = it.username,
-                                                username = it.username,
-                                                email = it.maskedEmail,
-                                            )
-                                        },
-                                        emailVerified = session?.emailVerified == true,
-                                        ownerAccessChecked = ownerAccessChecked,
-                                        canViewOwnerProfile = FinalOwnerAccessPolicy.canOpen(
-                                            ownerProfileGrant,
-                                            OwnerCapability.VIEW_OWNER_PROFILE,
-                                        ),
-                                        canViewOwnerTools = FinalOwnerAccessPolicy.canOpen(
-                                            ownerToolsGrant,
-                                            OwnerCapability.VIEW_OWNER_TOOLS,
-                                        ),
-                                        openOwnerProfile = {
-                                            scope.launch {
-                                                val refreshed = refreshOwnerAccess().first
-                                                if (
-                                                    FinalOwnerAccessPolicy.canOpen(
-                                                        refreshed,
-                                                        OwnerCapability.VIEW_OWNER_PROFILE,
-                                                    )
-                                                ) {
-                                                    page = FinalAppPage.OWNER_PROFILE
-                                                }
-                                            }
-                                        },
-                                        openOwnerTools = {
-                                            scope.launch {
-                                                val refreshed = refreshOwnerAccess().second
-                                                if (
-                                                    FinalOwnerAccessPolicy.canOpen(
-                                                        refreshed,
-                                                        OwnerCapability.VIEW_OWNER_TOOLS,
-                                                    )
-                                                ) {
-                                                    page = FinalAppPage.OWNER_TOOLS
-                                                }
-                                            }
-                                        },
-                                        signOut = ::signOut,
-                                    )
-                            else -> Unit
-                        }
-                    }
-                }
-
-                FinalAppPage.OWNER_PROFILE -> {
-                    if (
-                        FinalOwnerAccessPolicy.canOpen(
-                            ownerProfileGrant,
-                            OwnerCapability.VIEW_OWNER_PROFILE,
-                        )
-                    ) {
-                        OwnerProfile(
-                            profile = session?.let {
-                                Profile(
-                                    displayName = it.username,
-                                    username = it.username,
-                                    email = it.maskedEmail,
-                                )
-                            },
-                            back = { page = FinalAppPage.PROFILE },
-                        )
-                    } else {
-                        OwnerAccessDenied { page = FinalAppPage.PROFILE }
-                    }
-                }
-
-                FinalAppPage.OWNER_TOOLS -> {
-                    if (
-                        FinalOwnerAccessPolicy.canOpen(
-                            ownerToolsGrant,
-                            OwnerCapability.VIEW_OWNER_TOOLS,
-                        )
-                    ) {
-                        OwnerTools { page = FinalAppPage.PROFILE }
-                    } else {
-                        OwnerAccessDenied { page = FinalAppPage.PROFILE }
-                    }
-                }
-
-                FinalAppPage.PROTECTED -> FinalProtectedAccessState(
-                    message = "This area isn't available until secure account access is verified.",
-                    onSignOut = ::signOut,
-                )
                     }
                 }
 
                 if (
                     FinalVisualContract.navigationVisibleOnAllPages &&
+                    !editingBoardActive &&
                     page !in listOf(FinalAppPage.LOGIN, FinalAppPage.DEBUG_SET_PASSWORD) &&
                     (session != null || debugPreview)
                 ) {
-                    val selectedDestination = when (page) {
-                        FinalAppPage.HOME -> FinalHomeDestination.HOME
-                        FinalAppPage.THYNK -> FinalHomeDestination.THYNK
-                        FinalAppPage.CREATE -> FinalHomeDestination.CREATE
-                        FinalAppPage.DMS -> FinalHomeDestination.PATSY_DMS
+                    val selectedPanelDestination = when (page) {
+                        FinalAppPage.HOME -> ThynkPanelDestination.IN
+                        FinalAppPage.THYNK -> when (thynkEntry) {
+                            ThynkStudioEntry.MUSIC -> ThynkPanelDestination.MUSIC
+                            ThynkStudioEntry.IT -> ThynkPanelDestination.IT
+                        }
+                        FinalAppPage.DMS -> ThynkPanelDestination.CHATS
                         FinalAppPage.PROFILE,
                         FinalAppPage.OWNER_PROFILE,
-                        FinalAppPage.OWNER_TOOLS -> FinalHomeDestination.PROFILE
-                        else -> null
+                        FinalAppPage.OWNER_TOOLS -> ThynkPanelDestination.ME
+                        FinalAppPage.CREATE,
+                        FinalAppPage.LOGIN,
+                        FinalAppPage.DEBUG_SET_PASSWORD,
+                        FinalAppPage.PROTECTED -> null
                     }
-                    FinalPrimaryNavigationBar(
-                        selected = selectedDestination,
-                        onNavigate = ::navigate,
+                    ThynkPrimaryNavigationBar(
+                        selected = selectedPanelDestination,
+                        onNavigate = ::navigatePanel,
+                    )
+                }
+                }
+
+                if (
+                    page !in listOf(
+                        FinalAppPage.LOGIN,
+                        FinalAppPage.DEBUG_SET_PASSWORD,
+                        FinalAppPage.PROTECTED,
+                    ) && (session != null || debugPreview)
+                ) {
+                    PatsyCompanionOverlay(
+                        command = patsyCommand,
+                        onCommandConsumed = { patsyCommand = null },
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
             }

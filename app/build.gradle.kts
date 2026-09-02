@@ -18,8 +18,8 @@ android {
         applicationId = "com.patsy.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 338
-        versionName = "3.3.8-patsy1"
+        versionCode = 339
+        versionName = "3.3.9-thynkin-visible1"
 
         // Client-safe public Supabase configuration only. Never ship service-role/provider secrets.
         buildConfigField("String", "SUPABASE_URL", "\"https://tvtknwqcqbkecszvppub.supabase.co\"")

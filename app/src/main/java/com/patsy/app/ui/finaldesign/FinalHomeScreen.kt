@@ -57,6 +57,8 @@ fun FinalHomeScreen(
     onNavigate: (FinalHomeDestination) -> Unit,
     onAskPatsy: () -> Unit = {},
     onCreatePost: () -> Unit = {},
+    onOpenThynkMusic: () -> Unit = {},
+    onOpenThynkIt: () -> Unit = {},
 ) {
     Box(Modifier.fillMaxSize().background(FinalCharcoal)) {
         LazyColumn(
@@ -92,6 +94,12 @@ fun FinalHomeScreen(
                     modifier = Modifier.padding(horizontal = 28.dp),
                 )
             }
+            item {
+                VisibleThynkLaunchSection(
+                    onOpenThynkMusic = onOpenThynkMusic,
+                    onOpenThynkIt = onOpenThynkIt,
+                )
+            }
             item { ContinueDesignsSection(onNewDesign = { onNavigate(FinalHomeDestination.THYNK) }) }
             item { TodaySection() }
             item { CreatePostSection(onCreatePost) }
@@ -103,12 +111,62 @@ fun FinalHomeScreen(
 }
 
 @Composable
+private fun VisibleThynkLaunchSection(
+    onOpenThynkMusic: () -> Unit,
+    onOpenThynkIt: () -> Unit,
+) {
+    Column(
+        Modifier
+            .padding(horizontal = 22.dp)
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(
+            "CREATE IN THyNK-IN!",
+            style = TextStyle(brush = FinalRainbow, fontSize = 13.sp, fontWeight = FontWeight.Black),
+        )
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(
+                Modifier
+                    .weight(1f)
+                    .height(126.dp)
+                    .border(2.dp, FinalRainbow, RoundedCornerShape(22.dp))
+                    .clip(RoundedCornerShape(22.dp))
+                    .background(Color(0xFF0A0A0F))
+                    .clickable(onClick = onOpenThynkMusic)
+                    .padding(14.dp),
+            ) {
+                Text("THyNK Music", color = FinalWhite, fontSize = 19.sp, fontWeight = FontWeight.Black)
+                Spacer(Modifier.height(8.dp))
+                Text("MIX • RECORD • DJ • MASTER", color = FinalMuted, fontSize = 10.sp, lineHeight = 14.sp)
+                Spacer(Modifier.weight(1f))
+                Text("OPEN STUDIO →", style = TextStyle(brush = FinalRainbow, fontSize = 11.sp, fontWeight = FontWeight.Bold))
+            }
+            Column(
+                Modifier
+                    .weight(1f)
+                    .height(126.dp)
+                    .border(2.dp, FinalRainbow, RoundedCornerShape(22.dp))
+                    .clip(RoundedCornerShape(22.dp))
+                    .background(Color(0xFF0A0A0F))
+                    .clickable(onClick = onOpenThynkIt)
+                    .padding(14.dp),
+            ) {
+                Text("THyNK-IT", color = FinalWhite, fontSize = 19.sp, fontWeight = FontWeight.Black)
+                Spacer(Modifier.height(8.dp))
+                Text("PUBLISH • FASHION • PHOTO • DESIGN", color = FinalMuted, fontSize = 10.sp, lineHeight = 14.sp)
+                Spacer(Modifier.weight(1f))
+                Text("OPEN STUDIO →", style = TextStyle(brush = FinalRainbow, fontSize = 11.sp, fontWeight = FontWeight.Bold))
+            }
+        }
+    }
+}
+
+@Composable
 private fun FinalHomeTopBar() {
     Box(Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 10.dp)) {
-        Image(
-            painter = painterResource(R.drawable.patsy_logo_official_white),
-            contentDescription = "Patsy",
-            contentScale = ContentScale.Fit,
+        ThynkDestinationLogo(
+            destination = ThynkPanelDestination.IN,
             modifier = Modifier.align(Alignment.Center).width(120.dp).height(68.dp),
         )
         Row(

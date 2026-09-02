@@ -1,233 +1,295 @@
-PATSY APP — CODEX NEXT EXECUTION INSTRUCTION
-PR #38 — APPROVED THyNK CONSOLIDATION QUEUE
+THyNK-IN — CODEX NEXT EXECUTION INSTRUCTION — 2026-09-01 — ALL UPDATES
+SAVE MAIN APP / SAVE LOCK IN
 
-Work ONLY in repository:
-blazekolton50-tech/PatsyApp
+CANONICAL PRODUCT NAME — BINDING:
+- App/global product brand: THyNK-IN
+- Do not call the product “Patsy App”.
+- Patsy remains the assistant/character name for Patsy-specific Rive, animation, personality, PawMoji, companion and reference-asset work.
+- Legacy repository/package/file identifiers containing PatsyApp, patsy1, PATSY or com.patsy.app do not redefine the product brand and must not be blindly renamed during ordinary branding work.
 
-Work ONLY from branch:
-chatgpt/thynk-music-apk-2026-08-31
+WORK ONLY IN:
+Repository: blazekolton50-tech/PatsyApp
+Branch: chatgpt/codex-ready-2026-09-01
+PR: #41
 
-Active PR:
-#38 — Draft: integrate THyNK Studio, THyNK Music and locked Camera shell
+KEEP PR #41 DRAFT AND UNMERGED.
+DO NOT MERGE TO MAIN WITHOUT EXPLICIT OWNER APPROVAL AND PHYSICAL-DEVICE QA.
 
-KEEP PR #38 DRAFT.
-DO NOT MERGE TO MAIN.
-DO NOT RETURN TO PR #35 AS THE WORKING BRANCH.
+FIRST ACTION EVERY SESSION:
+- report exact current HEAD;
+- inspect the newest Patsy Consolidation CI for that HEAD;
+- if final-head CI is red, fix the real regression before dependent work;
+- never quote an older green run as proof for a newer head.
 
-OWNER APPROVAL:
-The 2026-08-31 THyNK donor consolidation design has been explicitly approved by the owner.
-Approval authorizes execution of the plans below in order. It does NOT authorize a merge to main and does NOT waive physical-device QA.
+==================================================
+READ FIRST — NEW BINDING ORDER
+==================================================
+1. docs/codex/PATSY_ALL_UPDATES_APK_HANDOFF_2026-09-01.md
+2. docs/codex/PATSY_CURRENT_BUILD_STATUS_2026-09-01.md
+3. docs/codex/PATSY_PAGE_VISUAL_LOCK_2026-09-01.md
+4. docs/superpowers/specs/2026-09-01-thynk-it-adaptive-creator-platform-design.md
+5. docs/superpowers/plans/2026-09-01-thynk-it-adaptive-creator-foundation.md
+6. docs/codex/THYNK_IT_CREATOR_WORLD_MATRIX_2026-09-01.md
+7. docs/codex/THYNK_IT_REACT_TAILWIND_DONOR_QUEUE_2026-09-01.md
+8. docs/superpowers/specs/2026-09-01-thynk-full-studio-reconciliation-design.md
+9. docs/superpowers/plans/2026-09-01-thynk-full-studio-reconciliation.md
+10. docs/codex/THYNK_FULL_STUDIO_CAPABILITY_MATRIX_2026-09-01.md
+11. docs/codex/THYNK_FULL_STUDIO_CAPABILITY_MATRIX_2026-09-01.json
+12. docs/PATSY_DESIGN_PRESERVATION_MASTER_2026-08-31.md
+13. docs/NAVIGATION_LOCK_2026-08-31.md
 
-READ FIRST:
-1. docs/PATSY_DESIGN_PRESERVATION_MASTER_2026-08-31.md
-2. docs/NAVIGATION_LOCK_2026-08-31.md
-3. docs/codex/PATSY_CURRENT_BUILD_STATUS_2026-08-31.md
-4. docs/codex/CODEX_HANDOFF_2026-08-31.md
-5. docs/superpowers/specs/2026-08-31-thynk-donor-consolidation-design.md
+Newest files override older structural wording where they conflict. Preserve working native implementation while migrating to the new structure.
 
-SOURCE PRECEDENCE:
-1. Current PR #38 code and checked-in locked contracts.
-2. Design preservation + navigation locks.
-3. Live Supabase security/auth/storage truth.
-4. Owner-supplied current visual references, especially the 10-screen THyNK Music sheet.
-5. Google AI Studio / Gemini / Drive / Replit / uploaded ZIP donor material.
-6. Older archive/prototype behavior only when it does not conflict with 1-5.
+==================================================
+PRODUCTION ARCHITECTURE — NON-NEGOTIABLE
+==================================================
+- Native Kotlin + Jetpack Compose remains production UI/runtime.
+- Supabase remains backend/auth/security/storage authority.
+- Existing route/age/Owner gates remain fail-closed.
+- Existing Camera/FileProvider and Media3 foundations stay native.
+- React/Tailwind is DONOR/REFERENCE content only: templates, layouts, palette/font ideas, workspace prototypes.
+- NO production WebView/React/Vite/Next runtime.
+- NO second Express/Prisma/Spring backend.
+- NO browser localStorage as production persistence.
 
-DONOR MATERIAL RULE:
-Use donor BEHAVIOURS and visual references only after native port/test/review.
-Do not paste React/Tailwind, Node/Express, browser Canvas/WebAudio, Expo/React Native or stale Android ZIP architecture over the native Kotlin/Compose app.
-Do not treat archive/wrapper names as verified production assets.
+Every donor capability remains exactly one of:
+ALREADY_NATIVE / PORT_FROM_UPLOAD / REPLACE_PLACEHOLDER / GENUINELY_MISSING.
+Never fake completion.
 
-DO NOT REDO WORK ALREADY COMPLETED:
-- StudioEditorState.kt is already ported.
-- StudioToolCatalog.kt is already ported.
-- StudioEditorStateTest.kt is already ported.
-- StudioSingleClipStateTest.kt is already ported.
-- StudioToolCatalogTest.kt is already ported.
-- Current THyNK has the locked 10-category architecture.
-- Current THyNK Music already has ten stable page IDs.
-- Shared nav already removed duplicate small white THyNK subtitle.
-- Shared nav already removed visible CAMERA caption and uses PDMs as short visible DM label.
-
-CURRENT LOCKED NAVIGATION:
+==================================================
+TWO NAVIGATION CONTRACTS — KEEP SEPARATE
+==================================================
+GLOBAL APP NAVIGATION
 Semantic routes:
 HOME · THyNK · CAMERA · PATSY DMS · PROFILE
 
-Visible bar:
-Home · [coloured THyNK only] · [large + only] · PDMs · Profile
+Visible app-wide bar:
+Home · [coloured THyNK mark only] · [large + only] · PDMs · Profile
 
-ABSOLUTE VISUAL RULES:
-- NO second small white THyNK text underneath the coloured THyNK wordmark.
-- NO CAMERA text underneath the centre +.
-- Visible DM label = PDMs.
-- Keep the large white + with rainbow ring.
-- Keep black/charcoal background and thin rainbow wave/glow.
-- The bar stays on every authenticated page including nested THyNK/editor/Music screens, Owner Profile, Owner Tools and authenticated protected states.
-- Login/Set Password must not expose authenticated routes before a session exists.
+- centre + remains Camera semantically;
+- no CAMERA caption;
+- preserve approved rainbow separator / raised centre arch;
+- keep auth/security semantics stable.
 
-EXECUTION ORDER — DO NOT PARALLELIZE DEPENDENT JOBS
+THyNK PANEL — THyNK-AREA NAVIGATION
+Exact left-to-right order:
+THyNK-ME · THyNK Chats · THyNK-IN · THyNK Music · THyNK-IT
 
-JOB 1 — MEDIA3 VIDEO PLAYER
-Execute exactly:
-docs/superpowers/plans/2026-08-31-thynk-video-player-integration.md
+- THyNK-IN is the centre THyNK Panel destination, opens social/news feed, and is the app/global product brand;
+- do NOT replace global route semantics with THyNK Panel labels;
+- current source contract intentionally separates `primaryNavigationDisplayLabels` and `thynkPanelDisplayLabels`.
 
-Requirements:
-- tests first
-- pure player-sync contract
-- Media3 1.8.1 dependencies only
-- reuse StudioVideoPlayer from PR #23 where compatible
-- DO NOT port PR #23 ThynkStudioScreen.kt wholesale
-- nested video-editor route in CURRENT THyNK
-- VIDEO & CAMERA items route to shared editor
-- truthful EMPTY/LOADING/READY/FAILED media state
-- no fake sample/imported production media
-- permanent outer nav visible
-- unit + debug + release + CI GREEN before Job 2
+==================================================
+THyNK HEADER LOGOS — LOCKED
+==================================================
+Main THyNK destinations show their matching approved supplied logo at top:
+- THyNK-ME → profile/THyNK-ME
+- THyNK Chats → chats/messaging
+- THyNK-IN → social/news feed
+- THyNK Music → Music
+- THyNK-IT → adaptive creator/productivity
 
-JOB 2 — ONE GLOBAL AUTHENTICATED PRIMARY NAV
-Execute exactly:
-docs/superpowers/plans/2026-08-31-global-navigation-every-authenticated-page.md
+Do not recreate approved logos as substitute text/generic SVGs/fonts.
 
-Requirements:
-- visible-label contract test first
-- semantic routes unchanged
-- FinalPrimaryNavigationBar becomes single canonical primary bar
-- remove FinalHomeBottomNavigation duplicate
-- one authenticated shell wrapper in FinalMainActivity
-- Home, THyNK, Camera, DMs, Profile, Owner Profile, Owner Tools and protected/denied authenticated states use it
-- do not weaken auth/age/Owner gates
-- unit + debug + release + CI GREEN before Job 3
+==================================================
+THyNK RAINBOW SETTING — LOCKED REQUIREMENT
+==================================================
+Use the same approved THyNK Panel/logo rainbow language across THyNK pages.
+Settings needs a simple THyNK Panel active-rainbow toggle:
+- ON: selected THyNK Panel destination keeps rainbow-lit active state;
+- OFF: panel buttons remain plain white with no persistent rainbow active state;
+- press again to re-enable.
+Implement/persist truthfully as a dedicated tested preference slice. Do not fake saved setting state.
 
-JOB 3 — VERIFIED DONOR ASSET INTAKE FOUNDATION
-Execute exactly:
-docs/superpowers/plans/2026-08-31-thynk-donor-asset-intake.md
+==================================================
+THyNK PRODUCT MODEL — NEW LOCK
+==================================================
+THyNK-IT = adaptive creator/productivity umbrella.
+One shared editor/project engine underneath; the visible workspace changes tools/panels/layout/defaults/templates/colours/fonts to match what the user chooses to make.
 
-Requirements:
-- manifest/truth model first under TDD
-- known Drive/AI Studio/Replit/uploaded ZIP sources start REFERENCE_ONLY
-- fail closed on license/origin/bytes/checksum/duplicate verification
-- no archive dump into APK
-- do not surface REFERENCE_ONLY as production content
-- unit + debug + release + CI GREEN before Job 4
+THyNK Music = separate specialist Music player + creation/editing environment.
+DJ Studio belongs inside THyNK Music.
 
-JOB 4 — GENERIC THyNK CANVAS + IMAGE IMPORT + REAL PNG EXPORT
-Execute exactly:
-docs/superpowers/plans/2026-08-31-thynk-canvas-import-png-export.md
+THyNK Video = separate specialist Video player + video editing environment.
+Social Reel/Short routes to THyNK Video, not a duplicate Social video engine.
 
-Requirements:
-- central presets + custom size validation
-- deterministic layer reducer
-- explicit resize handles
-- move/resize/rotate/flip/duplicate/delete/reorder
-- bounded undo/redo
-- Android OpenDocument image import with fail-closed validation
-- PNG export from LOGICAL canvas dimensions, not viewport screenshot
-- export success only after real bytes written
-- editable project remains separate from export result
-- permanent outer nav visible
-- do not duplicate Media3 video path
-- unit + debug + release + CI GREEN before Job 5
+==================================================
+THyNK-IT NATIVE FOUNDATION — DO NOT REDO
+==================================================
+Already present on PR #41:
+- CreatorWorkspaceModels.kt
+  - CreatorStudioDestination: ADAPTIVE / MUSIC / VIDEO
+  - CreatorCanvasMode: FREEFORM / PAGE / SPREAD / DOCUMENT / SOCIAL
+  - CreatorWorld / CreatorProjectType / WorkspaceConfig
+- CreatorWorkspaceCatalog.kt
+  - Creator Worlds and stable project IDs across Design, Art, Office, Publishing, Journalism, Fashion, Photo, Social, Branding, Writing, Comics, Interiors, Architecture, Product, Ceramics, Jewellery, Crafts, Education, Business, Events, Portfolio, Music, Video
+  - Social Reel → VIDEO
+  - DJ Set → MUSIC
+- CreatorWorkspaceConfigs.kt
+  - Fashion Collection
+  - Magazine
+  - CV / Resume
+  - Illustration
+  - Instagram Post
+  - ordered shared tool IDs, canvas mode, dimensions, starter shortcuts and resource-family IDs
 
-JOB 5 — THyNK MUSIC TEN-SCREEN REFINEMENT
-Execute exactly:
-docs/superpowers/plans/2026-08-31-thynk-music-ten-screen-refinement.md
+NEXT THyNK-IT FOUNDATION ORDER:
+1. CreatorWorkspaceTools.kt — resolve ordered tool IDs against StudioToolCatalog; unknown IDs fail closed.
+2. CreatorWorkspaceRouting.kt — project ID → ADAPTIVE/MUSIC/VIDEO; preserve stable legacy route compatibility.
+3. CreatorResourceCatalog.kt — template/palette/type metadata with explicit REFERENCE_ONLY / verified states.
+4. CreatorWorkspacePresentation.kt — pure UI presentation model.
+5. carry WorkspaceConfig into the actual native editor route/screen.
+6. add Creator World/project picker UI.
+7. prove Fashion, Magazine, CV, Illustration and Instagram Post materially change native workspace controls without duplicating the editor engine.
 
-Reference screens, in order:
-1. Music Home
-2. Create Music
-3. AI Music Generator
-4. Track Editor
-5. Mixer
-6. Equalizer
-7. Effects
-8. Lyrics & Vocals
-9. Mastering
-10. Export
+==================================================
+THyNK DESIGN — CURRENT NATIVE PROGRESS — DO NOT ROLLBACK
+==================================================
+Current branch already includes/tested:
+- StudioCanvasState/reducer and persistence mapping;
+- layer select/hide/lock/reorder/duplicate/stack/delete;
+- X/Y quick movement;
+- rotation quick edits;
+- opacity quick edits;
+- W/H resize quick edits using real Resize action;
+- canvas alignment LEFT/H-CENTRE/RIGHT/TOP/V-CENTRE/BOTTOM;
+- Position/Size/Alignment/Opacity panel presentation and Compose wiring;
+- stable Design entry mapping for Blank, Custom Size and template kinds.
 
-Stable route IDs MUST remain:
-music-home
-create-music
-ai-music-generator
-track-editor
-mixer
-equalizer
-effects
-lyrics-vocals
-mastering
-export
+Remaining genuine work includes:
+- carry DesignEntryPoint/WorkspaceConfig through actual editor entry;
+- rulers/guides/grid/snap;
+- distribution only after real multi-selection model;
+- deeper Text/Elements/Stickers/Draw/Frames/Background functionality where partial;
+- verified template assets;
+- native render/export truth.
 
-Music truth rules:
-- black/charcoal, white text, restrained purple/rainbow, compact DAW-like hierarchy
-- local controls may edit configuration state
-- do not fabricate audio waveforms when no audio data exists
-- do not simulate AI generation progress
-- generation/mastering/vocal processing/DSP/audio export remain NOT_CONFIGURED until genuinely wired
-- export format selection is not export success
-- no fake mastered track or stems
-- permanent Patsy outer navigation remains visible
+==================================================
+CREATOR WORLDS — FILL THEM, DO NOT LEAVE EMPTY LABELS
+==================================================
+Use docs/codex/THYNK_IT_CREATOR_WORLD_MATRIX_2026-09-01.md.
+Must support the product direction for:
+Design/Graphics, Art Studio, Office Studio, Publishing/Magazines/Newspapers, Journalism, Fashion/Textiles/Sewing, Photography, Social Content, Branding, Writing/Books, Comics, Interiors, Architecture concepts, Product Design, Pottery/Ceramics, Jewellery, Crafts/Making, Education, Business, Events and Portfolios.
 
-JOB 6 — FINAL CONSOLIDATED VERIFICATION
-Only after Jobs 1-5 are GREEN on exact branch head:
+Build shared behavior once. Configure subject workspaces rather than copying engines.
 
-Run:
-./gradlew testDebugUnitTest --stacktrace
-./gradlew assembleDebug --stacktrace
-./gradlew assembleRelease --stacktrace
+==================================================
+REACT / TAILWIND DONOR CONTENT
+==================================================
+Use React/Tailwind aggressively for donor/reference creation of:
+- workspace prototypes;
+- magazine/newspaper/fashion/art/office/social layouts;
+- template families;
+- palette libraries;
+- typography pairings;
+- component interactions.
 
-Then wait for final Patsy Consolidation CI.
+Do NOT claim donor templates/fonts/assets production-ready until actual bytes, licensing/provenance, checksum/identity and supersession are verified.
 
-PHYSICAL DEVICE QA IS STILL REQUIRED BEFORE MERGE:
-- real Login / Set Password / session restore
-- Home
-- all 10 THyNK categories
-- nested video editor + real media picker
-- generic image canvas + real image import
-- resize handles / transforms / undo-redo
-- real PNG export + readable file + logical output dimensions
-- all 10 THyNK Music screens
-- Camera
-- PDMs
-- Profile
-- Owner Profile / Owner Tools gates
-- permanent global nav
-- production Rive only if actual authored .riv exists and is verified
+==================================================
+THyNK MUSIC
+==================================================
+Music owns playback + editing.
+Preserve existing stable route foundation.
+Build genuine player/recording/multitrack/mixer/EQ/effects/loops/stems/lyrics workflow and DJ Studio inside Music.
+Use only real audio data for waveforms/meters.
 
-DO NOT:
-- redesign Login, Set Password or Home content
-- create another THyNK home
-- replace the 10-category architecture
-- hide navigation in an editor
-- make Schedule/Calendar primary tabs
-- weaken Supabase RLS
-- expose service-role/provider secrets in Android
-- grant Owner from username/email/debug/local state
-- fake AI/music/export/provider success
-- fake production Rive
-- promote unknown donor assets
-- merge PR #38
+Candidate `music-clips-100-original (1).zip` stays ASSET_PRESENT / VALIDATION_REQUIRED until bytes, audio properties, provenance/license/originality, checksums, duplicates and Android decode are verified.
 
-CURRENT BACKEND TRUTH FROM LATEST AUDIT:
-- Supabase active/healthy
-- 37 public tables; RLS enabled on all 37
-- 10 private tables; RLS enabled on all 10
-- 119 policies
-- 4 private storage buckets
-- Security Advisor: 0 current security lints
-- 0 current Auth users at audit time
-- real-user/device auth still unverified
+Remain NOT_CONFIGURED where real pipeline does not exist:
+AI music generation, provider vocal processing, provider mastering, unsupported encoding/export.
 
-AT EACH JOB BOUNDARY REPORT:
-- exact starting SHA
-- exact ending SHA
-- exact changed files
-- RED tests observed
-- GREEN unit tests
-- debug build result
-- release build result when required
-- CI run/result
-- artifact ids/digests when generated
-- device/provider/auth/Rive items still unverified
-- confirm PR #38 remains Draft
+==================================================
+THyNK VIDEO
+==================================================
+Build on native Camera + Media3.
+Video owns playback + editing, including Social Reels/Shorts handoff.
+No fake captureStream/MediaRecorder demo export, fake URLs or alert-only completion.
+Real export = real Android bytes at a real URI/path.
 
-STOP ON FAILURE.
-Do not start the next dependent job until the current job is genuinely GREEN with fresh verification evidence.
+==================================================
+PROFILE / MENU / THyNK-ME
+==================================================
+The owner-approved Profile and dropdown/menu composition is LOCKED. DO NOT REDESIGN IT.
+Only bind/finish genuine data/backend/settings behavior while preserving the approved visual structure and route security.
+
+==================================================
+PATSY DMS / THyNK CHATS
+==================================================
+Use real Supabase membership/messages/realtime/attachments/block/report/notifications/retention/age/privacy rules.
+No fake users/messages/read states.
+Call/video controls remain NOT_CONFIGURED until secure provider exists.
+
+==================================================
+PATSY / RIVE TRUTH GATE
+==================================================
+Native Rive host/runtime contracts exist.
+Final production authored Patsy .riv remains unverified until actual authored rig + device testing proves it.
+No GIFs, sprites, static pose swaps, fake bobbing or fake .riv.
+
+==================================================
+JOB 0 — GET EXACT CURRENT HEAD BUILDABLE FOR APK
+==================================================
+Before expanding more UI:
+1. inspect final-head CI;
+2. fix current test/compile regression if any;
+3. run full unit suite;
+4. build debug APK;
+5. build release variant;
+6. confirm integration scripts green;
+7. upload debug APK artifact;
+8. create/upload Android Studio ZIP;
+9. record exact final head/run/artifact evidence.
+
+A green APK is a BUILDABLE TEST APK, not proof all planned production features/providers/device flows are complete.
+
+==================================================
+NEXT CODE QUEUE AFTER JOB 0
+==================================================
+1. finish THyNK Panel UI/routing on relevant THyNK pages + matching top logos, preserving global nav separately;
+2. finish THyNK-IT adaptive tool resolver/routing/resource metadata/presentation/editor integration;
+3. make Fashion, Magazine, CV, Illustration and Instagram Post visibly adapt the native editor;
+4. Social Reel → THyNK Video and DJ Set → THyNK Music;
+5. continue Design editor-entry carry-through + rulers/guides/grid/snap;
+6. Photo/Image shared-canvas extensions;
+7. THyNK Video timeline/effects on Camera/Media3;
+8. THyNK Music player/editor/DJ genuine audio refinement;
+9. verified template/palette/font intake;
+10. autosave/project persistence, real DMs, Put-Away Portal, settings/preferences including THyNK rainbow toggle, under-16/provider slices;
+11. physical-device QA;
+12. production Patsy Rive only when real .riv verified.
+
+==================================================
+PRODUCTION TRUTH BOUNDARIES
+==================================================
+Never fake:
+- AI/provider generation;
+- mastering/vocal processing;
+- audio/video/PDF export;
+- waveforms without real data;
+- storage save success;
+- DMs/calls/read states;
+- Owner authority;
+- profile/social/project counts;
+- template/font/media verification;
+- production Rive.
+Never weaken RLS/security to make donor UI easier to port.
+
+==================================================
+REPORT AT EVERY CODE JOB BOUNDARY
+==================================================
+- exact starting SHA;
+- exact ending SHA;
+- exact changed files;
+- RED test evidence;
+- GREEN targeted tests;
+- GREEN full unit suite;
+- debug build result;
+- release build result;
+- exact final-head GitHub Actions run/result;
+- artifact IDs/digests when generated;
+- remaining device/provider/auth/Rive limitations;
+- confirmation PR remains Draft and unmerged.
+
+STOP ON GENUINE FAILURE.
+DO NOT MERGE.

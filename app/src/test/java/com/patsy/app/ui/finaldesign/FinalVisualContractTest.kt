@@ -22,20 +22,28 @@ class FinalVisualContractTest {
     }
 
     @Test
-    fun `primary navigation remains locked`() {
+    fun `primary navigation semantics remain security stable`() {
         assertEquals(
             listOf("HOME", "THyNK", "CAMERA", "PATSY DMS", "PROFILE"),
             FinalVisualContract.primaryNavigation,
         )
-    }
-
-    @Test
-    fun `global navigation visual matches approved reference on every page`() {
-        assertTrue(FinalVisualContract.navigationVisibleOnAllPages)
         assertEquals(
             listOf("Home", "", "", "PDMs", "Profile"),
             FinalVisualContract.primaryNavigationDisplayLabels,
         )
+    }
+
+    @Test
+    fun `THyNK panel uses the five locked branded destinations`() {
+        assertEquals(
+            listOf("THyNK-ME", "THyNK Chats", "THyNK-IN", "THyNK Music", "THyNK-IT"),
+            FinalVisualContract.thynkPanelDisplayLabels,
+        )
+    }
+
+    @Test
+    fun `global navigation visual remains available outside auth entry`() {
+        assertTrue(FinalVisualContract.navigationVisibleOnAllPages)
         assertFalse(FinalVisualContract.showThynkSecondaryLabel)
         assertFalse(FinalVisualContract.showCenterActionSecondaryLabel)
     }
