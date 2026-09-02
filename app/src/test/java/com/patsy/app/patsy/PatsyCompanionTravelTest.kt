@@ -13,7 +13,7 @@ import kotlin.test.assertTrue
 class PatsyCompanionTravelTest {
 
     @Test
-    fun guideToShrinksWalksAcrossPageAndPointsFromBesideTarget() = runTest {
+    fun guideToUsesLockedOneThumbShrinkThenWalksAndPoints() = runTest {
         val observed = mutableListOf<PatsyCompanionState>()
         val controller = PatsyCompanionController(
             rig = PatsyRigCoordinator(RecordingRuntime()),
@@ -24,11 +24,12 @@ class PatsyCompanionTravelTest {
 
         controller.guideTo(target)
 
-        assertTrue(observed.any { it.pose.stageScale <= 0.45f })
+        assertEquals(50, observed.count { it.mode == PatsyCompanionMode.SHRINKING })
+        assertTrue(observed.filter { it.mode == PatsyCompanionMode.SHRINKING }.all { it.pose.stageScale >= 0.50f })
         assertTrue(observed.any { it.pose.motion == PatsyRigMotion.WALK && it.pose.stageX > 0.50f })
         assertTrue(observed.count { it.pose.motion == PatsyRigMotion.WALK } >= 3)
         assertEquals(PatsyRigMotion.POINT, controller.state.pose.motion)
-        assertEquals(0.45f, controller.state.pose.stageScale)
+        assertEquals(0.50f, controller.state.pose.stageScale)
         assertEquals(target.normalizedX, controller.state.pose.pointX)
         assertEquals(target.normalizedY, controller.state.pose.pointY)
         assertTrue(controller.state.pose.stageX < target.normalizedX)
@@ -70,7 +71,7 @@ class PatsyCompanionTravelTest {
         observed.clear()
         controller.returnHome()
 
-        assertTrue(observed.any { it.pose.motion == PatsyRigMotion.WALK && it.pose.stageScale <= 0.45f })
+        assertTrue(observed.any { it.pose.motion == PatsyRigMotion.WALK && it.pose.stageScale <= 0.50f })
         assertEquals(PatsyRigMotion.IDLE, controller.state.pose.motion)
         assertEquals(0.50f, controller.state.pose.stageX)
         assertEquals(0.75f, controller.state.pose.stageY)
