@@ -10,6 +10,33 @@ This directory preserves the owner-supplied THyNK Music React/Tailwind/Next.js s
 - The stems and export endpoints in this donor are mocks/placeholders and must never be represented as real separation, mastering, or export success.
 - Use this package to mine layout, interaction, control grouping, timeline, mixer, DJ, effects, EQ, vocal, beat-pad, piano-roll, AI-tool and mastering UX into the native THyNK Music implementation.
 
+## Locked production design — 2026-09-02
+
+The owner has locked **exactly nine THyNK Music production workspaces**:
+
+1. Mixer / Master Console
+2. Effects Rack
+3. Equaliser
+4. Vocal Studio
+5. DJ Studio
+6. Beats Sampler
+7. Piano Roll / MIDI
+8. AI Tools Suite
+9. Mastering & Export
+
+The Arrangement/Timeline is shared across all nine workspaces and is **not** a tenth page. Create/Open/Import/Record are entry actions, not extra editor pages.
+
+The nine supplied visual references are the design authority. Production should preserve the near-black console base, neon-rainbow perimeter lighting, hardware-style controls, dense professional mobile layout, waveform prominence and stable track colours (vocals purple, drums orange, bass green, synth cyan/blue).
+
+Binding design spec:
+`../../docs/superpowers/specs/2026-09-02-thynk-music-nine-workspace-locked-design.md`
+
+Visual-source manifest:
+`reference/locked-9-pages/LOCKED_9_PAGE_VISUAL_REFERENCE.md`
+
+Repository contact sheet:
+`reference/locked-9-pages/thynk-music-locked-nine-page-reference.webp`
+
 ## Donor stack
 
 - Next.js 14.2.5
