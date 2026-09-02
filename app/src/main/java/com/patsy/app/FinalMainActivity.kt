@@ -177,10 +177,32 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
         }
     }
 
-    fun navigate(destination: FinalHomeDestination) {
-        if (destination != FinalHomeDestination.THYNK) {
-            editingBoardActive = false
+    fun navigateThynk(entry: ThynkStudioEntry) {
+        editingBoardActive = false
+        thynkEntry = entry
+        if (debugPreview) {
+            page = FinalAppPage.THYNK
+            return
         }
+
+        val account = (bootstrapResult as? AccountBootstrapResult.Available)?.account
+        if (account == null) {
+            page = FinalAppPage.PROTECTED
+            return
+        }
+
+        page = when (FinalShellNavigation.authorize(FinalHomeDestination.THYNK, account)) {
+            is NavigationDecision.Allowed -> FinalAppPage.THYNK
+            is NavigationDecision.Denied -> FinalAppPage.PROTECTED
+        }
+    }
+
+    fun navigate(destination: FinalHomeDestination) {
+        if (destination == FinalHomeDestination.THYNK) {
+            navigateThynk(ThynkStudioEntry.IT)
+            return
+        }
+        editingBoardActive = false
         if (debugPreview) {
             page = destination.toPage()
             return
@@ -203,14 +225,8 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
             ThynkPanelDestination.ME -> navigate(FinalHomeDestination.PROFILE)
             ThynkPanelDestination.CHATS -> navigate(FinalHomeDestination.PATSY_DMS)
             ThynkPanelDestination.IN -> navigate(FinalHomeDestination.HOME)
-            ThynkPanelDestination.MUSIC -> {
-                thynkEntry = ThynkStudioEntry.MUSIC
-                navigate(FinalHomeDestination.THYNK)
-            }
-            ThynkPanelDestination.IT -> {
-                thynkEntry = ThynkStudioEntry.IT
-                navigate(FinalHomeDestination.THYNK)
-            }
+            ThynkPanelDestination.MUSIC -> navigateThynk(ThynkStudioEntry.MUSIC)
+            ThynkPanelDestination.IT -> navigateThynk(ThynkStudioEntry.IT)
         }
     }
 
@@ -419,7 +435,7 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
                                                     ownerToolsGrant,
                                                     OwnerCapability.VIEW_OWNER_TOOLS,
                                                 ),
-                                                onQuickAction = { page = FinalAppPage.THYNK },
+                                                onQuickAction = { navigate(FinalHomeDestination.THYNK) },
                                                 onOpenOwnerProfile = {
                                                     scope.launch {
                                                         val refreshed = refreshOwnerAccess().first
