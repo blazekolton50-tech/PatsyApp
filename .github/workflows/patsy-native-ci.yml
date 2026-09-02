@@ -1,0 +1,43 @@
+name: Patsy Native CI
+
+on:
+  push:
+    branches:
+      - chatgpt/thynk-in-visible-patsy-integration-2026-09-02
+  pull_request:
+    paths:
+      - 'app/src/main/java/com/patsy/app/patsy/**'
+      - 'app/src/test/java/com/patsy/app/patsy/**'
+      - 'app/build.gradle.kts'
+      - '.github/workflows/patsy-native-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  patsy-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Verify canonical Patsy contract
+        run: ./gradlew testDebugUnitTest --tests 'com.patsy.app.patsy.*' --stacktrace
+
+      - name: Build native Android debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Upload Patsy-ready debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: thynk-in-patsy-native-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
