@@ -377,6 +377,8 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
                         FinalAppPage.HOME -> when {
                             debugPreview -> FinalHomeScreen(
                                 onNavigate = ::navigate,
+                                onOpenThynkMusic = { navigateThynk(ThynkStudioEntry.MUSIC) },
+                                onOpenThynkIt = { navigateThynk(ThynkStudioEntry.IT) },
                                 onAskPatsy = {
                                     guidePatsyTo(PatsyCompanionTarget(0.50f, 0.16f))
                                 },
@@ -393,6 +395,8 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
                                 ) {
                                     FinalHomeScreen(
                                 onNavigate = ::navigate,
+                                onOpenThynkMusic = { navigateThynk(ThynkStudioEntry.MUSIC) },
+                                onOpenThynkIt = { navigateThynk(ThynkStudioEntry.IT) },
                                 onAskPatsy = {
                                     guidePatsyTo(PatsyCompanionTarget(0.50f, 0.16f))
                                 },
