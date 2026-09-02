@@ -19,6 +19,36 @@ data class PatsyCompanionTarget(
     )
 }
 
+/** Reactions intentionally use only expressions already present in the locked V1 Rive ABI. */
+enum class PatsyCompanionReaction {
+    CHEEKY,
+    CURIOUS,
+    CONCERNED,
+    PROUD,
+    HAPPY,
+}
+
+/**
+ * Semantic companion commands layered over the existing travel controller and rig ABI.
+ * They describe intent, never frames, sprites or alternate Patsy assets.
+ */
+sealed interface PatsyCompanionIntent {
+    data object Blink : PatsyCompanionIntent
+    data class TrackEyes(val horizontal: Float, val vertical: Float) : PatsyCompanionIntent
+    data class TiltHead(val amount: Float) : PatsyCompanionIntent
+    data object Think : PatsyCompanionIntent
+    data object Listen : PatsyCompanionIntent
+    data class Speak(
+        val viseme: PatsyRigViseme = PatsyRigViseme.REST,
+        val visemeIntensity: Float = 0.45f,
+        val speechEnergy: Float = 0.45f,
+    ) : PatsyCompanionIntent
+    data class React(val reaction: PatsyCompanionReaction) : PatsyCompanionIntent
+    data object Celebrate : PatsyCompanionIntent
+    data object Jump : PatsyCompanionIntent
+    data object Sleep : PatsyCompanionIntent
+}
+
 enum class PatsyCompanionMode {
     IDLE,
     SHRINKING,
@@ -26,6 +56,15 @@ enum class PatsyCompanionMode {
     GUIDING,
     RETURNING,
     EXPANDING,
+    TRACKING,
+    ATTENTIVE,
+    THINKING,
+    LISTENING,
+    SPEAKING,
+    REACTING,
+    CELEBRATING,
+    JUMPING,
+    RESTING,
 }
 
 data class PatsyCompanionState(
@@ -40,10 +79,11 @@ data class PatsyCompanionState(
 )
 
 /**
- * App-owned companion movement controller.
+ * App-owned companion movement and semantic interaction controller.
  *
  * The same Patsy rig is used at every size. Travel is performed by repeatedly updating the
  * existing stage/x, stage/y and stage/scale ABI values; no alternate mini sprite/artboard is used.
+ * Semantic interactions are translated only into controls already available in PatsyRigContractV1.
  */
 class PatsyCompanionController(
     private val rig: PatsyRigCoordinator,
@@ -55,6 +95,82 @@ class PatsyCompanionController(
 
     init {
         rig.render(state.pose)
+    }
+
+    fun dispatch(intent: PatsyCompanionIntent) {
+        when (intent) {
+            PatsyCompanionIntent.Blink -> rig.blink()
+
+            is PatsyCompanionIntent.TrackEyes -> render(
+                PatsyCompanionMode.TRACKING,
+                state.pose.copy(
+                    lookX = intent.horizontal.coerceIn(-1f, 1f),
+                    lookY = intent.vertical.coerceIn(-1f, 1f),
+                ),
+            )
+
+            is PatsyCompanionIntent.TiltHead -> render(
+                PatsyCompanionMode.ATTENTIVE,
+                state.pose.copy(headTilt = intent.amount.coerceIn(-1f, 1f)),
+            )
+
+            PatsyCompanionIntent.Think -> render(
+                PatsyCompanionMode.THINKING,
+                state.pose.copy(
+                    motion = PatsyRigMotion.IDLE,
+                    motionSpeed = if (state.pose.reducedMotion) 0f else IDLE_MOTION_SPEED,
+                    lookX = 0.25f,
+                    lookY = -0.10f,
+                    headTilt = 0.28f,
+                    leftEarDrive = 0.18f,
+                    rightEarDrive = 0.08f,
+                    tailEnergy = 0.25f,
+                    expression = PatsyRigExpression.CURIOUS,
+                    expressionIntensity = 0.72f,
+                    talking = false,
+                    viseme = PatsyRigViseme.REST,
+                    visemeIntensity = 0f,
+                    speechEnergy = 0f,
+                ),
+            )
+
+            PatsyCompanionIntent.Listen -> render(
+                PatsyCompanionMode.LISTENING,
+                state.pose.copy(
+                    motion = PatsyRigMotion.IDLE,
+                    motionSpeed = if (state.pose.reducedMotion) 0f else IDLE_MOTION_SPEED,
+                    headTilt = 0.12f,
+                    leftEarDrive = 0.65f,
+                    rightEarDrive = 0.65f,
+                    tailEnergy = 0.22f,
+                    expression = PatsyRigExpression.CURIOUS,
+                    expressionIntensity = 0.78f,
+                    talking = false,
+                    viseme = PatsyRigViseme.REST,
+                    visemeIntensity = 0f,
+                    speechEnergy = 0f,
+                ),
+            )
+
+            is PatsyCompanionIntent.Speak -> render(
+                PatsyCompanionMode.SPEAKING,
+                state.pose.copy(
+                    motion = PatsyRigMotion.IDLE,
+                    motionSpeed = if (state.pose.reducedMotion) 0f else IDLE_MOTION_SPEED,
+                    expression = PatsyRigExpression.CHEEKY,
+                    expressionIntensity = 0.76f,
+                    talking = true,
+                    viseme = intent.viseme,
+                    visemeIntensity = intent.visemeIntensity.coerceIn(0f, 1f),
+                    speechEnergy = intent.speechEnergy.coerceIn(0f, 1f),
+                ),
+            )
+
+            is PatsyCompanionIntent.React -> react(intent.reaction)
+            PatsyCompanionIntent.Celebrate -> celebrate()
+            PatsyCompanionIntent.Jump -> jump()
+            PatsyCompanionIntent.Sleep -> sleep()
+        }
     }
 
     /**
@@ -222,6 +338,102 @@ class PatsyCompanionController(
                 reducedMotion = enabled,
                 motion = if (enabled) PatsyRigMotion.IDLE else state.pose.motion,
                 motionSpeed = if (enabled) 0f else state.pose.motionSpeed,
+            ),
+        )
+    }
+
+    private fun react(reaction: PatsyCompanionReaction) {
+        val expression = when (reaction) {
+            PatsyCompanionReaction.CHEEKY -> PatsyRigExpression.CHEEKY
+            PatsyCompanionReaction.CURIOUS -> PatsyRigExpression.CURIOUS
+            PatsyCompanionReaction.CONCERNED -> PatsyRigExpression.CONCERNED
+            PatsyCompanionReaction.PROUD -> PatsyRigExpression.PROUD
+            PatsyCompanionReaction.HAPPY -> PatsyRigExpression.EXCITED
+        }
+        val tailEnergy = when (reaction) {
+            PatsyCompanionReaction.HAPPY -> 0.88f
+            PatsyCompanionReaction.CONCERNED -> 0.18f
+            PatsyCompanionReaction.CURIOUS -> 0.32f
+            PatsyCompanionReaction.CHEEKY,
+            PatsyCompanionReaction.PROUD -> 0.48f
+        }
+        render(
+            PatsyCompanionMode.REACTING,
+            state.pose.copy(
+                motion = PatsyRigMotion.IDLE,
+                motionSpeed = if (state.pose.reducedMotion) 0f else IDLE_MOTION_SPEED,
+                expression = expression,
+                expressionIntensity = 0.82f,
+                tailEnergy = tailEnergy,
+                talking = false,
+                viseme = PatsyRigViseme.REST,
+                visemeIntensity = 0f,
+                speechEnergy = 0f,
+            ),
+        )
+    }
+
+    private fun celebrate() {
+        val reduced = state.pose.reducedMotion
+        render(
+            PatsyCompanionMode.CELEBRATING,
+            state.pose.copy(
+                motion = if (reduced) PatsyRigMotion.IDLE else PatsyRigMotion.WAVE,
+                motionSpeed = if (reduced) 0f else 0.65f,
+                leftEarDrive = if (reduced) 0.12f else 0.25f,
+                rightEarDrive = if (reduced) 0.10f else 0.18f,
+                tailEnergy = if (reduced) 0.35f else 0.95f,
+                expression = PatsyRigExpression.EXCITED,
+                expressionIntensity = 0.95f,
+                talking = false,
+                viseme = PatsyRigViseme.REST,
+                visemeIntensity = 0f,
+                speechEnergy = 0f,
+            ),
+        )
+        if (!reduced) rig.retriggerAction(PatsyRigMotion.WAVE)
+    }
+
+    private fun jump() {
+        val reduced = state.pose.reducedMotion
+        render(
+            PatsyCompanionMode.JUMPING,
+            state.pose.copy(
+                motion = if (reduced) PatsyRigMotion.IDLE else PatsyRigMotion.JUMP,
+                motionSpeed = if (reduced) 0f else 0.85f,
+                leftEarDrive = if (reduced) 0.12f else 0.34f,
+                rightEarDrive = if (reduced) 0.10f else 0.28f,
+                tailEnergy = if (reduced) 0.35f else 0.85f,
+                expression = PatsyRigExpression.EXCITED,
+                expressionIntensity = 0.92f,
+                talking = false,
+                viseme = PatsyRigViseme.REST,
+                visemeIntensity = 0f,
+                speechEnergy = 0f,
+            ),
+        )
+        if (!reduced) rig.retriggerAction(PatsyRigMotion.JUMP)
+    }
+
+    private fun sleep() {
+        render(
+            PatsyCompanionMode.RESTING,
+            state.pose.copy(
+                motion = PatsyRigMotion.LIE,
+                motionSpeed = 0f,
+                lookX = 0f,
+                lookY = 0f,
+                headTilt = 0.08f,
+                leftEarDrive = -0.10f,
+                rightEarDrive = -0.10f,
+                tailDrive = 0f,
+                tailEnergy = 0.12f,
+                expression = PatsyRigExpression.SLEEPY,
+                expressionIntensity = 0.72f,
+                talking = false,
+                viseme = PatsyRigViseme.REST,
+                visemeIntensity = 0f,
+                speechEnergy = 0f,
             ),
         )
     }
