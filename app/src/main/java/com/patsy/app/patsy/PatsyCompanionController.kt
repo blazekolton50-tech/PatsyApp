@@ -57,6 +57,10 @@ class PatsyCompanionController(
         rig.render(state.pose)
     }
 
+    suspend fun shrinkForMission() {
+        // Behaviour is added in the next RED/GREEN step; this establishes the command boundary.
+    }
+
     /** Shrink, travel beside [target], then point at the target while remaining small. */
     suspend fun guideTo(target: PatsyCompanionTarget) {
         val normalisedTarget = target.normalised()
