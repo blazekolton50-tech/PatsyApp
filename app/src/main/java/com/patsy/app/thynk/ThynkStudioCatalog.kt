@@ -68,6 +68,12 @@ object ThynkStudioCatalog {
             listOf("PRESENTATION", "PITCH DECK", "LESSON PLAN", "MOOD BOARD", "ROADMAP", "MEETING DECK", "PORTFOLIO", "SWOT ANALYSIS", "CALENDAR", "GOAL TRACKER", "KANBAN BOARD", "WEEKLY PLANNER"),
         ),
         ThynkCategory(
+            "fashion",
+            "FASHION & TEXTILES",
+            "Pattern, sketch, layer, material and production tools from the native THyNK-IT fashion pipeline.",
+            listOf("PATTERN CAD", "3D SKETCH", "LAYER MIXER", "MATERIALS LAB", "PRODUCTION"),
+        ),
+        ThynkCategory(
             "collage",
             "COLLAGE & CREATIVE",
             "Play, experiment and build creative layouts.",
