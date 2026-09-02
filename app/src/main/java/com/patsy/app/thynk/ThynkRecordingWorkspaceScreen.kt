@@ -2,6 +2,7 @@ package com.patsy.app.thynk
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -33,6 +33,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
 import com.patsy.app.ui.finaldesign.FinalCard
 import com.patsy.app.ui.finaldesign.FinalMuted
 import com.patsy.app.ui.finaldesign.FinalWhite
@@ -42,7 +46,9 @@ import java.io.File
 fun ThynkRecordingWorkspaceScreen() {
     val context = LocalContext.current
     val recorder = remember(context) { NativeThynkAudioRecorder(context.applicationContext) }
+    val player = remember(context) { ExoPlayer.Builder(context.applicationContext).build() }
     var state by remember { mutableStateOf(ThynkAudioRecordingState.initial()) }
+    var playbackState by remember { mutableStateOf(ThynkRecordedTakePlaybackState.IDLE) }
 
     fun applyStartResult(result: Result<File>) {
         state = result.fold(
@@ -76,6 +82,45 @@ fun ThynkRecordingWorkspaceScreen() {
 
     DisposableEffect(recorder) {
         onDispose { recorder.release() }
+    }
+
+    DisposableEffect(player) {
+        val listener = object : Player.Listener {
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                if (isPlaying) {
+                    playbackState = reduceRecordedTakePlaybackState(
+                        playbackState,
+                        ThynkRecordedTakePlaybackAction.Playing,
+                    )
+                } else if (playbackState == ThynkRecordedTakePlaybackState.PLAYING) {
+                    playbackState = reduceRecordedTakePlaybackState(
+                        playbackState,
+                        ThynkRecordedTakePlaybackAction.Stopped,
+                    )
+                }
+            }
+
+            override fun onPlaybackStateChanged(playbackStateValue: Int) {
+                if (playbackStateValue == Player.STATE_ENDED) {
+                    playbackState = reduceRecordedTakePlaybackState(
+                        playbackState,
+                        ThynkRecordedTakePlaybackAction.Completed,
+                    )
+                }
+            }
+
+            override fun onPlayerError(error: PlaybackException) {
+                playbackState = reduceRecordedTakePlaybackState(
+                    playbackState,
+                    ThynkRecordedTakePlaybackAction.Failed,
+                )
+            }
+        }
+        player.addListener(listener)
+        onDispose {
+            player.removeListener(listener)
+            player.release()
+        }
     }
 
     Column(
@@ -146,19 +191,65 @@ fun ThynkRecordingWorkspaceScreen() {
                 }
 
                 ThynkAudioRecordingPhase.RECORDED -> {
-                    val name = state.outputPath?.let(::File)?.name ?: "recording.m4a"
+                    val recordedFile = state.outputPath?.let(::File)
+                    val name = recordedFile?.name ?: "recording.m4a"
                     Text(name, color = FinalWhite, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                     Text("Real local file • AAC/M4A", color = FinalMuted, fontSize = 11.sp)
-                    OutlinedButton(
-                        onClick = {
-                            state = reduceThynkAudioRecordingState(
-                                state,
-                                ThynkAudioRecordingAction.Reset,
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(
+                            enabled = recordedFile?.exists() == true,
+                            onClick = {
+                                if (playbackState == ThynkRecordedTakePlaybackState.PLAYING) {
+                                    player.pause()
+                                    playbackState = reduceRecordedTakePlaybackState(
+                                        playbackState,
+                                        ThynkRecordedTakePlaybackAction.Stopped,
+                                    )
+                                } else if (recordedFile != null && recordedFile.exists()) {
+                                    player.setMediaItem(MediaItem.fromUri(Uri.fromFile(recordedFile)))
+                                    player.prepare()
+                                    player.playWhenReady = true
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = FinalWhite,
+                                contentColor = Color.Black,
+                            ),
+                        ) {
+                            Text(
+                                if (playbackState == ThynkRecordedTakePlaybackState.PLAYING) "PAUSE" else "PLAY TAKE",
+                                fontWeight = FontWeight.Black,
                             )
-                        },
-                    ) {
-                        Text("NEW TAKE", color = FinalWhite)
+                        }
+
+                        OutlinedButton(
+                            onClick = {
+                                player.stop()
+                                player.clearMediaItems()
+                                playbackState = reduceRecordedTakePlaybackState(
+                                    playbackState,
+                                    ThynkRecordedTakePlaybackAction.Stopped,
+                                )
+                                state = reduceThynkAudioRecordingState(
+                                    state,
+                                    ThynkAudioRecordingAction.Reset,
+                                )
+                            },
+                        ) {
+                            Text("NEW TAKE", color = FinalWhite)
+                        }
                     }
+
+                    Text(
+                        when (playbackState) {
+                            ThynkRecordedTakePlaybackState.IDLE -> "Playback ready"
+                            ThynkRecordedTakePlaybackState.PLAYING -> "Playing real recorded take"
+                            ThynkRecordedTakePlaybackState.ERROR -> "Playback failed"
+                        },
+                        color = if (playbackState == ThynkRecordedTakePlaybackState.ERROR) Color(0xFFFFC46B) else FinalMuted,
+                        fontSize = 10.sp,
+                    )
                 }
 
                 else -> {
@@ -191,7 +282,7 @@ fun ThynkRecordingWorkspaceScreen() {
 
         RecordingInfoPanel(
             "TRUTHFUL AUDIO BOUNDARY",
-            "This screen records the device microphone only. It does not claim live autotune, MP3 encoding, stem separation, mastering or a generated waveform until those engines are genuinely connected.",
+            "This screen records and plays back a real local microphone take. It does not claim live autotune, MP3 encoding, stem separation, mastering or a generated waveform until those engines are genuinely connected.",
         )
         Spacer(Modifier.height(12.dp))
     }
