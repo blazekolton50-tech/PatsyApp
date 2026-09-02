@@ -1,4 +1,4 @@
-name: Patsy Native CI
+name: THINK_IN AI Assistant CI
 
 on:
   push:
@@ -15,7 +15,7 @@ permissions:
   contents: write
 
 jobs:
-  patsy-android:
+  ai-assistant-android:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,27 +29,27 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
-      - name: Verify canonical Patsy contract
+      - name: Verify canonical AI assistant contract
         run: ./gradlew testDebugUnitTest --tests 'com.patsy.app.patsy.*' --stacktrace
 
       - name: Build native Android debug APK
         run: ./gradlew assembleDebug --stacktrace
 
-      - name: Publish Patsy-ready debug APK
+      - name: Publish THINK_IN! debug APK
         if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           SHORT_SHA="${GITHUB_SHA::7}"
-          TAG="patsy-native-${SHORT_SHA}"
-          ASSET="THyNK-IN-Patsy-native-debug.apk"
+          TAG="think-in-ai-${SHORT_SHA}"
+          ASSET="THINK_IN!.apk"
           cp app/build/outputs/apk/debug/app-debug.apk "$ASSET"
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "$ASSET" --clobber
           else
             gh release create "$TAG" "$ASSET" \
               --target "$GITHUB_SHA" \
-              --title "THyNK-IN! Patsy Native Debug" \
-              --notes "Native Patsy verification build. Canonical Patsy 720x720 contract; Big 300/1.0; Mini 150/0.5; 0.8 s shrink; 0.4 s mission run; native target pointing and rainbow fallback. The final authored production .riv is still supplied separately when available." \
+              --title "THINK_IN! AI Assistant Debug" \
+              --notes "THINK_IN! debug build with native AI assistant verification: canonical 720x720 contract; Big 300/1.0; Mini 150/0.5; 0.8 s shrink; 0.4 s mission run; native target pointing and rainbow fallback. The final authored production .riv is still supplied separately when available." \
               --prerelease
           fi
