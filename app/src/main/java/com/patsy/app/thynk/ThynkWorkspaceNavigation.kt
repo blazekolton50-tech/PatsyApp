@@ -76,9 +76,9 @@ internal object ThynkWorkspaceNavigation {
     fun isEditingBoard(route: ThynkWorkspaceRoute): Boolean = when (route) {
         is ThynkWorkspaceRoute.Editor -> true
         is ThynkWorkspaceRoute.Music -> route.pageId in musicEditingBoardPageIds
+        is ThynkWorkspaceRoute.Tool -> route.categoryId == "fashion"
         ThynkWorkspaceRoute.Hub,
-        is ThynkWorkspaceRoute.Category,
-        is ThynkWorkspaceRoute.Tool -> false
+        is ThynkWorkspaceRoute.Category -> false
     }
 
     fun chrome(route: ThynkWorkspaceRoute): ThynkWorkspaceChrome {
