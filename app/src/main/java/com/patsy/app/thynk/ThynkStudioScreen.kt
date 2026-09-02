@@ -23,6 +23,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
@@ -30,6 +32,8 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -55,52 +59,60 @@ import com.patsy.app.studio.StudioEditorState
 import com.patsy.app.studio.StudioVideoPlayer
 import com.patsy.app.studio.reduceStudioState
 
-private sealed interface ThynkRoute {
-    data object Hub : ThynkRoute
-    data class Category(val category: ThynkCategory) : ThynkRoute
-    data class Music(val pageId: String) : ThynkRoute
-    data class Editor(val pageId: String) : ThynkRoute
-}
-
 @Composable
-fun ThynkStudioScreen() {
-    var route by remember { mutableStateOf<ThynkRoute>(ThynkRoute.Hub) }
+fun ThynkStudioScreen(
+    onEditingBoardChanged: (Boolean) -> Unit = {},
+    onHome: () -> Unit = {},
+) {
+    var route by remember { mutableStateOf<ThynkWorkspaceRoute>(ThynkWorkspaceRoute.Hub) }
+    val chrome = ThynkWorkspaceNavigation.chrome(route)
+
+    LaunchedEffect(route) {
+        onEditingBoardChanged(ThynkWorkspaceNavigation.isEditingBoard(route))
+    }
+    DisposableEffect(Unit) {
+        onDispose { onEditingBoardChanged(false) }
+    }
+
     Column(Modifier.fillMaxSize().background(FinalCharcoal)) {
         ThynkHeader(
-            showBack = route !is ThynkRoute.Hub,
-            onBack = {
-                route = when (route) {
-                    is ThynkRoute.Music -> ThynkRoute.Category(ThynkStudioCatalog.categories.first { it.id == "music" })
-                    is ThynkRoute.Editor -> {
-                        val categoryId = editorDestinationForPage((route as ThynkRoute.Editor).pageId)?.categoryId
-                        categoryId?.let { id ->
-                            ThynkRoute.Category(ThynkStudioCatalog.categories.first { it.id == id })
-                        } ?: ThynkRoute.Hub
-                    }
-                    is ThynkRoute.Category -> ThynkRoute.Hub
-                    ThynkRoute.Hub -> ThynkRoute.Hub
-                }
-            },
+            chrome = chrome,
+            onBack = { route = ThynkWorkspaceNavigation.back(route) },
+            onHome = onHome,
         )
         Box(Modifier.weight(1f).fillMaxWidth()) {
             when (val current = route) {
-                ThynkRoute.Hub -> ThynkHub(onOpen = { category ->
-                    route = if (category.id == "music") ThynkRoute.Music("music-home") else ThynkRoute.Category(category)
-                })
-                is ThynkRoute.Category -> ThynkCategoryScreen(current.category) { item ->
-                    if (current.category.id == "music") {
-                        route = ThynkRoute.Music(musicPageForItem(item))
+                ThynkWorkspaceRoute.Hub -> ThynkHub(onOpen = { category ->
+                    route = if (category.id == "music") {
+                        ThynkWorkspaceRoute.Music("music-home")
                     } else {
-                        editorPageForThynkItem(item)?.let { editorPage ->
-                            route = ThynkRoute.Editor(editorPage)
+                        ThynkWorkspaceRoute.Category(category.id)
+                    }
+                })
+                is ThynkWorkspaceRoute.Category -> {
+                    val category = ThynkStudioCatalog.categories.firstOrNull { it.id == current.categoryId }
+                    if (category == null) {
+                        InfoPanel("CATEGORY UNAVAILABLE", "This THyNK category is not configured.")
+                    } else {
+                        ThynkCategoryScreen(category) { item ->
+                            if (category.id == "music") {
+                                route = ThynkWorkspaceRoute.Music(musicPageForItem(item))
+                            } else {
+                                editorPageForThynkItem(item)?.let { editorPage ->
+                                    route = ThynkWorkspaceRoute.Editor(
+                                        pageId = editorPage,
+                                        categoryId = category.id,
+                                    )
+                                }
+                            }
                         }
                     }
                 }
-                is ThynkRoute.Music -> ThynkMusicScreen(
+                is ThynkWorkspaceRoute.Music -> ThynkMusicScreen(
                     pageId = current.pageId,
-                    onOpenPage = { route = ThynkRoute.Music(it) },
+                    onOpenPage = { route = ThynkWorkspaceRoute.Music(it) },
                 )
-                is ThynkRoute.Editor -> when (editorDestinationForPage(current.pageId)?.kind) {
+                is ThynkWorkspaceRoute.Editor -> when (editorDestinationForPage(current.pageId)?.kind) {
                     ThynkEditorKind.DESIGN -> ThynkDesignEditorScreen()
                     ThynkEditorKind.VIDEO -> ThynkVideoEditorScreen()
                     null -> InfoPanel("EDITOR UNAVAILABLE", "This editor route is not configured.")
@@ -111,20 +123,54 @@ fun ThynkStudioScreen() {
 }
 
 @Composable
-private fun ThynkHeader(showBack: Boolean, onBack: () -> Unit) {
+private fun ThynkHeader(
+    chrome: ThynkWorkspaceChrome,
+    onBack: () -> Unit,
+    onHome: () -> Unit,
+) {
+    var menuExpanded by remember { mutableStateOf(false) }
     Box(Modifier.fillMaxWidth().height(72.dp).padding(horizontal = 16.dp)) {
-        if (showBack) {
+        if (chrome.showBack) {
             TextButton(onClick = onBack, modifier = Modifier.align(Alignment.CenterStart)) {
                 Text("‹ Back", color = FinalWhite)
             }
         }
-        Image(
-            painter = painterResource(R.drawable.patsy_logo_official_white),
-            contentDescription = "Patsy",
-            contentScale = ContentScale.Fit,
-            modifier = Modifier.align(Alignment.Center).width(104.dp).height(48.dp),
-        )
-        Text("•••", color = FinalWhite, fontSize = 16.sp, fontWeight = FontWeight.Black, modifier = Modifier.align(Alignment.CenterEnd))
+        if (!chrome.showOverflowHome) {
+            Image(
+                painter = painterResource(R.drawable.patsy_logo_official_white),
+                contentDescription = "Patsy",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.align(Alignment.Center).width(104.dp).height(48.dp),
+            )
+        }
+        if (chrome.showOverflowHome) {
+            Box(modifier = Modifier.align(Alignment.CenterEnd)) {
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .background(FinalRainbow, CircleShape)
+                        .padding(2.dp)
+                        .clip(CircleShape)
+                        .background(FinalCharcoal)
+                        .clickable { menuExpanded = true },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("•••", color = FinalWhite, fontSize = 14.sp, fontWeight = FontWeight.Black)
+                }
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false },
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Home") },
+                        onClick = {
+                            menuExpanded = false
+                            onHome()
+                        },
+                    )
+                }
+            }
+        }
     }
     Box(Modifier.fillMaxWidth().height(2.dp).background(FinalRainbow))
 }
