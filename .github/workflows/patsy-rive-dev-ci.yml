@@ -1,0 +1,24 @@
+name: Patsy Rive Dev CI
+
+on:
+  push:
+    branches:
+      - chatgpt/patsy-rive-generator-harness-2026-09-02
+
+jobs:
+  tooling:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/patsy-rive-dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tools/patsy-rive-dev/package-lock.json
+      - name: Install tooling dependencies
+        run: npm install
+      - name: Run tooling tests
+        run: npm test
