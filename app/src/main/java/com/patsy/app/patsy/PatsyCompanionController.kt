@@ -57,8 +57,45 @@ class PatsyCompanionController(
         rig.render(state.pose)
     }
 
+    /**
+     * Shrink the existing Patsy in place from normal size to the locked one-thumb mission size.
+     * The 50 x 16 ms frames preserve the 0.8 second product contract and use EaseOutCubic.
+     */
     suspend fun shrinkForMission() {
-        // Behaviour is added in the next RED/GREEN step; this establishes the command boundary.
+        if (state.pose.reducedMotion) {
+            render(
+                PatsyCompanionMode.IDLE,
+                state.pose.copy(
+                    motion = PatsyRigMotion.IDLE,
+                    motionSpeed = 0f,
+                    stageScale = MISSION_SCALE,
+                ),
+            )
+            return
+        }
+
+        val startScale = state.pose.stageScale
+        repeat(MISSION_SHRINK_FRAMES) { index ->
+            val progress = (index + 1).toFloat() / MISSION_SHRINK_FRAMES.toFloat()
+            render(
+                PatsyCompanionMode.SHRINKING,
+                state.pose.copy(
+                    motion = PatsyRigMotion.IDLE,
+                    motionSpeed = IDLE_MOTION_SPEED,
+                    stageScale = lerp(startScale, MISSION_SCALE, easeOutCubic(progress)),
+                ),
+            )
+            frameWait(FRAME_MILLIS)
+        }
+
+        render(
+            PatsyCompanionMode.IDLE,
+            state.pose.copy(
+                motion = PatsyRigMotion.IDLE,
+                motionSpeed = IDLE_MOTION_SPEED,
+                stageScale = MISSION_SCALE,
+            ),
+        )
     }
 
     /** Shrink, travel beside [target], then point at the target while remaining small. */
@@ -271,6 +308,11 @@ class PatsyCompanionController(
 
     private fun smoothStep(value: Float): Float = value * value * (3f - 2f * value)
 
+    private fun easeOutCubic(value: Float): Float {
+        val remaining = 1f - value
+        return 1f - (remaining * remaining * remaining)
+    }
+
     private fun lerp(start: Float, end: Float, progress: Float): Float =
         start + (end - start) * progress
 
@@ -278,6 +320,7 @@ class PatsyCompanionController(
         const val REST_STAGE_X = 0.50f
         const val REST_STAGE_Y = 0.75f
         const val FULL_SCALE = 1.00f
+        const val MISSION_SCALE = 0.50f
         const val HELPER_SCALE = 0.45f
         const val REDUCED_HELPER_SCALE = 0.80f
         const val IDLE_MOTION_SPEED = 0.12f
@@ -285,6 +328,7 @@ class PatsyCompanionController(
         const val STAGE_EDGE_MARGIN = 0.08f
         const val STAGE_TOP_MARGIN = 0.12f
         const val STAGE_BOTTOM_MARGIN = 0.86f
+        const val MISSION_SHRINK_FRAMES = 50
         const val SHRINK_FRAMES = 6
         const val EXPAND_FRAMES = 7
         const val MIN_TRAVEL_FRAMES = 8
