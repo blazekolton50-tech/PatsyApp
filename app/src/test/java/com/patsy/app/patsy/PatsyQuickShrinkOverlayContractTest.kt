@@ -32,6 +32,8 @@ class PatsyQuickShrinkOverlayContractTest {
         assertTrue(quickShrink.contains("fun PatsyQuickShrink("))
         assertTrue(quickShrink.contains("onMissionStart: () -> Unit"))
         assertTrue(quickShrink.contains("controller.guideTo("))
+        assertFalse(quickShrink.contains("PatsyShrinkRainbow("))
+        assertFalse(quickShrink.contains("RISING_RAINBOW_GLITTER"))
     }
 
     private fun source(path: String): String {
