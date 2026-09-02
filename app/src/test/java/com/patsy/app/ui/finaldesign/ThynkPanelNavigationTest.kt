@@ -39,9 +39,10 @@ class ThynkPanelNavigationTest {
     }
 
     @Test
-    fun `panel stays visible across THyNK browsing and editor workspaces`() {
+    fun `panel stays visible while browsing and choosing categories but hides on editing boards`() {
         assertTrue(thynkPanelVisibleFor(ThynkPanelSurface.BROWSING))
-        assertTrue(thynkPanelVisibleFor(ThynkPanelSurface.WORKSPACE))
+        assertTrue(thynkPanelVisibleFor(ThynkPanelSurface.CATEGORY))
+        assertFalse(thynkPanelVisibleFor(ThynkPanelSurface.EDITING_BOARD))
     }
 
     @Test
