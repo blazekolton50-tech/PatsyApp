@@ -7,6 +7,15 @@ import kotlin.test.assertTrue
 
 class ThynkWorkspaceNavigationTest {
     @Test
+    fun `THyNK IT and Music panel entries open distinct roots`() {
+        assertEquals(ThynkWorkspaceRoute.Hub, ThynkWorkspaceNavigation.initialRoute(ThynkStudioEntry.IT))
+        assertEquals(
+            ThynkWorkspaceRoute.Music("music-home"),
+            ThynkWorkspaceNavigation.initialRoute(ThynkStudioEntry.MUSIC),
+        )
+    }
+
+    @Test
     fun `design and video editor routes are full screen editing boards`() {
         assertTrue(
             ThynkWorkspaceNavigation.isEditingBoard(
@@ -86,12 +95,16 @@ class ThynkWorkspaceNavigationTest {
     }
 
     @Test
-    fun `root hub chrome has no back and keeps global homebar`() {
-        val chrome = ThynkWorkspaceNavigation.chrome(ThynkWorkspaceRoute.Hub)
-
-        assertFalse(chrome.showBack)
-        assertFalse(chrome.showOverflowHome)
-        assertTrue(chrome.showGlobalHomebar)
+    fun `THyNK IT and Music roots have no back and keep global homebar`() {
+        listOf(
+            ThynkWorkspaceRoute.Hub,
+            ThynkWorkspaceRoute.Music("music-home"),
+        ).forEach { route ->
+            val chrome = ThynkWorkspaceNavigation.chrome(route)
+            assertFalse(chrome.showBack)
+            assertFalse(chrome.showOverflowHome)
+            assertTrue(chrome.showGlobalHomebar)
+        }
     }
 
     @Test
@@ -117,14 +130,18 @@ class ThynkWorkspaceNavigationTest {
     }
 
     @Test
-    fun `back continues outward from music home and category screens`() {
+    fun `back from music setup returns to music home while music home remains root`() {
         assertEquals(
-            ThynkWorkspaceRoute.Category("music"),
-            ThynkWorkspaceNavigation.back(ThynkWorkspaceRoute.Music("music-home")),
+            ThynkWorkspaceRoute.Music("music-home"),
+            ThynkWorkspaceNavigation.back(ThynkWorkspaceRoute.Music("create-music")),
         )
         assertEquals(
-            ThynkWorkspaceRoute.Hub,
-            ThynkWorkspaceNavigation.back(ThynkWorkspaceRoute.Category("music")),
+            ThynkWorkspaceRoute.Music("music-home"),
+            ThynkWorkspaceNavigation.back(ThynkWorkspaceRoute.Music("ai-music-generator")),
+        )
+        assertEquals(
+            ThynkWorkspaceRoute.Music("music-home"),
+            ThynkWorkspaceNavigation.back(ThynkWorkspaceRoute.Music("music-home")),
         )
     }
 }
