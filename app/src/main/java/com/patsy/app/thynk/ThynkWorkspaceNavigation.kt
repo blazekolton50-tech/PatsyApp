@@ -30,12 +30,16 @@ internal data class ThynkWorkspaceChrome(
 
 internal object ThynkWorkspaceNavigation {
     private val musicEditingBoardPageIds = setOf(
+        "recording",
         "track-editor",
         "mixer",
         "equalizer",
         "effects",
         "lyrics-vocals",
+        "dj-studio",
+        "auto-tuner",
         "mastering",
+        "video-editor",
         "export",
     )
 
@@ -46,15 +50,11 @@ internal object ThynkWorkspaceNavigation {
 
     fun topLogoDestination(route: ThynkWorkspaceRoute): ThynkPanelDestination = when (route) {
         is ThynkWorkspaceRoute.Music -> ThynkPanelDestination.MUSIC
-        is ThynkWorkspaceRoute.Category -> if (route.categoryId == "music") {
-            ThynkPanelDestination.MUSIC
-        } else {
-            ThynkPanelDestination.IT
-        }
-        is ThynkWorkspaceRoute.Editor -> if (route.categoryId == "music") {
-            ThynkPanelDestination.MUSIC
-        } else {
-            ThynkPanelDestination.IT
+        is ThynkWorkspaceRoute.Category -> ThynkPanelDestination.IT
+        is ThynkWorkspaceRoute.Editor -> when (studioEntryForEditorPage(route.pageId)) {
+            ThynkStudioEntry.MUSIC -> ThynkPanelDestination.MUSIC
+            ThynkStudioEntry.IT,
+            null -> ThynkPanelDestination.IT
         }
         ThynkWorkspaceRoute.Hub -> ThynkPanelDestination.IT
     }
@@ -79,8 +79,9 @@ internal object ThynkWorkspaceNavigation {
 
     fun back(route: ThynkWorkspaceRoute): ThynkWorkspaceRoute = when (route) {
         is ThynkWorkspaceRoute.Editor -> ThynkWorkspaceRoute.Category(route.categoryId)
-        is ThynkWorkspaceRoute.Music -> when {
-            route.pageId == "music-home" -> route
+        is ThynkWorkspaceRoute.Music -> when (route.pageId) {
+            "music-home" -> route
+            "video-player", "video-editor" -> ThynkWorkspaceRoute.Music("video-home")
             else -> ThynkWorkspaceRoute.Music("music-home")
         }
         is ThynkWorkspaceRoute.Category -> ThynkWorkspaceRoute.Hub
