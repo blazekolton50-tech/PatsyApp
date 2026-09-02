@@ -6,7 +6,10 @@ import com.patsy.app.patsy.rig.PatsyRigMotion
 import com.patsy.app.patsy.rig.PatsyRigPose
 import com.patsy.app.patsy.rig.PatsyRigViseme
 import kotlinx.coroutines.delay
+import kotlin.math.abs
 import kotlin.math.roundToInt
+import kotlin.math.sin
+
 
 data class PatsyCompanionTarget(
     val normalizedX: Float,
@@ -27,6 +30,7 @@ enum class PatsyCompanionMode {
     EXPANDING,
 }
 
+/** Retained for source compatibility; simple shrink no longer requests a visual effect. */
 enum class PatsyCompanionEffectKind {
     RISING_RAINBOW_GLITTER,
 }
@@ -52,12 +56,13 @@ data class PatsyCompanionState(
  * App-owned companion movement controller.
  *
  * Big = 300 visual units / scale 1.0. Mini = 150 visual units / scale 0.5.
- * Shrink lasts exactly 0.8 s and the mission run lasts exactly 0.4 s.
- * The same Patsy rig is used throughout; no second mini sprite/artboard is introduced.
+ * Shrink is intentionally simple: Patsy jumps, shrinks while airborne, then lands mini.
+ * The full jump-shrink lasts exactly 0.8 s. No rainbow, glitter, sprite swap or second Patsy.
  */
 class PatsyCompanionController(
     private val rig: PatsyRigCoordinator,
     private val onStateChanged: (PatsyCompanionState) -> Unit = {},
+    @Suppress("UNUSED_PARAMETER")
     private val onEffectRequested: (PatsyCompanionEffect) -> Unit = {},
     private val frameWait: suspend (Long) -> Unit = { delay(it) },
 ) {
@@ -87,14 +92,7 @@ class PatsyCompanionController(
             return
         }
 
-        onEffectRequested(CANONICAL_SHRINK_EFFECT)
-        animateScale(
-            destination = HELPER_SCALE,
-            mode = PatsyCompanionMode.SHRINKING,
-            motion = PatsyRigMotion.IDLE,
-            frames = SHRINK_FRAMES,
-            frameMillis = SHRINK_FRAME_MILLIS,
-        )
+        animateJumpShrink()
 
         val anchor = guideAnchor(normalisedTarget)
         animatePosition(
@@ -142,12 +140,13 @@ class PatsyCompanionController(
                 speechEnergy = 0f,
             ),
         )
+
         val home = PatsyCompanionTarget(REST_STAGE_X, REST_STAGE_Y)
-        val distance = kotlin.math.abs(home.normalizedX - state.pose.stageX) +
-            kotlin.math.abs(home.normalizedY - state.pose.stageY)
+        val distance = abs(home.normalizedX - state.pose.stageX) + abs(home.normalizedY - state.pose.stageY)
         val returnFrames = (MIN_RETURN_FRAMES + distance * EXTRA_RETURN_FRAMES)
             .roundToInt()
             .coerceAtLeast(MIN_RETURN_FRAMES)
+
         animatePosition(
             destination = home,
             mode = PatsyCompanionMode.RETURNING,
@@ -155,6 +154,7 @@ class PatsyCompanionController(
             frames = returnFrames,
             frameMillis = RETURN_FRAME_MILLIS,
         )
+
         animateScale(
             destination = FULL_SCALE,
             mode = PatsyCompanionMode.EXPANDING,
@@ -172,6 +172,49 @@ class PatsyCompanionController(
                 reducedMotion = enabled,
                 motion = if (enabled) PatsyRigMotion.IDLE else state.pose.motion,
                 motionSpeed = if (enabled) 0f else state.pose.motionSpeed,
+            ),
+        )
+    }
+
+    /**
+     * Ten 80 ms frames = exactly 800 ms.
+     * The parabolic Y offset makes Patsy leave the floor and return to the same landing point.
+     * Scale eases from 1.0 to 0.5 while she is airborne, so the final landing is already Mini.
+     */
+    private suspend fun animateJumpShrink() {
+        val startScale = state.pose.stageScale
+        val landingY = state.pose.stageY
+        rig.retriggerAction(PatsyRigMotion.JUMP)
+
+        repeat(SHRINK_FRAMES) { index ->
+            val progress = (index + 1).toFloat() / SHRINK_FRAMES.toFloat()
+            val easedScale = easeOutCubic(progress)
+            val jumpArc = sin(Math.PI.toFloat() * progress)
+
+            render(
+                PatsyCompanionMode.SHRINKING,
+                state.pose.copy(
+                    motion = PatsyRigMotion.JUMP,
+                    motionSpeed = 1f,
+                    stageY = (landingY - JUMP_HEIGHT * jumpArc).coerceIn(0f, 1f),
+                    stageScale = lerp(startScale, HELPER_SCALE, easedScale),
+                    talking = false,
+                    viseme = PatsyRigViseme.REST,
+                    visemeIntensity = 0f,
+                    speechEnergy = 0f,
+                ),
+            )
+            frameWait(SHRINK_FRAME_MILLIS)
+        }
+
+        // Pin the exact landing state so there is no snap or size drift.
+        render(
+            PatsyCompanionMode.SHRINKING,
+            state.pose.copy(
+                motion = PatsyRigMotion.IDLE,
+                motionSpeed = IDLE_MOTION_SPEED,
+                stageY = landingY,
+                stageScale = HELPER_SCALE,
             ),
         )
     }
@@ -239,7 +282,7 @@ class PatsyCompanionController(
         val start = state.pose.stageScale
         repeat(frames) { index ->
             val progress = (index + 1).toFloat() / frames.toFloat()
-            val eased = if (mode == PatsyCompanionMode.SHRINKING) easeOutCubic(progress) else smoothStep(progress)
+            val eased = smoothStep(progress)
             render(
                 mode,
                 state.pose.copy(
@@ -289,6 +332,7 @@ class PatsyCompanionController(
         const val HELPER_SCALE = 0.50f
         const val REDUCED_HELPER_SCALE = 0.80f
         const val IDLE_MOTION_SPEED = 0.12f
+        const val JUMP_HEIGHT = 0.12f
         const val GUIDE_SIDE_OFFSET = 0.18f
         const val STAGE_EDGE_MARGIN = 0.08f
         const val STAGE_TOP_MARGIN = 0.12f
@@ -302,11 +346,6 @@ class PatsyCompanionController(
         const val MIN_RETURN_FRAMES = 8
         const val EXTRA_RETURN_FRAMES = 18f
         const val RETURN_FRAME_MILLIS = 16L
-        val CANONICAL_SHRINK_EFFECT = PatsyCompanionEffect(
-            kind = PatsyCompanionEffectKind.RISING_RAINBOW_GLITTER,
-            assetName = "video4635308202773325454.mp4",
-            playbackSpeed = 8f,
-        )
     }
 }
 
