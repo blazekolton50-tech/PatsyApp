@@ -1,5 +1,7 @@
 package com.patsy.app.thynk
 
+import com.patsy.app.ui.finaldesign.ThynkPanelDestination
+
 /** Which specialist THyNK hub the five-logo app panel opened. */
 enum class ThynkStudioEntry {
     MUSIC,
@@ -40,6 +42,21 @@ internal object ThynkWorkspaceNavigation {
     fun initialRoute(entry: ThynkStudioEntry): ThynkWorkspaceRoute = when (entry) {
         ThynkStudioEntry.IT -> ThynkWorkspaceRoute.Hub
         ThynkStudioEntry.MUSIC -> ThynkWorkspaceRoute.Music("music-home")
+    }
+
+    fun topLogoDestination(route: ThynkWorkspaceRoute): ThynkPanelDestination = when (route) {
+        is ThynkWorkspaceRoute.Music -> ThynkPanelDestination.MUSIC
+        is ThynkWorkspaceRoute.Category -> if (route.categoryId == "music") {
+            ThynkPanelDestination.MUSIC
+        } else {
+            ThynkPanelDestination.IT
+        }
+        is ThynkWorkspaceRoute.Editor -> if (route.categoryId == "music") {
+            ThynkPanelDestination.MUSIC
+        } else {
+            ThynkPanelDestination.IT
+        }
+        ThynkWorkspaceRoute.Hub -> ThynkPanelDestination.IT
     }
 
     fun isEditingBoard(route: ThynkWorkspaceRoute): Boolean = when (route) {
