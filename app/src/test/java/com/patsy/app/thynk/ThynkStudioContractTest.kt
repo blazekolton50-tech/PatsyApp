@@ -2,42 +2,48 @@ package com.patsy.app.thynk
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ThynkStudioContractTest {
     @Test
-    fun `THyNK exposes the locked ten category hub`() {
+    fun `THyNK IT excludes music and video specialist roots`() {
         assertEquals(
             listOf(
                 "DESIGN & TEMPLATES",
                 "SOCIAL & CONTENT",
                 "PHOTO & IMAGE",
-                "VIDEO & CAMERA",
                 "DOCUMENTS & BUSINESS",
                 "HOMEWORK & STUDY",
                 "PRESENTATIONS & PLANNING",
                 "COLLAGE & CREATIVE",
-                "THyNK MUSIC",
                 "AI & MY STUDIO",
             ),
             ThynkStudioCatalog.categories.map { it.label },
         )
+        assertFalse(ThynkStudioCatalog.categories.any { it.id == "music" || it.id == "video" })
     }
 
     @Test
-    fun `THyNK Music exposes the locked creator workflow`() {
+    fun `THyNK Music owns the complete music and video media roots`() {
         val pages = ThynkMusicCatalog.pages.map { it.id }
         assertEquals(
             listOf(
                 "music-home",
                 "create-music",
                 "ai-music-generator",
+                "recording",
                 "track-editor",
                 "mixer",
                 "equalizer",
                 "effects",
                 "lyrics-vocals",
+                "dj-studio",
+                "auto-tuner",
                 "mastering",
+                "video-home",
+                "video-player",
+                "video-editor",
                 "export",
             ),
             pages,
@@ -46,20 +52,22 @@ class ThynkStudioContractTest {
     }
 
     @Test
-    fun `video editor items map to the shared video editor route`() {
+    fun `video editor is owned by THyNK Music`() {
         assertEquals("video-editor", editorPageForThynkItem("VIDEO EDITOR"))
         assertEquals("video-editor", editorPageForThynkItem("TRIM & CUT"))
+        assertEquals(ThynkStudioEntry.MUSIC, studioEntryForEditorPage("video-editor"))
     }
 
     @Test
-    fun `design items map to the shared native design editor route`() {
+    fun `design items remain owned by THyNK IT`() {
         assertEquals("design-editor", editorPageForThynkItem("POSTERS"))
         assertEquals("design-editor", editorPageForThynkItem("CUSTOM SIZE"))
         assertEquals("design-editor", editorPageForThynkItem("TEMPLATES"))
+        assertEquals(ThynkStudioEntry.IT, studioEntryForEditorPage("design-editor"))
     }
 
     @Test
-    fun `editor pages retain their owning category and editor kind`() {
+    fun `editor pages retain their editor kind`() {
         assertEquals(
             ThynkEditorDestination("design", ThynkEditorKind.DESIGN),
             editorDestinationForPage("design-editor"),
