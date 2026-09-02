@@ -3,7 +3,12 @@ from pathlib import Path
 HOST = Path("app/src/main/java/com/patsy/app/thynk/ThynkStudioScreen.kt")
 
 ALREADY_APPLIED_MARKERS = {
+    "THyNK-IT tool routing": "ThynkWorkspaceNavigation.openItItem(category.id, item)",
+    "THyNK-IT tool page host": "is ThynkWorkspaceRoute.Tool ->",
+    "THyNK-IT tool screen": "private fun ThynkToolScreen(categoryId: String, item: String)",
+    "recording route": '"RECORD" -> "recording"',
     "THyNK Music render registry": "when (ThynkMusicPageRenderer.kind(page.id))",
+    "record quick-start page": 'onOpenPage("recording")',
     "music creator page rail": '"beats-sampler" to "BEATS SAMPLER"',
     "specialist THyNK Music page bodies": "private fun androidx.compose.foundation.lazy.LazyListScope.recordingItems()",
 }
@@ -222,7 +227,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.autoTunerItems() {
         var strength by remember { mutableFloatStateOf(0.65f) }
         Column(Modifier.fillMaxWidth().background(FinalCard, RoundedCornerShape(20.dp)).padding(15.dp)) {
             Text("CORRECTION STRENGTH", color = FinalWhite, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-            Slider(value = strength, onValueChange = { strength = it })
+            Slider(value = strength, onValueChange = { strength = it }, modifier = Modifier.weight(1f))
             Text("${(strength * 100).toInt()}%", color = FinalMuted, fontSize = 11.sp)
         }
     }
