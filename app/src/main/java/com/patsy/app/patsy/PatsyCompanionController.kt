@@ -214,7 +214,7 @@ class PatsyCompanionController(
         )
     }
 
-    /** Shrink, travel beside [target], then point at the target while remaining small. */
+    /** Shrink to the locked mission size, travel beside [target], then point while remaining small. */
     suspend fun guideTo(target: PatsyCompanionTarget) {
         val normalisedTarget = target.normalised()
         if (state.pose.reducedMotion) {
@@ -234,12 +234,7 @@ class PatsyCompanionController(
             return
         }
 
-        animateScale(
-            destination = HELPER_SCALE,
-            mode = PatsyCompanionMode.SHRINKING,
-            motion = PatsyRigMotion.IDLE,
-            frames = SHRINK_FRAMES,
-        )
+        shrinkForMission()
 
         val anchor = guideAnchor(normalisedTarget)
         animatePosition(
@@ -253,7 +248,7 @@ class PatsyCompanionController(
             state.pose.copy(
                 motion = PatsyRigMotion.POINT,
                 motionSpeed = 0.55f,
-                stageScale = HELPER_SCALE,
+                stageScale = MISSION_SCALE,
                 pointX = normalisedTarget.normalizedX,
                 pointY = normalisedTarget.normalizedY,
                 expression = PatsyRigExpression.PROUD,
@@ -267,7 +262,7 @@ class PatsyCompanionController(
         rig.retriggerAction(PatsyRigMotion.POINT)
     }
 
-    /** Walk back to Patsy's resting position while small, then expand to normal size and idle. */
+    /** Walk back to Patsy's resting position at mission size, then expand to normal size and idle. */
     suspend fun returnHome() {
         if (state.pose.reducedMotion) {
             render(
@@ -292,7 +287,7 @@ class PatsyCompanionController(
             state.pose.copy(
                 motion = PatsyRigMotion.WALK,
                 motionSpeed = 0.72f,
-                stageScale = HELPER_SCALE,
+                stageScale = MISSION_SCALE,
                 talking = false,
                 viseme = PatsyRigViseme.REST,
                 visemeIntensity = 0f,
@@ -461,7 +456,7 @@ class PatsyCompanionController(
                     motionSpeed = 0.72f,
                     stageX = lerp(startX, destination.normalizedX, eased),
                     stageY = lerp(startY, destination.normalizedY, eased),
-                    stageScale = HELPER_SCALE,
+                    stageScale = MISSION_SCALE,
                     talking = false,
                     viseme = PatsyRigViseme.REST,
                     visemeIntensity = 0f,
@@ -533,7 +528,6 @@ class PatsyCompanionController(
         const val REST_STAGE_Y = 0.75f
         const val FULL_SCALE = 1.00f
         const val MISSION_SCALE = 0.50f
-        const val HELPER_SCALE = 0.45f
         const val REDUCED_HELPER_SCALE = 0.80f
         const val IDLE_MOTION_SPEED = 0.12f
         const val GUIDE_SIDE_OFFSET = 0.18f
@@ -541,7 +535,6 @@ class PatsyCompanionController(
         const val STAGE_TOP_MARGIN = 0.12f
         const val STAGE_BOTTOM_MARGIN = 0.86f
         const val MISSION_SHRINK_FRAMES = 50
-        const val SHRINK_FRAMES = 6
         const val EXPAND_FRAMES = 7
         const val MIN_TRAVEL_FRAMES = 8
         const val EXTRA_TRAVEL_FRAMES = 18f
