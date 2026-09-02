@@ -1,0 +1,32 @@
+name: THyNK-IN Dex Debug
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  debug-dex:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+      - name: Assemble debug with full Gradle diagnostics
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew assembleDebug --stacktrace --debug 2>&1 | tee gradle-dex-debug.log
+      - name: Upload dex debug log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: thynk-in-dex-debug-log
+          path: gradle-dex-debug.log
+          if-no-files-found: warn
