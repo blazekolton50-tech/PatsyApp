@@ -61,12 +61,16 @@ import com.patsy.app.studio.reduceStudioState
 
 @Composable
 fun ThynkStudioScreen(
+    entry: ThynkStudioEntry = ThynkStudioEntry.IT,
     onEditingBoardChanged: (Boolean) -> Unit = {},
     onHome: () -> Unit = {},
 ) {
-    var route by remember { mutableStateOf<ThynkWorkspaceRoute>(ThynkWorkspaceRoute.Hub) }
+    var route by remember { mutableStateOf<ThynkWorkspaceRoute>(ThynkWorkspaceNavigation.initialRoute(entry)) }
     val chrome = ThynkWorkspaceNavigation.chrome(route)
 
+    LaunchedEffect(entry) {
+        route = ThynkWorkspaceNavigation.initialRoute(entry)
+    }
     LaunchedEffect(route) {
         onEditingBoardChanged(ThynkWorkspaceNavigation.isEditingBoard(route))
     }
