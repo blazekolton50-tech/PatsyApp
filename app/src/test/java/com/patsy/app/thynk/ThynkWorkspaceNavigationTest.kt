@@ -64,6 +64,37 @@ class ThynkWorkspaceNavigationTest {
     }
 
     @Test
+    fun `editing board chrome is back plus overflow home with global homebar hidden`() {
+        val chrome = ThynkWorkspaceNavigation.chrome(
+            ThynkWorkspaceRoute.Music("mixer"),
+        )
+
+        assertTrue(chrome.showBack)
+        assertTrue(chrome.showOverflowHome)
+        assertFalse(chrome.showGlobalHomebar)
+    }
+
+    @Test
+    fun `category chrome keeps back and global homebar without board overflow home`() {
+        val chrome = ThynkWorkspaceNavigation.chrome(
+            ThynkWorkspaceRoute.Category("fashion"),
+        )
+
+        assertTrue(chrome.showBack)
+        assertFalse(chrome.showOverflowHome)
+        assertTrue(chrome.showGlobalHomebar)
+    }
+
+    @Test
+    fun `root hub chrome has no back and keeps global homebar`() {
+        val chrome = ThynkWorkspaceNavigation.chrome(ThynkWorkspaceRoute.Hub)
+
+        assertFalse(chrome.showBack)
+        assertFalse(chrome.showOverflowHome)
+        assertTrue(chrome.showGlobalHomebar)
+    }
+
+    @Test
     fun `back from non music editor returns to exact originating category`() {
         assertEquals(
             ThynkWorkspaceRoute.Category("fashion"),
