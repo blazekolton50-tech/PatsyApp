@@ -53,3 +53,5 @@ jobs:
               --notes "THyNK-IN! debug build with native AI assistant verification: canonical 720x720 contract; Big 300/1.0; Mini 150/0.5; 0.8 s shrink; 0.4 s mission run; native target pointing and rainbow fallback. The final authored production .riv is still supplied separately when available." \
               --prerelease
           fi
+
+# Re-triggered after runner startup failure; no production behavior changed.
