@@ -19,8 +19,13 @@ class ThynkPanelNavigationTest {
             ThynkPanelDestination.entries,
         )
         assertEquals(
-            listOf("THyNK-ME", "THyNK Chats", "THyNK-IN", "THyNK Music", "THyNK-IT"),
+            listOf("THyNK-ME", "THyNK Chats", "THyNK-IN!", "THyNK Music", "THyNK-IT"),
             ThynkPanelDestination.entries.map { it.visibleLabel },
+        )
+        assertEquals(
+            ThynkPanelDestination.IN,
+            ThynkPanelDestination.entries[2],
+            "THyNK-IN! must remain the centre destination.",
         )
     }
 
