@@ -16,7 +16,7 @@ class ThynkWorkspaceNavigationTest {
     }
 
     @Test
-    fun `design and video editor routes are full screen editing boards`() {
+    fun `design and legacy video editor route objects are editing boards`() {
         assertTrue(
             ThynkWorkspaceNavigation.isEditingBoard(
                 ThynkWorkspaceRoute.Editor(pageId = "design-editor", categoryId = "design"),
@@ -30,14 +30,18 @@ class ThynkWorkspaceNavigationTest {
     }
 
     @Test
-    fun `specialist music workspaces hide the global homebar`() {
+    fun `specialist music and media workspaces hide the global homebar`() {
         listOf(
+            "recording",
             "track-editor",
             "mixer",
             "equalizer",
             "effects",
             "lyrics-vocals",
+            "dj-studio",
+            "auto-tuner",
             "mastering",
+            "video-editor",
             "export",
         ).forEach { pageId ->
             assertTrue(
@@ -48,28 +52,19 @@ class ThynkWorkspaceNavigationTest {
     }
 
     @Test
-    fun `hubs category screens and music setup pages retain the global homebar`() {
+    fun `hubs category screens and media setup pages retain the global homebar`() {
         assertFalse(ThynkWorkspaceNavigation.isEditingBoard(ThynkWorkspaceRoute.Hub))
         assertFalse(
             ThynkWorkspaceNavigation.isEditingBoard(
                 ThynkWorkspaceRoute.Category("design"),
             ),
         )
-        assertFalse(
-            ThynkWorkspaceNavigation.isEditingBoard(
-                ThynkWorkspaceRoute.Music("music-home"),
-            ),
-        )
-        assertFalse(
-            ThynkWorkspaceNavigation.isEditingBoard(
-                ThynkWorkspaceRoute.Music("create-music"),
-            ),
-        )
-        assertFalse(
-            ThynkWorkspaceNavigation.isEditingBoard(
-                ThynkWorkspaceRoute.Music("ai-music-generator"),
-            ),
-        )
+        listOf("music-home", "create-music", "ai-music-generator", "video-home", "video-player").forEach { pageId ->
+            assertFalse(
+                ThynkWorkspaceNavigation.isEditingBoard(ThynkWorkspaceRoute.Music(pageId)),
+                "$pageId must keep the global homebar",
+            )
+        }
     }
 
     @Test
@@ -118,7 +113,7 @@ class ThynkWorkspaceNavigationTest {
     }
 
     @Test
-    fun `back from specialist music board returns to music home`() {
+    fun `back from specialist audio board returns to music home`() {
         assertEquals(
             ThynkWorkspaceRoute.Music("music-home"),
             ThynkWorkspaceNavigation.back(ThynkWorkspaceRoute.Music("mixer")),
@@ -130,7 +125,19 @@ class ThynkWorkspaceNavigationTest {
     }
 
     @Test
-    fun `back from music setup returns to music home while music home remains root`() {
+    fun `back from video player or editor returns to video home`() {
+        assertEquals(
+            ThynkWorkspaceRoute.Music("video-home"),
+            ThynkWorkspaceNavigation.back(ThynkWorkspaceRoute.Music("video-player")),
+        )
+        assertEquals(
+            ThynkWorkspaceRoute.Music("video-home"),
+            ThynkWorkspaceNavigation.back(ThynkWorkspaceRoute.Music("video-editor")),
+        )
+    }
+
+    @Test
+    fun `back from music or video setup returns one level toward product root`() {
         assertEquals(
             ThynkWorkspaceRoute.Music("music-home"),
             ThynkWorkspaceNavigation.back(ThynkWorkspaceRoute.Music("create-music")),
@@ -138,6 +145,10 @@ class ThynkWorkspaceNavigationTest {
         assertEquals(
             ThynkWorkspaceRoute.Music("music-home"),
             ThynkWorkspaceNavigation.back(ThynkWorkspaceRoute.Music("ai-music-generator")),
+        )
+        assertEquals(
+            ThynkWorkspaceRoute.Music("music-home"),
+            ThynkWorkspaceNavigation.back(ThynkWorkspaceRoute.Music("video-home")),
         )
         assertEquals(
             ThynkWorkspaceRoute.Music("music-home"),
