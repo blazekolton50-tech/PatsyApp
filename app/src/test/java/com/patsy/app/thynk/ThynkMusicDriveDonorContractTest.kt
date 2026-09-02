@@ -25,6 +25,9 @@ class ThynkMusicDriveDonorContractTest {
         val capability = ThynkMusicDriveDonorContract.capability("microphone-recording")!!
         assertEquals(DriveDonorReadiness.NATIVE_PRESENT, capability.readiness)
         assertTrue(capability.nativeTarget.contains("NativeThynkAudioRecorder"))
+
+        val recordingPage = ThynkMusicCatalog.pages.first { it.id == "recording" }
+        assertEquals("LOCAL_NATIVE", recordingPage.providerState)
     }
 
     @Test
