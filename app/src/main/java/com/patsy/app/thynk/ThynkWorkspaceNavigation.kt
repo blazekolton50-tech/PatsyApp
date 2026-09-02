@@ -14,6 +14,12 @@ internal sealed interface ThynkWorkspaceRoute {
     ) : ThynkWorkspaceRoute
 }
 
+internal data class ThynkWorkspaceChrome(
+    val showBack: Boolean,
+    val showOverflowHome: Boolean,
+    val showGlobalHomebar: Boolean,
+)
+
 internal object ThynkWorkspaceNavigation {
     private val musicEditingBoardPageIds = setOf(
         "track-editor",
@@ -30,6 +36,15 @@ internal object ThynkWorkspaceNavigation {
         is ThynkWorkspaceRoute.Music -> route.pageId in musicEditingBoardPageIds
         ThynkWorkspaceRoute.Hub,
         is ThynkWorkspaceRoute.Category -> false
+    }
+
+    fun chrome(route: ThynkWorkspaceRoute): ThynkWorkspaceChrome {
+        val editingBoard = isEditingBoard(route)
+        return ThynkWorkspaceChrome(
+            showBack = route !is ThynkWorkspaceRoute.Hub,
+            showOverflowHome = editingBoard,
+            showGlobalHomebar = !editingBoard,
+        )
     }
 
     fun back(route: ThynkWorkspaceRoute): ThynkWorkspaceRoute = when (route) {
