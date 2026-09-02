@@ -38,26 +38,39 @@ class PatsyCompositeStateController(
     fun dispatch(command: PatsyCompositeCommand) {
         val plan = PatsyCompositeCommandMapper.map(command)
         val previous = state
+        val requestedSpeech = plan.speechText.trim()
+        val requestedAudioClipId = plan.audioClipId.trim()
+        val carriesActiveSpeech = requestedSpeech.isEmpty() && previous.speechText.isNotEmpty()
+        val nextPose = if (carriesActiveSpeech) {
+            plan.pose.copy(
+                talking = true,
+                viseme = previous.pose.viseme,
+                visemeIntensity = previous.pose.visemeIntensity,
+                speechEnergy = previous.pose.speechEnergy,
+            )
+        } else {
+            plan.pose
+        }
 
-        rig.render(plan.pose)
+        rig.render(nextPose)
 
         if (plan.oneShotAction != null && plan.oneShotAction != previous.activeAction) {
             rig.retriggerAction(plan.oneShotAction)
         }
 
-        val nextSpeech = plan.speechText.trim()
-        val nextAudioClipId = plan.audioClipId.trim()
-        val speechChanged = nextSpeech != previous.speechText || nextAudioClipId != previous.audioClipId
-        when {
-            nextSpeech.isNotEmpty() && speechChanged -> speechRuntime.start(nextSpeech, nextAudioClipId)
-            nextSpeech.isEmpty() && previous.speechText.isNotEmpty() -> speechRuntime.stop()
+        if (requestedSpeech.isNotEmpty()) {
+            val speechChanged = requestedSpeech != previous.speechText ||
+                requestedAudioClipId != previous.audioClipId
+            if (speechChanged) {
+                speechRuntime.start(requestedSpeech, requestedAudioClipId)
+            }
         }
 
         state = PatsyCompositeState(
-            pose = plan.pose,
+            pose = nextPose,
             activeAction = plan.oneShotAction,
-            speechText = nextSpeech,
-            audioClipId = nextAudioClipId,
+            speechText = if (requestedSpeech.isNotEmpty()) requestedSpeech else previous.speechText,
+            audioClipId = if (requestedSpeech.isNotEmpty()) requestedAudioClipId else previous.audioClipId,
         )
     }
 
