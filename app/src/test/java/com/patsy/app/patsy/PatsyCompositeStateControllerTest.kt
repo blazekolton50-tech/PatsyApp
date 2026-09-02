@@ -44,6 +44,27 @@ class PatsyCompositeStateControllerTest {
     }
 
     @Test
+    fun clearingOneShotRearmsTheSameActionWithoutDuplicateRetriggers() {
+        val runtime = RecordingRuntime()
+        val controller = PatsyCompositeStateController(
+            rig = PatsyRigCoordinator(runtime),
+            speechRuntime = RecordingSpeechRuntime(),
+        )
+        val wave = PatsyCompositeCommand(bodyState = "sitting", actionName = "wave")
+
+        controller.dispatch(wave)
+        controller.dispatch(wave)
+        assertEquals(1, runtime.actionSequenceCount())
+
+        controller.dispatch(PatsyCompositeCommand(bodyState = "sitting", actionName = "none"))
+        assertEquals(null, controller.state.activeAction)
+
+        controller.dispatch(wave)
+        assertEquals(2, runtime.actionSequenceCount())
+        assertEquals(PatsyRigMotion.WAVE, controller.state.activeAction)
+    }
+
+    @Test
     fun emptySpeechMeansNoNewSpeechAndDoesNotStopActiveSpeech() {
         val runtime = RecordingRuntime()
         val speech = RecordingSpeechRuntime()
@@ -93,14 +114,25 @@ class PatsyCompositeStateControllerTest {
                 actionName = "wave",
                 expressionPreset = "happy",
                 expressionIntensity = 0.8f,
+                attentionType = "worldTarget",
+                attentionTargetName = "timeline-scrubber",
+                attentionTarget = PatsyCompanionTarget(0.9f, 0.2f),
                 speechText = "Testing speech",
             )
         )
+        assertTrue(controller.state.pose.lookX > 0f)
+        assertTrue(controller.state.pose.lookY < 0f)
+
         controller.resetToNeutral()
 
         assertEquals(PatsyRigMotion.IDLE, controller.state.pose.motion)
         assertEquals(PatsyRigExpression.NEUTRAL, controller.state.pose.expression)
         assertEquals(0f, controller.state.pose.expressionIntensity)
+        assertEquals(0f, controller.state.pose.lookX)
+        assertEquals(0f, controller.state.pose.lookY)
+        assertEquals(0f, controller.state.pose.headTilt)
+        assertEquals(0.5f, controller.state.pose.pointX)
+        assertEquals(0.5f, controller.state.pose.pointY)
         assertFalse(controller.state.pose.talking)
         assertEquals(PatsyRigViseme.REST, controller.state.pose.viseme)
         assertEquals(null, controller.state.activeAction)
@@ -115,6 +147,14 @@ class PatsyCompositeStateControllerTest {
         assertEquals(
             PatsyRigValue.Enum("neutral"),
             latest[PatsyRigContractV1.Property.FACE_EXPRESSION],
+        )
+        assertEquals(
+            PatsyRigValue.Number(0f),
+            latest[PatsyRigContractV1.Property.HEAD_LOOK_X],
+        )
+        assertEquals(
+            PatsyRigValue.Number(0f),
+            latest[PatsyRigContractV1.Property.HEAD_LOOK_Y],
         )
         assertEquals(
             PatsyRigValue.Boolean(false),
