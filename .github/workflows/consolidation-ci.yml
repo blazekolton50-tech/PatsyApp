@@ -85,9 +85,9 @@ jobs:
           BRANCH="${GITHUB_REF#refs/heads/}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app/src/main/java/com/patsy/app/FinalMainActivity.kt app/src/main/java/com/patsy/app/thynk/ThynkStudioScreen.kt
+          git add app/src/main/AndroidManifest.xml app/build.gradle.kts app/src/main/java/com/patsy/app/FinalMainActivity.kt app/src/main/java/com/patsy/app/ui/finaldesign/FinalHomeScreen.kt app/src/main/java/com/patsy/app/thynk/ThynkStudioScreen.kt
           if ! git diff --cached --quiet; then
-            git commit -m "feat: persist nine THyNK Music screens and Patsy companion"
+            git commit -m "feat: persist visible THyNK-IN device shell"
             git fetch origin "$BRANCH"
             git rebase "origin/$BRANCH"
             git push origin "HEAD:$BRANCH"
@@ -112,7 +112,7 @@ jobs:
             TAG="thynk-in-new-screens-patsy-${CURRENT_SHA::7}"
             ASSET="THyNK-IN-new-screens-Patsy-debug.apk"
             TITLE="THyNK-IN! New Screens + Patsy Debug"
-            NOTES="Newest native THyNK-IN! build with the nine owner-locked THyNK Music workspaces: Mixer/Master Console, Effects Rack, Equaliser, Vocal Studio, DJ Studio, Beats Sampler, Piano Roll/MIDI, AI Tools Suite and Mastering & Export. Shared Arrangement/Timeline remains one project layer. Includes native Patsy companion controller: 300-to-150 quick shrink, 0.8s shrink, 0.4s mission run, target pointing and native rainbow fallback. Camera and protected shell preserved. Final authored production Rive asset remains separately required."
+            NOTES="Newest native THyNK-IN! build with a visibly updated THyNK-IN home launcher for direct THyNK Music and THyNK-IT access, plus the nine owner-locked THyNK Music workspaces: Mixer/Master Console, Effects Rack, Equaliser, Vocal Studio, DJ Studio, Beats Sampler, Piano Roll/MIDI, AI Tools Suite and Mastering & Export. Shared Arrangement/Timeline remains one project layer. Camera, protected shell and native Patsy companion boundaries are preserved."
           elif [ "$GITHUB_REF" = "refs/heads/chatgpt/device-launcher-thynk-panel-2026-09-02" ]; then
             TAG="thynk-in-debug-${CURRENT_SHA::7}"
             ASSET="THyNK-IN-debug.apk"
