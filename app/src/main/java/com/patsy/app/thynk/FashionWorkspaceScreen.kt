@@ -5,13 +5,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.patsy.app.ui.finaldesign.FinalCard
 import com.patsy.app.ui.finaldesign.FinalMuted
-import com.patsy.app.ui.finaldesign.FinalRainbow
 import com.patsy.app.ui.finaldesign.FinalWhite
 
 @Composable
@@ -362,7 +361,7 @@ private fun FashionSwitchRow(
 @Composable
 private fun FashionPanel(
     title: String,
-    content: @Composable Column.() -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(
         Modifier.fillMaxWidth()
