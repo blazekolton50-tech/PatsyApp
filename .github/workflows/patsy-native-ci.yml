@@ -12,7 +12,7 @@ on:
       - '.github/workflows/patsy-native-ci.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   patsy-android:
@@ -35,9 +35,21 @@ jobs:
       - name: Build native Android debug APK
         run: ./gradlew assembleDebug --stacktrace
 
-      - name: Upload Patsy-ready debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: thynk-in-patsy-native-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
+      - name: Publish Patsy-ready debug APK
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SHORT_SHA="${GITHUB_SHA::7}"
+          TAG="patsy-native-${SHORT_SHA}"
+          ASSET="THyNK-IN-Patsy-native-debug.apk"
+          cp app/build/outputs/apk/debug/app-debug.apk "$ASSET"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$ASSET" --clobber
+          else
+            gh release create "$TAG" "$ASSET" \
+              --target "$GITHUB_SHA" \
+              --title "THyNK-IN! Patsy Native Debug" \
+              --notes "Native Patsy verification build. Canonical Patsy 720x720 contract; Big 300/1.0; Mini 150/0.5; 0.8 s shrink; 0.4 s mission run; native target pointing and rainbow fallback. The final authored production .riv is still supplied separately when available." \
+              --prerelease
+          fi
