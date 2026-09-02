@@ -2,6 +2,7 @@ package com.patsy.app
 
 import java.io.File
 import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ThynkPanelEntryWiringContractTest {
@@ -35,6 +36,19 @@ class ThynkPanelEntryWiringContractTest {
         )
         assertTrue(activity.contains("ThynkPanelDestination.MUSIC -> navigateThynk(ThynkStudioEntry.MUSIC)"))
         assertTrue(activity.contains("ThynkPanelDestination.IT -> navigateThynk(ThynkStudioEntry.IT)"))
+    }
+
+    @Test
+    fun `generic THyNK deep link resets to IT instead of inheriting Music`() {
+        val activity = source("app/src/main/java/com/patsy/app/FinalMainActivity.kt")
+
+        assertTrue(activity.contains("if (deepLinkedPage == FinalAppPage.THYNK)"))
+        assertTrue(activity.contains("navigateThynk(ThynkStudioEntry.IT)"))
+        assertFalse(
+            activity.contains(
+                "is NavigationDecision.Allowed -> decision.route.destination.toFinalPage() ?: FinalAppPage.PROTECTED",
+            ),
+        )
     }
 
     private fun source(path: String): String {
