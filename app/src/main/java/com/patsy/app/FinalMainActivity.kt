@@ -39,6 +39,9 @@ import com.patsy.app.navigation.FinalShellNavigation
 import com.patsy.app.navigation.NavigationDecision
 import com.patsy.app.navigation.ShellDestination
 import com.patsy.app.navigation.ShellNavigationGate
+import com.patsy.app.patsy.PatsyCompanionTarget
+import com.patsy.app.patsy.ui.PatsyCompanionCommand
+import com.patsy.app.patsy.ui.PatsyCompanionOverlay
 import com.patsy.app.security.FailClosedOwnerAuthorizationGate
 import com.patsy.app.security.FinalOwnerAccessPolicy
 import com.patsy.app.security.OwnerAuthorizationDecision
@@ -110,7 +113,16 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
     var ownerAccessChecked by remember { mutableStateOf(false) }
     var editingBoardActive by remember { mutableStateOf(false) }
     var thynkEntry by remember { mutableStateOf(ThynkStudioEntry.IT) }
+    var patsyCommand by remember { mutableStateOf<PatsyCompanionCommand?>(null) }
     val scope = rememberCoroutineScope()
+
+    fun guidePatsyTo(target: PatsyCompanionTarget) {
+        patsyCommand = PatsyCompanionCommand.GuideTo(target)
+    }
+
+    fun returnPatsyHome() {
+        patsyCommand = PatsyCompanionCommand.ReturnHome
+    }
 
     fun clearOwnerAccess(checked: Boolean) {
         ownerProfileGrant = null
@@ -178,6 +190,7 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
     }
 
     fun navigate(destination: FinalHomeDestination) {
+        returnPatsyHome()
         if (destination != FinalHomeDestination.THYNK) {
             editingBoardActive = false
         }
@@ -316,7 +329,8 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
         ),
     ) {
         Surface(Modifier.fillMaxSize(), color = FinalCharcoal) {
-            Column(Modifier.fillMaxSize().background(FinalCharcoal)) {
+            Box(Modifier.fillMaxSize()) {
+                Column(Modifier.fillMaxSize().background(FinalCharcoal)) {
                 Box(Modifier.weight(1f).fillMaxWidth()) {
                     when (page) {
                         FinalAppPage.LOGIN -> FinalLoginRoute(
@@ -338,7 +352,12 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
                         )
 
                         FinalAppPage.HOME -> when {
-                            debugPreview -> FinalHomeScreen(onNavigate = ::navigate)
+                            debugPreview -> FinalHomeScreen(
+                                onNavigate = ::navigate,
+                                onAskPatsy = {
+                                    guidePatsyTo(PatsyCompanionTarget(0.50f, 0.16f))
+                                },
+                            )
                             bootstrapLoading -> FinalProtectedAccessState(
                                 message = "Checking your account securely…",
                                 onSignOut = ::signOut,
@@ -349,7 +368,12 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
                                     account != null &&
                                     FinalShellNavigation.authorize(FinalHomeDestination.HOME, account) is NavigationDecision.Allowed
                                 ) {
-                                    FinalHomeScreen(onNavigate = ::navigate)
+                                    FinalHomeScreen(
+                                onNavigate = ::navigate,
+                                onAskPatsy = {
+                                    guidePatsyTo(PatsyCompanionTarget(0.50f, 0.16f))
+                                },
+                            )
                                 } else {
                                     FinalProtectedAccessState(
                                         message = "We couldn't securely verify access to this area. Your account stays protected.",
@@ -522,6 +546,21 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
                     ThynkPrimaryNavigationBar(
                         selected = selectedPanelDestination,
                         onNavigate = ::navigatePanel,
+                    )
+                }
+                }
+
+                if (
+                    page !in listOf(
+                        FinalAppPage.LOGIN,
+                        FinalAppPage.DEBUG_SET_PASSWORD,
+                        FinalAppPage.PROTECTED,
+                    ) && (session != null || debugPreview)
+                ) {
+                    PatsyCompanionOverlay(
+                        command = patsyCommand,
+                        onCommandConsumed = { patsyCommand = null },
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
             }

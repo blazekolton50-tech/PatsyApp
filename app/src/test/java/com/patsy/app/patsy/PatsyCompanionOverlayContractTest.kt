@@ -1,0 +1,56 @@
+package com.patsy.app.patsy
+
+import java.io.File
+import kotlin.test.Test
+import kotlin.test.assertTrue
+
+class PatsyCompanionOverlayContractTest {
+    @Test
+    fun `authenticated shell hosts one full-screen Patsy travel overlay`() {
+        val activity = source("app/src/main/java/com/patsy/app/FinalMainActivity.kt")
+        val overlay = source("app/src/main/java/com/patsy/app/patsy/ui/PatsyCompanionOverlay.kt")
+
+        assertTrue(activity.contains("PatsyCompanionOverlay("))
+        assertTrue(activity.contains("var patsyCommand by remember"))
+        assertTrue(activity.contains("patsyCommand = PatsyCompanionCommand.GuideTo("))
+        assertTrue(activity.contains("patsyCommand = PatsyCompanionCommand.ReturnHome"))
+
+        assertTrue(overlay.contains("Modifier.fillMaxSize()"))
+        assertTrue(overlay.contains("PatsyRiveHost("))
+        assertTrue(overlay.contains("PatsyCompanionController("))
+        assertTrue(overlay.contains("controller.guideTo(command.target)"))
+        assertTrue(overlay.contains("controller.returnHome()"))
+        assertTrue(overlay.contains("R.drawable.patsy_generated_main"))
+    }
+
+    @Test
+    fun `quick shrink uses the existing one Patsy overlay and starts mission only after shrink`() {
+        val controller = source("app/src/main/java/com/patsy/app/patsy/PatsyCompanionController.kt")
+        val overlay = source("app/src/main/java/com/patsy/app/patsy/ui/PatsyCompanionOverlay.kt")
+
+        assertTrue(controller.contains("suspend fun shrinkForMission()"))
+        assertTrue(overlay.contains("data class QuickShrink"))
+        assertTrue(overlay.contains("controller.shrinkForMission()"))
+        assertTrue(overlay.contains("command.onMissionStart()"))
+    }
+
+    @Test
+    fun `quick shrink is consumed before mission callback can enqueue the next Patsy command`() {
+        val overlay = source("app/src/main/java/com/patsy/app/patsy/ui/PatsyCompanionOverlay.kt")
+        val quickShrinkStart = overlay.indexOf("is PatsyCompanionCommand.QuickShrink")
+        val shrink = overlay.indexOf("controller.shrinkForMission()", startIndex = quickShrinkStart)
+        val consumed = overlay.indexOf("onCommandConsumed()", startIndex = shrink)
+        val mission = overlay.indexOf("command.onMissionStart()", startIndex = shrink)
+
+        assertTrue(quickShrinkStart >= 0)
+        assertTrue(shrink > quickShrinkStart)
+        assertTrue(consumed > shrink)
+        assertTrue(mission > consumed)
+    }
+
+    private fun source(path: String): String {
+        val candidates = sequenceOf(File(path), File("../$path"))
+        return candidates.firstOrNull(File::isFile)?.readText()
+            ?: error("Could not locate $path")
+    }
+}
