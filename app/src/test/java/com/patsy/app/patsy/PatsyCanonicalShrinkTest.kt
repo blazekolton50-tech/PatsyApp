@@ -14,6 +14,14 @@ import kotlin.test.assertNotNull
 class PatsyCanonicalShrinkTest {
 
     @Test
+    fun canonicalSizeStatesAreBigThreeHundredAndMiniOneHundredFifty() {
+        assertEquals(1.0f, PatsySizeState.Big.scale)
+        assertEquals(300, PatsySizeState.Big.dp)
+        assertEquals(0.5f, PatsySizeState.Mini.scale)
+        assertEquals(150, PatsySizeState.Mini.dp)
+    }
+
+    @Test
     fun canonicalShrinkUsesMiniScalePointFiveForEightHundredMilliseconds() = runTest {
         val observed = mutableListOf<PatsyCompanionState>()
         var currentMode = PatsyCompanionMode.IDLE
