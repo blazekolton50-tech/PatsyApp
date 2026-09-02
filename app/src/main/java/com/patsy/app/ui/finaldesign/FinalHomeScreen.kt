@@ -105,10 +105,8 @@ fun FinalHomeScreen(
 @Composable
 private fun FinalHomeTopBar() {
     Box(Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 10.dp)) {
-        Image(
-            painter = painterResource(R.drawable.patsy_logo_official_white),
-            contentDescription = "Patsy",
-            contentScale = ContentScale.Fit,
+        ThynkDestinationLogo(
+            destination = ThynkPanelDestination.IN,
             modifier = Modifier.align(Alignment.Center).width(120.dp).height(68.dp),
         )
         Row(
