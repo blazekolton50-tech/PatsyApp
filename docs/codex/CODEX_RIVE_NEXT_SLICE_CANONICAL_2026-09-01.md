@@ -15,6 +15,16 @@ Codex must preserve the existing core Kotlin architecture without ABI redesign:
 5. Do not introduce numeric `motion/mode` IDs, action IDs in `motion/action_sequence`, unsupported V1 actions, HTML/JS/React/WebView animation, GIF/sprite/static pose swaps, or claims that production Rive exists before an actual asset is validated.
 6. Use only the locked 13 motion-reference videos documented in `PATSY_RIVE_APPROVED_VIDEO_SOURCES_2026-09-01.md` and `PATSY_MOTION_REFERENCE_MAP_CANONICAL_2026-09-01.json`.
 
+## 2 September composite-state continuation
+
+Read next:
+- `docs/codex/PATSY_COMPOSITE_ANIMATION_HANDOFF_2026-09-02.md`
+- GitHub issue #45: `Patsy animation: reconcile native Rive controller and composite state pipeline`
+
+The Unity/C# subsystem prototype discussed on 2 September is behavioral reference only. Translate the useful body/action/emotion/attention/voice semantics into the existing Kotlin/Rive boundary; do not add Unity as a second production runtime.
+
+The older `codex/patsy-rive-ui-foundation` branch contains fuller `PatsyCompanionController`/test work that must be reconciled selectively with the current THyNK-IN working line rather than assumed present.
+
 ## Current real blocker
 
 Author and deliver a genuine production asset at:

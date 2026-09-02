@@ -7,6 +7,7 @@ on:
       - chatgpt/thynk-music-apk-2026-08-31
       - chatgpt/codex-ready-2026-09-01
       - chatgpt/device-launcher-thynk-panel-2026-09-02
+      - chatgpt/patsy-animation-composite-2026-09-02
   pull_request:
     branches:
       - feat/final-login-password-home-design-lock
@@ -33,14 +34,24 @@ jobs:
         run: python3 scripts/apply_camera_native_integration.py
       - name: Apply native THyNK Design editor host
         run: python3 scripts/apply_thynk_design_editor_integration_compat.py
-      - name: Apply complete THyNK page routing
-        run: python3 scripts/apply_thynk_page_completeness.py
       - name: Apply live authenticated Profile route
         run: python3 scripts/apply_live_profile_route.py
       - name: Apply truthful PDM presentation
         run: python3 scripts/apply_truthful_dm_ui.py
       - name: Apply live authenticated PDM route
         run: python3 scripts/apply_live_dm_route.py
+      - name: Apply Patsy full-screen companion overlay
+        run: python3 scripts/apply_patsy_companion_overlay.py
+      - name: Persist Patsy companion overlay
+        if: github.event_name == 'push' && github.ref == 'refs/heads/chatgpt/patsy-animation-composite-2026-09-02'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/src/main/java/com/patsy/app/FinalMainActivity.kt
+          if ! git diff --cached --quiet; then
+            git commit -m "feat: wire Patsy full-screen companion overlay"
+            git push origin HEAD:chatgpt/patsy-animation-composite-2026-09-02
+          fi
       - name: Persist integration on source branch
         if: github.event_name == 'push' && github.ref == 'refs/heads/chatgpt/thynk-music-apk-2026-08-31'
         run: |
@@ -58,21 +69,17 @@ jobs:
       - name: Build release variant
         run: ./gradlew assembleRelease --stacktrace
       - name: Persist verified native integrations
-        if: >-
-          github.event_name == 'push' &&
-          (github.ref == 'refs/heads/chatgpt/codex-ready-2026-09-01' ||
-           github.ref == 'refs/heads/chatgpt/device-launcher-thynk-panel-2026-09-02')
+        if: github.event_name == 'push' && github.ref == 'refs/heads/chatgpt/codex-ready-2026-09-01'
         run: |
-          BRANCH="${GITHUB_REF#refs/heads/}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add app/src/main/java/com/patsy/app/thynk/ThynkStudioScreen.kt app/src/main/java/com/patsy/app/thynk/ThynkDesignEditorScreen.kt app/src/main/java/com/patsy/app/FinalMainActivity.kt app/src/main/java/com/patsy/app/ui/finaldesign/FinalProfileDmScreens.kt
           if ! git diff --cached --quiet; then
             git commit -m "feat: persist verified native integrations"
             git reset --hard HEAD
-            git fetch origin "$BRANCH"
-            git rebase "origin/$BRANCH"
-            git push origin "HEAD:$BRANCH"
+            git fetch origin chatgpt/codex-ready-2026-09-01
+            git rebase origin/chatgpt/codex-ready-2026-09-01
+            git push origin HEAD:chatgpt/codex-ready-2026-09-01
           fi
       - name: Upload debug APK
         continue-on-error: true
@@ -91,8 +98,8 @@ jobs:
           if [ "$GITHUB_REF" = "refs/heads/chatgpt/device-launcher-thynk-panel-2026-09-02" ]; then
             TAG="thynk-in-debug-${GITHUB_SHA::7}"
             ASSET="THyNK-IN-debug.apk"
-            TITLE="THyNK-IN! Debug Preview"
-            NOTES="Debug preview for physical-device QA of current THyNK-IN! branding, five-destination THyNK Panel, matching destination logos and routed THyNK Music/THyNK-IT pages. Provider-backed features remain NOT_CONFIGURED where not production-verified."
+            TITLE="THyNK-IN Debug Preview"
+            NOTES="Debug preview for physical-device QA of current THyNK-IN branding and navigation. Provider-backed features remain NOT_CONFIGURED where not production-verified."
           else
             TAG="thynk-music-debug-${GITHUB_SHA::7}"
             ASSET="PatsyApp-THyNK-Music-debug.apk"

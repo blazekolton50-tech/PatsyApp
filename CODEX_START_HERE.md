@@ -1,11 +1,14 @@
-# CODEX — START HERE: THyNK-IN — 2026-09-01
+# CODEX — START HERE: THyNK-IN — 2026-09-02
 
 Repository: `blazekolton50-tech/PatsyApp` (legacy repository slug; product name is THyNK-IN)
 
-Working branch:
-`chatgpt/codex-ready-2026-09-01`
+Current working lines:
+- device/THyNK Panel: `chatgpt/device-launcher-thynk-panel-2026-09-02` (PR #43)
+- Patsy animation/composite integration: `chatgpt/patsy-animation-composite-2026-09-02` (stacked from PR #43 head)
 
-Keep PR #41 **Draft and unmerged**. Do not merge to `main` without explicit owner approval and physical-device QA.
+PR #41 is a historical closed draft. Its exact head was merged through PR #42 into the current working native line. Do not treat the old “PR #41 unmerged” wording as current state.
+
+Keep current integration PRs Draft unless the owner explicitly authorizes merge. Physical-device QA remains required for production claims.
 
 ## Canonical naming — binding
 
@@ -17,21 +20,24 @@ Keep PR #41 **Draft and unmerged**. Do not merge to `main` without explicit owne
 
 ## Read these first — binding order
 
-1. `docs/superpowers/specs/2026-09-01-thynk-full-studio-reconciliation-design.md`
-2. `docs/superpowers/plans/2026-09-01-thynk-full-studio-reconciliation.md`
-3. `docs/codex/THYNK_FULL_STUDIO_CAPABILITY_MATRIX_2026-09-01.md`
-4. `docs/codex/THYNK_FULL_STUDIO_CAPABILITY_MATRIX_2026-09-01.json`
-5. `docs/codex/PATSY_CURRENT_BUILD_STATUS_2026-09-01.md`
-6. `docs/codex/PATSY_SOURCE_INTAKE_2026-09-01.md`
-7. `docs/codex/CODEX_NEXT_INSTRUCTION.txt`
-8. `docs/PATSY_DESIGN_PRESERVATION_MASTER_2026-08-31.md`
-9. `docs/NAVIGATION_LOCK_2026-08-31.md`
+1. `docs/codex/THYNK_IN_AUTHORITATIVE_SOURCE_2026-09-02.md`
+2. `docs/codex/PATSY_COMPOSITE_ANIMATION_HANDOFF_2026-09-02.md` when working on Patsy animation/control
+3. `docs/codex/CODEX_RIVE_NEXT_SLICE_CANONICAL_2026-09-01.md` when working on Rive
+4. `docs/superpowers/specs/2026-09-01-thynk-full-studio-reconciliation-design.md`
+5. `docs/superpowers/plans/2026-09-01-thynk-full-studio-reconciliation.md`
+6. `docs/codex/THYNK_FULL_STUDIO_CAPABILITY_MATRIX_2026-09-01.md`
+7. `docs/codex/THYNK_FULL_STUDIO_CAPABILITY_MATRIX_2026-09-01.json`
+8. `docs/codex/PATSY_CURRENT_BUILD_STATUS_2026-09-01.md`
+9. `docs/codex/PATSY_SOURCE_INTAKE_2026-09-01.md`
+10. `docs/codex/CODEX_NEXT_INSTRUCTION.txt`
+11. `docs/PATSY_DESIGN_PRESERVATION_MASTER_2026-08-31.md`
+12. `docs/NAVIGATION_LOCK_2026-08-31.md`
 
-The older 2026-08-31 status/handoff files are historical checkpoints. The newly uploaded full THyNK Studio reconciliation above supersedes the older assumption that most Studio material is wrapper-only.
+The older 2026-08-31 status/handoff files are historical checkpoints. Newer dated authoritative files supersede conflicting older wording.
 
 ## Source truth
 
-The uploaded Library contains substantial donor/editor implementations, including full THyNK Studio builds, Design/editor tools, Publication/Document workflows, Video editor donor behavior, THyNK Music Lab, templates and 1110-item setup/material descriptions.
+The uploaded Library contains substantial donor/editor implementations, including full THyNK Studio builds, Design/editor tools, Publication/Document workflows, Video editor donor behavior, THyNK Music Lab, templates and setup/material descriptions.
 
 This does **not** mean the React/Tailwind/WebAudio runtime becomes production architecture. Production THyNK-IN remains native Kotlin/Jetpack Compose with the existing Supabase, auth/security, Camera, Media3, navigation and provider truth boundaries.
 
@@ -63,23 +69,33 @@ Do not rebuild `ALREADY_NATIVE` work. Do not copy `REPLACE_PLACEHOLDER` demo beh
 
 Do not repeat Media3, global-navigation, Camera-foundation, category-routing or auth/security jobs.
 
+## Patsy animation continuation — current
+
+Production Patsy remains Kotlin/Compose/Rive. The Unity/C# subsystem prototype from 2026-09-02 is behavioral reference only.
+
+Preserve the current native ABI and runtime files:
+- `PatsyRigContractV1.kt`
+- `PatsyRigRuntimePort.kt`
+- `PatsyRiveHost.kt`
+- `PatsyRiveRuntimeAdapter.kt`
+
+Reconcile the fuller companion/controller regression work from `codex/patsy-rive-ui-foundation` / PR #15 selectively into the latest working line. Do not roll back newer THyNK-IN work.
+
+The five semantic layers to preserve are Body, transient Action, Emotion + intensity, Attention + target, and Voice. Composite commands must coexist rather than replace each other. Duplicate dispatch must not endlessly retrigger one-shot actions or restart speech.
+
+Do not fake unsupported V1 actions/expressions. Current V1 motion is idle/walk/sit/lie/jump/wave/point. Current V1 expressions are neutral/cheeky/excited/curious/confused/concerned/proud/sleepy. A genuine authored `app/src/main/res/raw/patsy_assistant.riv` matching this ABI remains the production visual blocker.
+
+Active implementation tracker: GitHub issue #45.
+
 ## First coding slice after this documentation reconciliation
 
-Start with **Design & Templates native port on the existing shared editor core**, using the capability matrix.
+For Patsy work, follow issue #45 and `PATSY_COMPOSITE_ANIMATION_HANDOFF_2026-09-02.md` using RED/GREEN TDD.
 
-Port donor behavior such as:
-- deterministic canvas transforms
-- layers hide/lock/reorder
-- rulers/guides
-- align/distribute
-- text/elements/stickers/draw/frames/background tool coverage
-- template catalogue workflow
+For THyNK editor work, continue Design & Templates native port on the existing shared editor core using the capability matrix.
 
 Do not create a second editor or embed the donor React runtime.
 
 Asset/template files still fail closed until real bytes, origin/license, checksum, format and supersession status are verified. Asset verification is a gate inside the slice that uses the asset; it must not block porting non-asset editor behavior.
-
-After Design, follow the queue in `docs/codex/CODEX_NEXT_INSTRUCTION.txt`.
 
 ## Locked visual rules
 
@@ -124,4 +140,4 @@ Provider-backed work stays `NOT_CONFIGURED` until genuinely configured and verif
 
 Every coding slice must show RED-before-GREEN evidence, targeted/full tests, debug/release build results, exact final GitHub Actions run/head SHA and remaining physical-device/provider/Rive limitations.
 
-Stop on failure. Keep the PR Draft. Do not merge.
+Stop on failure. Keep integration PRs Draft unless explicitly authorized to merge.
