@@ -18,5 +18,17 @@ jobs:
           node-version: '22'
       - name: Install tooling dependencies
         run: npm install
+      - name: Generate Pet Rive fixture
+        run: npm run generate:pet
       - name: Run tooling tests
         run: npm test
+      - name: Type-check and build React harness
+        run: npm run build
+      - name: Verify generated Rive bytes
+        run: node -e "const fs=require('fs'); const p='public/pet.riv'; const n=fs.statSync(p).size; if(n<32) process.exit(1); console.log('pet.riv bytes',n)"
+      - name: Upload pet.riv
+        uses: actions/upload-artifact@v4
+        with:
+          name: pet-riv
+          path: tools/patsy-rive-dev/public/pet.riv
+          if-no-files-found: error
