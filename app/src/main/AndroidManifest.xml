@@ -5,7 +5,7 @@
     <application
         android:name=".PatsyApplication"
         android:theme="@style/Theme.Patsy"
-        android:label="THINK_IN!"
+        android:label="THyNK-IN!"
         android:allowBackup="false"
         android:supportsRtl="true">
         <provider
