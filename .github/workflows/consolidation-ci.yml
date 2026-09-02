@@ -10,6 +10,7 @@ on:
   pull_request:
     branches:
       - feat/final-login-password-home-design-lock
+      - chatgpt/camera-native-foundation-2026-08-31
 
 permissions:
   contents: write
