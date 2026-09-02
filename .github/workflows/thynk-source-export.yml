@@ -1,0 +1,36 @@
+name: THyNK Source Export
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export-source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact THyNK source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Create THyNK source file
+        shell: bash
+        run: |
+          tar --exclude='.git' -cf THyNK.tar .
+          sha256sum THyNK.tar > THyNK.tar.sha256
+
+      - name: Upload THyNK source file
+        uses: actions/upload-artifact@v4
+        with:
+          name: THyNK-source-file
+          path: |
+            THyNK.tar
+            THyNK.tar.sha256
+          if-no-files-found: error
+          retention-days: 7
