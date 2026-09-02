@@ -65,7 +65,9 @@ fun PatsyCompanionOverlay(
             is PatsyCompanionCommand.GuideTo -> controller.guideTo(command.target)
             is PatsyCompanionCommand.QuickShrink -> {
                 controller.shrinkForMission()
+                onCommandConsumed()
                 command.onMissionStart()
+                return@LaunchedEffect
             }
             PatsyCompanionCommand.ReturnHome -> controller.returnHome()
             null -> return@LaunchedEffect
