@@ -34,6 +34,20 @@ class PatsyCompanionOverlayContractTest {
         assertTrue(overlay.contains("command.onMissionStart()"))
     }
 
+    @Test
+    fun `quick shrink is consumed before mission callback can enqueue the next Patsy command`() {
+        val overlay = source("app/src/main/java/com/patsy/app/patsy/ui/PatsyCompanionOverlay.kt")
+        val quickShrinkStart = overlay.indexOf("is PatsyCompanionCommand.QuickShrink")
+        val shrink = overlay.indexOf("controller.shrinkForMission()", startIndex = quickShrinkStart)
+        val consumed = overlay.indexOf("onCommandConsumed()", startIndex = shrink)
+        val mission = overlay.indexOf("command.onMissionStart()", startIndex = shrink)
+
+        assertTrue(quickShrinkStart >= 0)
+        assertTrue(shrink > quickShrinkStart)
+        assertTrue(consumed > shrink)
+        assertTrue(mission > consumed)
+    }
+
     private fun source(path: String): String {
         val candidates = sequenceOf(File(path), File("../$path"))
         return candidates.firstOrNull(File::isFile)?.readText()
