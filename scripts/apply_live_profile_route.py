@@ -110,7 +110,14 @@ new = '''                                    FinalAppPage.PROFILE -> {
                                     }
 '''
 
-if new not in text:
+live_route_markers = (
+    "FinalAppPage.PROFILE -> {",
+    "FinalProfileLiveRoute(",
+    "onUnauthorized = { page = FinalAppPage.PROTECTED },",
+)
+live_route_present = all(marker in text for marker in live_route_markers)
+
+if not live_route_present:
     if old not in text:
         raise SystemExit("Expected Profile route block missing; refusing blind shell rewrite")
     text = text.replace(old, new, 1)
