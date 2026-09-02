@@ -27,7 +27,7 @@ import com.patsy.app.R
  * hit regions provide real navigation without redrawing or approximating any logo with text.
  */
 @Composable
-fun FinalPrimaryNavigationBar(
+fun ThynkPrimaryNavigationBar(
     selected: ThynkPanelDestination?,
     onNavigate: (ThynkPanelDestination) -> Unit,
     modifier: Modifier = Modifier,
@@ -74,4 +74,31 @@ fun FinalPrimaryNavigationBar(
             }
         }
     }
+}
+
+/**
+ * Temporary secure-shell compatibility bridge. The authenticated shell is being moved to the
+ * five-destination callback so MUSIC and IT can retain distinct THyNK entry state.
+ */
+@Composable
+fun FinalPrimaryNavigationBar(
+    selected: FinalHomeDestination?,
+    onNavigate: (FinalHomeDestination) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    val selectedPanel = when (selected) {
+        FinalHomeDestination.HOME -> ThynkPanelDestination.IN
+        FinalHomeDestination.THYNK -> ThynkPanelDestination.IT
+        FinalHomeDestination.PATSY_DMS -> ThynkPanelDestination.CHATS
+        FinalHomeDestination.PROFILE -> ThynkPanelDestination.ME
+        FinalHomeDestination.CREATE,
+        null -> null
+    }
+    ThynkPrimaryNavigationBar(
+        selected = selectedPanel,
+        onNavigate = { onNavigate(it.secureDestination()) },
+        modifier = modifier,
+        enabled = enabled,
+    )
 }
