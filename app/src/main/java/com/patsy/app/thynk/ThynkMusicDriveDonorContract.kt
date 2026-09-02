@@ -63,6 +63,12 @@ object ThynkMusicDriveDonorContract {
             nativeTarget = "auto-tuner",
         ),
         ThynkMusicDriveCapability(
+            id = "microphone-recording",
+            sourceDriveFileId = studioProDriveFileId,
+            readiness = DriveDonorReadiness.NATIVE_PRESENT,
+            nativeTarget = "NativeThynkAudioRecorder / ThynkRecordingWorkspaceScreen",
+        ),
+        ThynkMusicDriveCapability(
             id = "project-persistence",
             sourceDriveFileId = fullStackDriveFileId,
             readiness = DriveDonorReadiness.NATIVE_PRESENT,
