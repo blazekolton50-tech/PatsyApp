@@ -10,14 +10,15 @@ package com.patsy.app.ui.finaldesign
 enum class ThynkPanelDestination(val visibleLabel: String) {
     ME("THyNK-ME"),
     CHATS("THyNK Chats"),
-    IN("THyNK-IN"),
+    IN("THyNK-IN!"),
     MUSIC("THyNK Music"),
     IT("THyNK-IT"),
 }
 
 enum class ThynkPanelSurface {
     BROWSING,
-    WORKSPACE,
+    CATEGORY,
+    EDITING_BOARD,
 }
 
 fun ThynkPanelDestination.secureDestination(): FinalHomeDestination = when (this) {
@@ -30,8 +31,8 @@ fun ThynkPanelDestination.secureDestination(): FinalHomeDestination = when (this
 
 fun thynkPanelVisibleFor(surface: ThynkPanelSurface): Boolean = when (surface) {
     ThynkPanelSurface.BROWSING,
-    ThynkPanelSurface.WORKSPACE,
-    -> true
+    ThynkPanelSurface.CATEGORY -> true
+    ThynkPanelSurface.EDITING_BOARD -> false
 }
 
 fun shouldLightThynkPanelItem(

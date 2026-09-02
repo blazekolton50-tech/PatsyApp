@@ -16,6 +16,21 @@ private val designEditorItems = setOf(
     "TEMPLATES",
 )
 
+private val videoEditorItems = setOf(
+    "VIDEO EDITOR",
+    "TRIM & CUT",
+    "SPLIT",
+    "TRANSITIONS",
+    "SUBTITLES",
+    "OVERLAYS",
+    "GREEN SCREEN",
+    "VIDEO FILTERS",
+    "SLOW MOTION",
+    "SLIDESHOW",
+    "LOOP",
+    "ASPECT RESIZER",
+)
+
 enum class ThynkEditorKind {
     DESIGN,
     VIDEO,
@@ -28,20 +43,13 @@ data class ThynkEditorDestination(
 
 internal fun editorPageForThynkItem(item: String): String? = when {
     item in designEditorItems -> "design-editor"
-    item in setOf(
-        "VIDEO EDITOR",
-        "TRIM & CUT",
-        "SPLIT",
-        "TRANSITIONS",
-        "SUBTITLES",
-        "OVERLAYS",
-        "GREEN SCREEN",
-        "VIDEO FILTERS",
-        "SLOW MOTION",
-        "SLIDESHOW",
-        "LOOP",
-        "ASPECT RESIZER",
-    ) -> "video-editor"
+    item in videoEditorItems -> "video-editor"
+    else -> null
+}
+
+internal fun studioEntryForEditorPage(pageId: String): ThynkStudioEntry? = when (pageId) {
+    "design-editor" -> ThynkStudioEntry.IT
+    "video-editor" -> ThynkStudioEntry.MUSIC
     else -> null
 }
 

@@ -35,12 +35,6 @@ object ThynkStudioCatalog {
             listOf("EDIT PHOTO", "CROP", "RESIZE", "ROTATE", "FLIP", "CUTOUT", "REMOVE BACKGROUND", "REMOVE OBJECT", "FILTERS", "RETOUCH", "COLOR CORRECTION", "FRAMES"),
         ),
         ThynkCategory(
-            "video",
-            "VIDEO & CAMERA",
-            "Shoot, edit and produce video.",
-            listOf("VIDEO EDITOR", "TRIM & CUT", "SPLIT", "TRANSITIONS", "SUBTITLES", "OVERLAYS", "GREEN SCREEN", "VIDEO FILTERS", "SLOW MOTION", "SLIDESHOW", "LOOP", "ASPECT RESIZER"),
-        ),
-        ThynkCategory(
             "documents",
             "DOCUMENTS & BUSINESS",
             "Build useful documents and business materials.",
@@ -65,12 +59,6 @@ object ThynkStudioCatalog {
             listOf("PHOTO COLLAGE", "SCRAPBOOK", "MOOD COLLAGE", "POLAROID WALL", "MEME BUILDER", "STICKER COLLAGE", "MAGAZINE CUTOUT", "GRID COLLAGE", "FREESTYLE BOARD", "SHAPE COLLAGE", "LAYERED ART", "MEMORY WALL"),
         ),
         ThynkCategory(
-            "music",
-            "THyNK MUSIC",
-            "Create, record, edit, mix and master music.",
-            listOf("CREATE MUSIC", "AI MUSIC GENERATOR", "RECORD", "TRACK EDITOR", "MIXER", "MASTERING", "LOOPS & SAMPLES", "STEMS", "SOUND EFFECTS", "LYRICS & VOCALS", "IMPORT AUDIO", "MY MUSIC"),
-        ),
-        ThynkCategory(
             "ai",
             "AI & MY STUDIO",
             "AI tools, projects, uploads and your creative space.",
@@ -81,15 +69,21 @@ object ThynkStudioCatalog {
 
 object ThynkMusicCatalog {
     val pages = listOf(
-        ThynkMusicPage("music-home", "THyNK Music", "Create. Record. Edit. Mix. Master."),
+        ThynkMusicPage("music-home", "THyNK Music", "Music, video, recording and media production."),
         ThynkMusicPage("create-music", "Create Music", "Start a new original track.", "NOT_CONFIGURED"),
         ThynkMusicPage("ai-music-generator", "AI Music Generator", "Generate original music through a configured provider.", "NOT_CONFIGURED"),
+        ThynkMusicPage("recording", "Recording", "Record vocals and audio when the native capture pipeline is connected.", "NOT_CONFIGURED"),
         ThynkMusicPage("track-editor", "Track Editor", "Arrange, trim and shape tracks."),
         ThynkMusicPage("mixer", "Mixer", "Balance tracks, pan and levels."),
         ThynkMusicPage("equalizer", "Equalizer", "Shape frequency balance."),
         ThynkMusicPage("effects", "Effects", "Apply local effect settings and prepare processing."),
         ThynkMusicPage("lyrics-vocals", "Lyrics & Vocals", "Write and organise lyrics and vocal ideas.", "NOT_CONFIGURED"),
+        ThynkMusicPage("dj-studio", "DJ Studio", "Deck, cue and performance workspace; real audio deck playback remains to be connected.", "NOT_CONFIGURED"),
+        ThynkMusicPage("auto-tuner", "Auto-Tuner", "Pitch-correction controls require a verified audio processing engine.", "NOT_CONFIGURED"),
         ThynkMusicPage("mastering", "Mastering", "Finalize through a configured mastering provider.", "NOT_CONFIGURED"),
+        ThynkMusicPage("video-home", "Video", "Play, import and edit video inside the THyNK Music media family."),
+        ThynkMusicPage("video-player", "Video Player", "Play a real selected video with the native Media3 foundation."),
+        ThynkMusicPage("video-editor", "Video Editor", "Edit a real selected video with the shared native Media3 editor."),
         ThynkMusicPage("export", "Export", "Choose output settings; real file export must be verified.", "NOT_CONFIGURED"),
     )
 }

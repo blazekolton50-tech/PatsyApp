@@ -6,9 +6,11 @@ on:
       - codex/consolidate-final3-auth-rive-2026-08-31
       - chatgpt/thynk-music-apk-2026-08-31
       - chatgpt/codex-ready-2026-09-01
+      - chatgpt/device-launcher-thynk-panel-2026-09-02
   pull_request:
     branches:
       - feat/final-login-password-home-design-lock
+      - chatgpt/camera-native-foundation-2026-08-31
 
 permissions:
   contents: write
@@ -30,7 +32,9 @@ jobs:
       - name: Apply native Camera integration
         run: python3 scripts/apply_camera_native_integration.py
       - name: Apply native THyNK Design editor host
-        run: python3 scripts/apply_thynk_design_editor_integration.py
+        run: python3 scripts/apply_thynk_design_editor_integration_compat.py
+      - name: Apply complete THyNK page routing
+        run: python3 scripts/apply_thynk_page_completeness.py
       - name: Apply live authenticated Profile route
         run: python3 scripts/apply_live_profile_route.py
       - name: Apply truthful PDM presentation
@@ -54,42 +58,61 @@ jobs:
       - name: Build release variant
         run: ./gradlew assembleRelease --stacktrace
       - name: Persist verified native integrations
-        if: github.event_name == 'push' && github.ref == 'refs/heads/chatgpt/codex-ready-2026-09-01'
+        if: >-
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/chatgpt/codex-ready-2026-09-01' ||
+           github.ref == 'refs/heads/chatgpt/device-launcher-thynk-panel-2026-09-02')
         run: |
+          BRANCH="${GITHUB_REF#refs/heads/}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add app/src/main/java/com/patsy/app/thynk/ThynkStudioScreen.kt app/src/main/java/com/patsy/app/thynk/ThynkDesignEditorScreen.kt app/src/main/java/com/patsy/app/FinalMainActivity.kt app/src/main/java/com/patsy/app/ui/finaldesign/FinalProfileDmScreens.kt
           if ! git diff --cached --quiet; then
             git commit -m "feat: persist verified native integrations"
             git reset --hard HEAD
-            git fetch origin chatgpt/codex-ready-2026-09-01
-            git rebase origin/chatgpt/codex-ready-2026-09-01
-            git push origin HEAD:chatgpt/codex-ready-2026-09-01
+            git fetch origin "$BRANCH"
+            git rebase "origin/$BRANCH"
+            git push origin "HEAD:$BRANCH"
           fi
       - name: Upload debug APK
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: patsy-thynk-music-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
       - name: Publish direct APK preview
-        if: github.event_name == 'push' && github.ref == 'refs/heads/chatgpt/thynk-music-apk-2026-08-31'
+        if: >-
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/chatgpt/thynk-music-apk-2026-08-31' ||
+           github.ref == 'refs/heads/chatgpt/device-launcher-thynk-panel-2026-09-02')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="thynk-music-debug-${GITHUB_SHA::7}"
-          cp app/build/outputs/apk/debug/app-debug.apk PatsyApp-THyNK-Music-debug.apk
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" PatsyApp-THyNK-Music-debug.apk --clobber
+          if [ "$GITHUB_REF" = "refs/heads/chatgpt/device-launcher-thynk-panel-2026-09-02" ]; then
+            TAG="thynk-in-debug-${GITHUB_SHA::7}"
+            ASSET="THyNK-IN-debug.apk"
+            TITLE="THyNK-IN! Debug Preview"
+            NOTES="Debug preview for physical-device QA of current THyNK-IN! branding, five-destination THyNK Panel, matching destination logos and routed THyNK Music/THyNK-IT pages. Provider-backed features remain NOT_CONFIGURED where not production-verified."
           else
-            gh release create "$TAG" PatsyApp-THyNK-Music-debug.apk \
+            TAG="thynk-music-debug-${GITHUB_SHA::7}"
+            ASSET="PatsyApp-THyNK-Music-debug.apk"
+            TITLE="PatsyApp THyNK Music Debug Preview"
+            NOTES="Debug preview only. THyNK Studio and THyNK Music integration for device testing. Provider-backed AI/music mastering/export features remain NOT_CONFIGURED where not production-verified."
+          fi
+          cp app/build/outputs/apk/debug/app-debug.apk "$ASSET"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$ASSET" --clobber
+          else
+            gh release create "$TAG" "$ASSET" \
               --target "$GITHUB_SHA" \
-              --title "PatsyApp THyNK Music Debug Preview" \
-              --notes "Debug preview only. THyNK Studio and THyNK Music integration for device testing. Provider-backed AI/music mastering/export features remain NOT_CONFIGURED where not production-verified." \
+              --title "$TITLE" \
+              --notes "$NOTES" \
               --prerelease
           fi
       - name: Create Android Studio project ZIP
         run: zip -rq PatsyApp-AndroidStudio-THyNK-Music.zip . -x '.git/*' '.gradle/*' 'app/build/*' 'PatsyApp-AndroidStudio-THyNK-Music.zip'
       - name: Upload Android Studio project ZIP
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: PatsyApp-AndroidStudio-THyNK-Music

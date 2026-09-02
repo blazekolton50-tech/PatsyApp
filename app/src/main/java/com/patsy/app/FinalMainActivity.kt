@@ -44,6 +44,7 @@ import com.patsy.app.security.FinalOwnerAccessPolicy
 import com.patsy.app.security.OwnerAuthorizationDecision
 import com.patsy.app.security.OwnerCapability
 import com.patsy.app.thynk.NativeCameraHub
+import com.patsy.app.thynk.ThynkStudioEntry
 import com.patsy.app.thynk.ThynkStudioScreen
 import com.patsy.app.ui.finaldesign.FinalCharcoal
 import com.patsy.app.ui.finaldesign.FinalDebugSetPasswordRoute
@@ -52,11 +53,12 @@ import com.patsy.app.ui.finaldesign.FinalHomeScreen
 import com.patsy.app.ui.finaldesign.FinalLoginRoute
 import com.patsy.app.ui.finaldesign.FinalPatsyDmScreen
 import com.patsy.app.ui.finaldesign.FinalPatsyDmLiveRoute
-import com.patsy.app.ui.finaldesign.FinalPrimaryNavigationBar
 import com.patsy.app.ui.finaldesign.FinalProfileScreen
 import com.patsy.app.ui.finaldesign.FinalProfileLiveRoute
 import com.patsy.app.ui.finaldesign.FinalVisualContract
 import com.patsy.app.ui.finaldesign.FinalWhite
+import com.patsy.app.ui.finaldesign.ThynkPanelDestination
+import com.patsy.app.ui.finaldesign.ThynkPrimaryNavigationBar
 import com.patsy.app.thynk.LockedCameraHub
 import com.patsy.app.ui.finaldesign.finalDmScreenState
 import com.patsy.app.ui.finaldesign.finalProfileScreenState
@@ -106,6 +108,8 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
     var ownerProfileGrant by remember { mutableStateOf<OwnerAuthorizationDecision.Allowed?>(null) }
     var ownerToolsGrant by remember { mutableStateOf<OwnerAuthorizationDecision.Allowed?>(null) }
     var ownerAccessChecked by remember { mutableStateOf(false) }
+    var editingBoardActive by remember { mutableStateOf(false) }
+    var thynkEntry by remember { mutableStateOf(ThynkStudioEntry.IT) }
     val scope = rememberCoroutineScope()
 
     fun clearOwnerAccess(checked: Boolean) {
@@ -152,6 +156,8 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
         debugPreview = isDebugPreview
         bootstrapResult = null
         bootstrapLoading = !isDebugPreview
+        editingBoardActive = false
+        thynkEntry = ThynkStudioEntry.IT
         clearOwnerAccess(checked = isDebugPreview)
         page = FinalAppPage.HOME
     }
@@ -164,12 +170,17 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
             bootstrapResult = null
             bootstrapLoading = false
             debugPreview = false
+            editingBoardActive = false
+            thynkEntry = ThynkStudioEntry.IT
             clearOwnerAccess(checked = false)
             page = FinalAppPage.LOGIN
         }
     }
 
     fun navigate(destination: FinalHomeDestination) {
+        if (destination != FinalHomeDestination.THYNK) {
+            editingBoardActive = false
+        }
         if (debugPreview) {
             page = destination.toPage()
             return
@@ -184,6 +195,22 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
         page = when (FinalShellNavigation.authorize(destination, account)) {
             is NavigationDecision.Allowed -> destination.toPage()
             is NavigationDecision.Denied -> FinalAppPage.PROTECTED
+        }
+    }
+
+    fun navigatePanel(destination: ThynkPanelDestination) {
+        when (destination) {
+            ThynkPanelDestination.ME -> navigate(FinalHomeDestination.PROFILE)
+            ThynkPanelDestination.CHATS -> navigate(FinalHomeDestination.PATSY_DMS)
+            ThynkPanelDestination.IN -> navigate(FinalHomeDestination.HOME)
+            ThynkPanelDestination.MUSIC -> {
+                thynkEntry = ThynkStudioEntry.MUSIC
+                navigate(FinalHomeDestination.THYNK)
+            }
+            ThynkPanelDestination.IT -> {
+                thynkEntry = ThynkStudioEntry.IT
+                navigate(FinalHomeDestination.THYNK)
+            }
         }
     }
 
@@ -253,6 +280,10 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
             is NavigationDecision.Allowed -> decision.route.destination.toFinalPage() ?: FinalAppPage.PROTECTED
             is NavigationDecision.Denied -> FinalAppPage.PROTECTED
         }
+    }
+
+    LaunchedEffect(page) {
+        if (page != FinalAppPage.THYNK) editingBoardActive = false
     }
 
     LaunchedEffect(page, ownerProfileGrant?.authorizationId, ownerToolsGrant?.authorizationId) {
@@ -345,7 +376,14 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
                                 )
                             } else {
                                 when (page) {
-                                    FinalAppPage.THYNK -> ThynkStudioScreen()
+                                    FinalAppPage.THYNK -> ThynkStudioScreen(
+                                        entry = thynkEntry,
+                                        onEditingBoardChanged = { editingBoardActive = it },
+                                        onHome = {
+                                            editingBoardActive = false
+                                            navigate(FinalHomeDestination.HOME)
+                                        },
+                                    )
                                     FinalAppPage.CREATE -> NativeCameraHub(onOpenThynk = { navigate(FinalHomeDestination.THYNK) })
                                     FinalAppPage.DMS -> {
                                         val activeSession = session
@@ -462,22 +500,28 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
 
                 if (
                     FinalVisualContract.navigationVisibleOnAllPages &&
+                    !editingBoardActive &&
                     page !in listOf(FinalAppPage.LOGIN, FinalAppPage.DEBUG_SET_PASSWORD) &&
                     (session != null || debugPreview)
                 ) {
-                    val selectedDestination = when (page) {
-                        FinalAppPage.HOME -> FinalHomeDestination.HOME
-                        FinalAppPage.THYNK -> FinalHomeDestination.THYNK
-                        FinalAppPage.CREATE -> FinalHomeDestination.CREATE
-                        FinalAppPage.DMS -> FinalHomeDestination.PATSY_DMS
+                    val selectedPanelDestination = when (page) {
+                        FinalAppPage.HOME -> ThynkPanelDestination.IN
+                        FinalAppPage.THYNK -> when (thynkEntry) {
+                            ThynkStudioEntry.MUSIC -> ThynkPanelDestination.MUSIC
+                            ThynkStudioEntry.IT -> ThynkPanelDestination.IT
+                        }
+                        FinalAppPage.DMS -> ThynkPanelDestination.CHATS
                         FinalAppPage.PROFILE,
                         FinalAppPage.OWNER_PROFILE,
-                        FinalAppPage.OWNER_TOOLS -> FinalHomeDestination.PROFILE
-                        else -> null
+                        FinalAppPage.OWNER_TOOLS -> ThynkPanelDestination.ME
+                        FinalAppPage.CREATE,
+                        FinalAppPage.LOGIN,
+                        FinalAppPage.DEBUG_SET_PASSWORD,
+                        FinalAppPage.PROTECTED -> null
                     }
-                    FinalPrimaryNavigationBar(
-                        selected = selectedDestination,
-                        onNavigate = ::navigate,
+                    ThynkPrimaryNavigationBar(
+                        selected = selectedPanelDestination,
+                        onNavigate = ::navigatePanel,
                     )
                 }
             }

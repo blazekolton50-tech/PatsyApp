@@ -1,103 +1,99 @@
 # THyNK-IN! — BRAND + STUDIO LOGO LOCK
 
-**SAVE MAIN APP / SAVE LOCK IN / CODEX BINDING UPDATE — 2026-09-01**
+**SAVE MAIN APP / SAVE LOCK IN / CODEX BINDING UPDATE — reconciled 2026-09-02**
 
 This file supersedes older app-name/header branding rules wherever they conflict with this lock.
 
-## 1. APP BRAND
+## 1. APP BRAND / FEED BRAND
 
-The app's locked brand name is now:
+The app's locked global brand name is **THyNK-IN!**. The exclamation mark is part of the name.
 
-**THyNK-IN!**
+**THyNK-IN!** is also the centre THyNK Panel destination and opens the social/news feed.
 
-The word **Patsy** is no longer the app name. Patsy is the in-app AI companion / pet pal only:
+The word **Patsy** is no longer the application title. Patsy is the in-app AI companion / character only. Legacy repository/package identifiers such as `PatsyApp`, `patsy1`, or `com.patsy.app` do not redefine the product brand and must not be blindly renamed as part of an ordinary visual branding slice.
 
-**Patsy the Pet Pal**
+Canonical owner-approved THyNK-IN! master in the persistent project Library:
+- `THyNK-IN_APP_BRAND_LOCKED.png`
+- SHA-256 recorded in the earlier lock: `41aff5e6335a17ae5394b0b5cf8366d7551519b8b4e361a35685b0e6c1a462b8`
 
-Do not use `Patsy` as the application title, global brand title, or default top-page brand mark after this migration.
+## 2. FIVE MATCHING MAIN DESTINATION LOGOS
 
-Canonical owner-approved master asset stored in the persistent project Library:
-- `THyNK-IN!/Brand Locks/2026-09-01/THyNK-IN_APP_BRAND_LOCKED.png`
-- SHA-256: `41aff5e6335a17ae5394b0b5cf8366d7551519b8b4e361a35685b0e6c1a462b8`
+The five main THyNK destinations are, in exact panel order:
 
-The approved THyNK-IN! brand logo is the global app identity and should appear as the top brand on ordinary app pages unless a studio-specific rule below takes precedence.
+1. **THyNK-ME** — Profile
+2. **THyNK Chats** — DMs/messages
+3. **THyNK-IN!** — app/social feed
+4. **THyNK Music** — music + video family
+5. **THyNK-IT** — non-music creator/editing studio
 
-## 2. THyNK IT. — DESIGN / GENERAL EDITING BRAND
+Each main destination page must show its matching supplied logo at the top. The supplied five-logo panel/homebar artwork is also binding visual reference/artwork and must not be recreated from generic fonts.
 
-The locked Design/general editing logo is:
+## 3. THyNK-IT — NON-MUSIC CREATOR / EDITING BRAND
 
-**THyNK IT.**
+The exact current name is **THyNK-IT**. The older spelling `THyNK IT.` is superseded.
 
-Canonical owner-approved master asset stored in the persistent project Library:
-- `THyNK-IN!/Brand Locks/2026-09-01/THyNK_IT_EDITING_LOCKED.png`
-- SHA-256: `a8ef528f54ea60996eb960849d7a2883dfcef3611c610a8fd4eb32f8377d2700`
+THyNK-IT owns all non-music creator/editing/productivity surfaces, including Design, Art, Office, Publishing, Journalism, Fashion/Textiles, Photography, non-video Social graphics, Branding, Writing, Comics, Interiors, Architecture, Product, Pottery/Ceramics, Jewellery, Crafts, Education, Business, Events and Portfolio workflows where the adaptive native creator supports them.
 
-Use this logo:
-- on the THyNK Design / general Editing landing area;
-- at the top of all non-Music editing/design pages;
-- as the THyNK Design/general Editing identity in the bottom homebar where that destination/logo treatment is shown.
+An older canonical editing master was stored as `THyNK_IT_EDITING_LOCKED.png`; where its visible punctuation conflicts with the newer **THyNK-IT** lock, use the newer approved THyNK-IT supplied artwork rather than retyping or redrawing the mark.
 
-Do not use THyNK IT. as the top logo on pages covered by the THyNK Music rule below.
+## 4. THyNK MUSIC — COMPLETE MUSIC + VIDEO BRAND
 
-## 3. THyNK MUSIC — MUSIC + VIDEO BRAND
-
-The locked Music/video logo is:
-
-**THyNK Music**
-
-Canonical owner-approved master asset stored in the persistent project Library:
-- `THyNK-IN!/Brand Locks/2026-09-01/THyNK_MUSIC_LOCKED.png`
-- SHA-256: `1061bbbcfeda85baebb795fd2f720b3afadf291868ae31d158ea8819f114ce00`
-
-THyNK Music owns the entire music/video workspace, including:
-- music home and discovery;
+**THyNK Music** owns the complete music/video family, including where genuinely implemented:
+- music home/discovery;
 - music player;
 - video player;
 - music editing;
 - video editing;
-- combined music/video editing flows;
-- music creation, multitrack, mixer, EQ, effects, lyrics/vocals, mastering and export routes where those capabilities genuinely exist.
+- DJ Studio;
+- Auto-Tuner;
+- recording;
+- multitrack/mixer/EQ/effects;
+- lyrics/vocals;
+- mastering;
+- music/video export and handoff routes when the underlying capability is real and verified.
 
-**Every page in this Music/video family must show the approved THyNK Music logo at the top.**
+Canonical owner-approved master:
+- `THyNK_MUSIC_LOCKED.png`
+- SHA-256 recorded in the earlier lock: `1061bbbcfeda85baebb795fd2f720b3afadf291868ae31d158ea8819f114ce00`
 
-This is a deliberate override of older rules that excluded player/editor pages from the Music logo.
+Every page in this music/video family must show the approved THyNK Music logo at the top.
 
-## 4. TWO-STUDIO SWAP
+## 5. WORKSPACE SWAP / AUTOSAVE
 
-The existing design/editing and Music/video workspaces remain separate visual spaces while sharing the locked native app shell.
+The THyNK-IT and THyNK Music workspaces remain separate specialist visual spaces while sharing the secure native app shell.
 
-Add a clear workspace switch:
-- on THyNK IT. editing pages: **Swap to Music**;
+Provide a clear native workspace switch where appropriate:
+- on THyNK-IT editing pages: **Swap to Music**;
 - on THyNK Music pages: **Swap to IT**.
 
-The swap must route between the two existing native workspace families; it must not create a second React/WebView/editor runtime and must not discard the current project state. Preserve/autosave in-progress work before or as the user switches according to the existing THyNK persistence rules.
+Do not create a second React/WebView production editor. Preserve/autosave in-progress project state before or as the user switches according to the existing persistence contracts.
 
-## 5. LOGO ROUTING PRECEDENCE
+## 6. TOP-PAGE LOGO PRECEDENCE
 
-Use this order for top-page branding:
+Use this order:
 
-1. Music/video player/editor/music routes -> **THyNK Music**.
-2. Other design/editing routes -> **THyNK IT.**.
-3. Ordinary non-editor app pages -> **THyNK-IN!**.
+1. Music/video player/editor/DJ/Auto-Tuner and other music-video specialist routes -> **THyNK Music**.
+2. Other creator/editing/productivity routes -> **THyNK-IT**.
+3. Profile main destination -> **THyNK-ME**.
+4. DMs/messages main destination -> **THyNK Chats**.
+5. Social/news feed and ordinary global app identity -> **THyNK-IN!**.
 
-Patsy remains the AI character and may appear/animate according to the Patsy companion contract, but her name/logo must not replace the THyNK-IN! application identity.
+Patsy may appear and animate according to the companion contract, but the Patsy wordmark must not replace the matching THyNK destination/header logo.
 
-## 6. DO NOT REDESIGN THE ASSETS
+## 7. DO NOT REDESIGN THE ASSETS
 
-The three supplied owner-approved raster logos are binding visual assets.
-
-Do not:
-- regenerate them from text;
+Use the supplied owner-approved raster artwork. Do not:
+- regenerate it from text;
 - substitute a generic font;
 - change the distinctive `y`;
-- recolour or rebuild the rainbow treatment;
-- reinterpret THyNK IT. or THyNK Music as plain text when the approved image asset is available;
-- silently fall back to an older Patsy app wordmark.
+- recolour/rebuild the logo artwork;
+- reinterpret THyNK-IT or THyNK Music as plain typed text when the supplied raster exists;
+- silently fall back to the older Patsy app wordmark.
 
-Android implementation may create density-appropriate derivatives/crops from the locked masters, but must preserve the approved visible artwork.
+Android may create density-appropriate scaled derivatives/crops from the supplied masters as long as the visible artwork is preserved.
 
-## 7. CODEX NEXT-PASS REQUIREMENT
+## 8. SECURITY / IMPLEMENTATION BOUNDARY
 
-Before the next production code slice, Codex must read this file as a binding owner lock and reconcile any older `Patsy` app-brand/header references against it.
+Do not weaken Supabase auth/security, Owner/age/RLS gates, native Camera/FileProvider, Media3, editor state/reducers or autosave while applying branding/navigation changes.
 
-Do not weaken navigation/auth/Owner/age/RLS gates while applying the rebrand. Keep PR #41 Draft and unmerged until owner approval and physical-device QA.
+Current implementation work is tracked in Draft PR #43 until final checks and physical-device QA are complete, unless the owner explicitly authorizes an earlier merge.
