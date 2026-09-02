@@ -106,6 +106,7 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
     var ownerProfileGrant by remember { mutableStateOf<OwnerAuthorizationDecision.Allowed?>(null) }
     var ownerToolsGrant by remember { mutableStateOf<OwnerAuthorizationDecision.Allowed?>(null) }
     var ownerAccessChecked by remember { mutableStateOf(false) }
+    var editingBoardActive by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     fun clearOwnerAccess(checked: Boolean) {
@@ -152,6 +153,7 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
         debugPreview = isDebugPreview
         bootstrapResult = null
         bootstrapLoading = !isDebugPreview
+        editingBoardActive = false
         clearOwnerAccess(checked = isDebugPreview)
         page = FinalAppPage.HOME
     }
@@ -164,12 +166,16 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
             bootstrapResult = null
             bootstrapLoading = false
             debugPreview = false
+            editingBoardActive = false
             clearOwnerAccess(checked = false)
             page = FinalAppPage.LOGIN
         }
     }
 
     fun navigate(destination: FinalHomeDestination) {
+        if (destination != FinalHomeDestination.THYNK) {
+            editingBoardActive = false
+        }
         if (debugPreview) {
             page = destination.toPage()
             return
@@ -253,6 +259,10 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
             is NavigationDecision.Allowed -> decision.route.destination.toFinalPage() ?: FinalAppPage.PROTECTED
             is NavigationDecision.Denied -> FinalAppPage.PROTECTED
         }
+    }
+
+    LaunchedEffect(page) {
+        if (page != FinalAppPage.THYNK) editingBoardActive = false
     }
 
     LaunchedEffect(page, ownerProfileGrant?.authorizationId, ownerToolsGrant?.authorizationId) {
@@ -345,7 +355,13 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
                                 )
                             } else {
                                 when (page) {
-                                    FinalAppPage.THYNK -> ThynkStudioScreen()
+                                    FinalAppPage.THYNK -> ThynkStudioScreen(
+                                        onEditingBoardChanged = { editingBoardActive = it },
+                                        onHome = {
+                                            editingBoardActive = false
+                                            navigate(FinalHomeDestination.HOME)
+                                        },
+                                    )
                                     FinalAppPage.CREATE -> NativeCameraHub(onOpenThynk = { navigate(FinalHomeDestination.THYNK) })
                                     FinalAppPage.DMS -> {
                                         val activeSession = session
@@ -462,6 +478,7 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
 
                 if (
                     FinalVisualContract.navigationVisibleOnAllPages &&
+                    !editingBoardActive &&
                     page !in listOf(FinalAppPage.LOGIN, FinalAppPage.DEBUG_SET_PASSWORD) &&
                     (session != null || debugPreview)
                 ) {
