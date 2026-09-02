@@ -16,6 +16,7 @@ class ThynkStudioContractTest {
                 "DOCUMENTS & BUSINESS",
                 "HOMEWORK & STUDY",
                 "PRESENTATIONS & PLANNING",
+                "FASHION & TEXTILES",
                 "COLLAGE & CREATIVE",
                 "AI & MY STUDIO",
             ),
