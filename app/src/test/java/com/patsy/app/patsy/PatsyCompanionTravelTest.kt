@@ -35,6 +35,29 @@ class PatsyCompanionTravelTest {
     }
 
     @Test
+    fun shrinkForMissionShrinksInPlaceToOneThumbThenIdles() = runTest {
+        val observed = mutableListOf<PatsyCompanionState>()
+        val waits = mutableListOf<Long>()
+        val controller = PatsyCompanionController(
+            rig = PatsyRigCoordinator(RecordingRuntime()),
+            onStateChanged = observed::add,
+            frameWait = waits::add,
+        )
+
+        controller.shrinkForMission()
+
+        assertTrue(observed.isNotEmpty())
+        assertTrue(observed.any { it.mode == PatsyCompanionMode.SHRINKING })
+        assertTrue(observed.none { it.pose.motion == PatsyRigMotion.WALK || it.pose.motion == PatsyRigMotion.POINT })
+        assertTrue(observed.all { it.pose.stageX == 0.50f && it.pose.stageY == 0.75f })
+        assertEquals(PatsyCompanionMode.IDLE, controller.state.mode)
+        assertEquals(PatsyRigMotion.IDLE, controller.state.pose.motion)
+        assertEquals(0.50f, controller.state.pose.stageScale)
+        assertEquals(50, waits.size)
+        assertEquals(800L, waits.sum())
+    }
+
+    @Test
     fun returnHomeWalksBackThenExpandsToNormalIdlePosition() = runTest {
         val observed = mutableListOf<PatsyCompanionState>()
         val controller = PatsyCompanionController(
