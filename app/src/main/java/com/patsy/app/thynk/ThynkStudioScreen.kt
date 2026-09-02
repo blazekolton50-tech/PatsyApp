@@ -715,8 +715,9 @@ private fun androidx.compose.foundation.lazy.LazyListScope.videoEditorItems() {
 }
 
 private fun androidx.compose.foundation.lazy.LazyListScope.trackEditorItems(onOpenPage: (String) -> Unit) {
+    item { ThynkAudioImportCard() }
     item {
-        InfoPanel("My New Track", "00:00 / 03:24 • local editor preview")
+        InfoPanel("My New Track", "Local editor state • imported audio plays from the real selected URI")
     }
     items(listOf("Vocals", "Beat", "Bass", "Keys", "FX")) { name ->
         TrackRow(name)
