@@ -35,12 +35,15 @@ class ThynkStudioContractTest {
                 "recording",
                 "track-editor",
                 "mixer",
-                "equalizer",
                 "effects",
+                "equalizer",
                 "lyrics-vocals",
                 "dj-studio",
-                "auto-tuner",
+                "beats-sampler",
+                "piano-roll",
+                "ai-tools",
                 "mastering",
+                "auto-tuner",
                 "video-home",
                 "video-player",
                 "video-editor",
@@ -49,6 +52,8 @@ class ThynkStudioContractTest {
             pages,
         )
         assertTrue(ThynkMusicCatalog.pages.all { it.providerState != "FAKE_COMPLETE" })
+        assertEquals(9, ThynkMusicLockedWorkspaces.ids.size)
+        assertTrue(ThynkMusicLockedWorkspaces.ids.all(pages::contains))
     }
 
     @Test
