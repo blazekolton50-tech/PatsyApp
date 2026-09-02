@@ -8,10 +8,7 @@ enum class ThynkStudioEntry {
     IT,
 }
 
-/**
- * Internal THyNK workspace history. The authenticated app shell still owns global destinations;
- * this model only decides when THyNK is at a hub/category versus a full-screen editing board.
- */
+/** Internal THyNK workspace history; the authenticated shell still owns global destinations. */
 internal sealed interface ThynkWorkspaceRoute {
     data object Hub : ThynkWorkspaceRoute
     data class Category(val categoryId: String) : ThynkWorkspaceRoute
@@ -41,6 +38,9 @@ internal object ThynkWorkspaceNavigation {
         "effects",
         "lyrics-vocals",
         "dj-studio",
+        "beats-sampler",
+        "piano-roll",
+        "ai-tools",
         "auto-tuner",
         "mastering",
         "video-editor",
@@ -76,9 +76,9 @@ internal object ThynkWorkspaceNavigation {
     fun isEditingBoard(route: ThynkWorkspaceRoute): Boolean = when (route) {
         is ThynkWorkspaceRoute.Editor -> true
         is ThynkWorkspaceRoute.Music -> route.pageId in musicEditingBoardPageIds
+        is ThynkWorkspaceRoute.Tool -> route.categoryId == "fashion"
         ThynkWorkspaceRoute.Hub,
-        is ThynkWorkspaceRoute.Category,
-        is ThynkWorkspaceRoute.Tool -> false
+        is ThynkWorkspaceRoute.Category -> false
     }
 
     fun chrome(route: ThynkWorkspaceRoute): ThynkWorkspaceChrome {

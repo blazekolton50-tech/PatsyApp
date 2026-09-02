@@ -30,6 +30,21 @@ class ThynkWorkspaceNavigationTest {
     }
 
     @Test
+    fun `fashion specialist tools are editing boards and hide the THyNK Panel`() {
+        FashionPipelineContract.stages.forEach { stage ->
+            val route = ThynkWorkspaceRoute.Tool(
+                categoryId = "fashion",
+                item = stage.label.uppercase(),
+            )
+            assertTrue(ThynkWorkspaceNavigation.isEditingBoard(route))
+            val chrome = ThynkWorkspaceNavigation.chrome(route)
+            assertTrue(chrome.showBack)
+            assertTrue(chrome.showOverflowHome)
+            assertFalse(chrome.showGlobalHomebar)
+        }
+    }
+
+    @Test
     fun `specialist music and media workspaces hide the global homebar`() {
         listOf(
             "recording",
@@ -52,11 +67,16 @@ class ThynkWorkspaceNavigationTest {
     }
 
     @Test
-    fun `hubs category screens and media setup pages retain the global homebar`() {
+    fun `hubs category screens and ordinary setup tools retain the global homebar`() {
         assertFalse(ThynkWorkspaceNavigation.isEditingBoard(ThynkWorkspaceRoute.Hub))
         assertFalse(
             ThynkWorkspaceNavigation.isEditingBoard(
                 ThynkWorkspaceRoute.Category("design"),
+            ),
+        )
+        assertFalse(
+            ThynkWorkspaceNavigation.isEditingBoard(
+                ThynkWorkspaceRoute.Tool(categoryId = "study", item = "NOTES"),
             ),
         )
         listOf("music-home", "create-music", "ai-music-generator", "video-home", "video-player").forEach { pageId ->

@@ -1,12 +1,6 @@
 package com.patsy.app.thynk
 
-/**
- * Stable render registry for every visible THyNK Music destination.
- *
- * Keeping the catalog-to-render mapping explicit prevents a page from being added to navigation
- * while silently rendering an empty body. The Compose host consumes these kinds when deciding
- * which native page body to show.
- */
+/** Stable render registry for every visible THyNK Music destination. */
 internal enum class ThynkMusicRenderKind {
     HOME,
     CREATE_MUSIC,
@@ -18,6 +12,9 @@ internal enum class ThynkMusicRenderKind {
     EFFECTS,
     LYRICS_VOCALS,
     DJ_STUDIO,
+    BEATS_SAMPLER,
+    PIANO_ROLL,
+    AI_TOOLS,
     AUTO_TUNER,
     MASTERING,
     VIDEO_HOME,
@@ -38,6 +35,9 @@ internal object ThynkMusicPageRenderer {
         "effects" -> ThynkMusicRenderKind.EFFECTS
         "lyrics-vocals" -> ThynkMusicRenderKind.LYRICS_VOCALS
         "dj-studio" -> ThynkMusicRenderKind.DJ_STUDIO
+        "beats-sampler" -> ThynkMusicRenderKind.BEATS_SAMPLER
+        "piano-roll" -> ThynkMusicRenderKind.PIANO_ROLL
+        "ai-tools" -> ThynkMusicRenderKind.AI_TOOLS
         "auto-tuner" -> ThynkMusicRenderKind.AUTO_TUNER
         "mastering" -> ThynkMusicRenderKind.MASTERING
         "video-home" -> ThynkMusicRenderKind.VIDEO_HOME

@@ -9,6 +9,14 @@ def replace_if_present(path: str, old: str, new: str) -> None:
     file.write_text(text.replace(old, new, 1), encoding="utf-8")
 
 
+def replace_all_if_present(path: str, old: str, new: str) -> None:
+    file = Path(path)
+    text = file.read_text(encoding="utf-8")
+    if old not in text:
+        return
+    file.write_text(text.replace(old, new), encoding="utf-8")
+
+
 def ensure_import(path: str, anchor_import: str, import_line: str) -> None:
     file = Path(path)
     text = file.read_text(encoding="utf-8")
@@ -75,6 +83,120 @@ replace_if_present(
     '',
 )
 remove_from_marker(home, "\n@Composable\nprivate fun FinalHomeBottomNavigation(")
+
+# DEVICE-VISIBLE THyNK-IN! FIX: make the installed build unmistakably new and expose both current
+# creator spaces from the first authenticated screen instead of hiding them behind legacy-looking UI.
+replace_if_present(
+    "app/src/main/AndroidManifest.xml",
+    'android:label="PATSY"',
+    'android:label="THyNK-IN!"',
+)
+replace_if_present("app/build.gradle.kts", "versionCode = 338", "versionCode = 339")
+replace_if_present(
+    "app/build.gradle.kts",
+    'versionName = "3.3.8-patsy1"',
+    'versionName = "3.3.9-thynkin-visible1"',
+)
+replace_if_present(
+    home,
+    '''fun FinalHomeScreen(
+    onNavigate: (FinalHomeDestination) -> Unit,
+    onAskPatsy: () -> Unit = {},
+    onCreatePost: () -> Unit = {},
+) {''',
+    '''fun FinalHomeScreen(
+    onNavigate: (FinalHomeDestination) -> Unit,
+    onAskPatsy: () -> Unit = {},
+    onCreatePost: () -> Unit = {},
+    onOpenThynkMusic: () -> Unit = {},
+    onOpenThynkIt: () -> Unit = {},
+) {''',
+)
+replace_if_present(
+    home,
+    '''            item { ContinueDesignsSection(onNewDesign = { onNavigate(FinalHomeDestination.THYNK) }) }
+''',
+    '''            item {
+                VisibleThynkLaunchSection(
+                    onOpenThynkMusic = onOpenThynkMusic,
+                    onOpenThynkIt = onOpenThynkIt,
+                )
+            }
+            item { ContinueDesignsSection(onNewDesign = { onNavigate(FinalHomeDestination.THYNK) }) }
+''',
+)
+replace_if_present(
+    home,
+    '''@Composable
+private fun FinalHomeTopBar() {
+''',
+    '''@Composable
+private fun VisibleThynkLaunchSection(
+    onOpenThynkMusic: () -> Unit,
+    onOpenThynkIt: () -> Unit,
+) {
+    Column(
+        Modifier
+            .padding(horizontal = 22.dp)
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(
+            "CREATE IN THyNK-IN!",
+            style = TextStyle(brush = FinalRainbow, fontSize = 13.sp, fontWeight = FontWeight.Black),
+        )
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(
+                Modifier
+                    .weight(1f)
+                    .height(126.dp)
+                    .border(2.dp, FinalRainbow, RoundedCornerShape(22.dp))
+                    .clip(RoundedCornerShape(22.dp))
+                    .background(Color(0xFF0A0A0F))
+                    .clickable(onClick = onOpenThynkMusic)
+                    .padding(14.dp),
+            ) {
+                Text("THyNK Music", color = FinalWhite, fontSize = 19.sp, fontWeight = FontWeight.Black)
+                Spacer(Modifier.height(8.dp))
+                Text("MIX • RECORD • DJ • MASTER", color = FinalMuted, fontSize = 10.sp, lineHeight = 14.sp)
+                Spacer(Modifier.weight(1f))
+                Text("OPEN STUDIO →", style = TextStyle(brush = FinalRainbow, fontSize = 11.sp, fontWeight = FontWeight.Bold))
+            }
+            Column(
+                Modifier
+                    .weight(1f)
+                    .height(126.dp)
+                    .border(2.dp, FinalRainbow, RoundedCornerShape(22.dp))
+                    .clip(RoundedCornerShape(22.dp))
+                    .background(Color(0xFF0A0A0F))
+                    .clickable(onClick = onOpenThynkIt)
+                    .padding(14.dp),
+            ) {
+                Text("THyNK-IT", color = FinalWhite, fontSize = 19.sp, fontWeight = FontWeight.Black)
+                Spacer(Modifier.height(8.dp))
+                Text("PUBLISH • FASHION • PHOTO • DESIGN", color = FinalMuted, fontSize = 10.sp, lineHeight = 14.sp)
+                Spacer(Modifier.weight(1f))
+                Text("OPEN STUDIO →", style = TextStyle(brush = FinalRainbow, fontSize = 11.sp, fontWeight = FontWeight.Bold))
+            }
+        }
+    }
+}
+
+@Composable
+private fun FinalHomeTopBar() {
+''',
+)
+replace_all_if_present(
+    final_main,
+    '''                                onNavigate = ::navigate,
+                                onAskPatsy = {
+''',
+    '''                                onNavigate = ::navigate,
+                                onOpenThynkMusic = { navigateThynk(ThynkStudioEntry.MUSIC) },
+                                onOpenThynkIt = { navigateThynk(ThynkStudioEntry.IT) },
+                                onAskPatsy = {
+''',
+)
 
 # Older THyNK heads had Music only. Upgrade those heads, but do nothing when a newer Editor route is
 # already present (including the current Design-aware routing and category-return behavior).
@@ -157,4 +279,4 @@ replace_if_present(
 ''',
 )
 
-print("THyNK compatibility integration checked; newer native routes preserved")
+print("THyNK compatibility integration checked; visible device launch and newer native routes preserved")
