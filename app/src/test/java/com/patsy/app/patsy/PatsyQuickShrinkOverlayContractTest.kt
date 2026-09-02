@@ -2,14 +2,16 @@ package com.patsy.app.patsy
 
 import java.io.File
 import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class PatsyQuickShrinkOverlayContractTest {
     @Test
-    fun `authenticated shell exposes one native Patsy quick-shrink overlay`() {
+    fun `authenticated shell exposes one native Patsy jump-shrink overlay`() {
         val activity = source("app/src/main/java/com/patsy/app/FinalMainActivity.kt")
         val overlay = source("app/src/main/java/com/patsy/app/patsy/ui/PatsyCompanionOverlay.kt")
         val quickShrink = source("app/src/main/java/com/patsy/app/patsy/ui/PatsyQuickShrink.kt")
+        val controller = source("app/src/main/java/com/patsy/app/patsy/PatsyCompanionController.kt")
 
         assertTrue(activity.contains("PatsyCompanionOverlay("))
         assertTrue(activity.contains("var patsyCommand by remember"))
@@ -19,9 +21,13 @@ class PatsyQuickShrinkOverlayContractTest {
         assertTrue(overlay.contains("Modifier.fillMaxSize()"))
         assertTrue(overlay.contains("PatsyRiveHost("))
         assertTrue(overlay.contains("PatsyCompanionController("))
-        assertTrue(overlay.contains("PatsyShrinkRainbow("))
+        assertFalse(overlay.contains("PatsyShrinkRainbow("))
         assertTrue(overlay.contains("R.drawable.patsy_generated_main"))
         assertTrue(overlay.contains("baseSize = 300.dp"))
+
+        assertTrue(controller.contains("PatsyRigMotion.JUMP"))
+        assertTrue(controller.contains("JUMP_HEIGHT"))
+        assertFalse(controller.contains("onEffectRequested(CANONICAL_SHRINK_EFFECT)"))
 
         assertTrue(quickShrink.contains("fun PatsyQuickShrink("))
         assertTrue(quickShrink.contains("onMissionStart: () -> Unit"))
