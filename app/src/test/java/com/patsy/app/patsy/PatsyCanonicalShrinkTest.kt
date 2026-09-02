@@ -9,7 +9,7 @@ import com.patsy.app.patsy.rig.PatsyRigStatus
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class PatsyCanonicalShrinkTest {
 
@@ -22,7 +22,7 @@ class PatsyCanonicalShrinkTest {
     }
 
     @Test
-    fun canonicalShrinkUsesMiniScalePointFiveForEightHundredMilliseconds() = runTest {
+    fun canonicalShrinkJumpsAndLandsAtMiniScaleInEightHundredMilliseconds() = runTest {
         val observed = mutableListOf<PatsyCompanionState>()
         var currentMode = PatsyCompanionMode.IDLE
         var shrinkWaitMillis = 0L
@@ -34,15 +34,16 @@ class PatsyCanonicalShrinkTest {
                 currentMode = state.mode
             },
             frameWait = { millis ->
-                if (currentMode == PatsyCompanionMode.SHRINKING) {
-                    shrinkWaitMillis += millis
-                }
+                if (currentMode == PatsyCompanionMode.SHRINKING) shrinkWaitMillis += millis
             },
         )
 
         controller.guideTo(PatsyCompanionTarget(normalizedX = 0.82f, normalizedY = 0.30f))
 
-        val finalShrinkState = observed.last { it.mode == PatsyCompanionMode.SHRINKING }
+        val shrinking = observed.filter { it.mode == PatsyCompanionMode.SHRINKING }
+        assertTrue(shrinking.any { it.pose.motion == PatsyRigMotion.JUMP })
+        assertTrue(shrinking.any { it.pose.stageY < 0.75f })
+        val finalShrinkState = shrinking.last()
         assertEquals(0.50f, finalShrinkState.pose.stageScale)
         assertEquals(800L, shrinkWaitMillis)
         assertEquals(0.50f, controller.state.pose.stageScale)
@@ -62,9 +63,7 @@ class PatsyCanonicalShrinkTest {
                 currentMode = state.mode
             },
             frameWait = { millis ->
-                if (currentMode == PatsyCompanionMode.TRAVELLING) {
-                    travelWaitMillis += millis
-                }
+                if (currentMode == PatsyCompanionMode.TRAVELLING) travelWaitMillis += millis
             },
         )
 
@@ -78,21 +77,17 @@ class PatsyCanonicalShrinkTest {
     }
 
     @Test
-    fun canonicalShrinkRequestsRainbowGlitterVideoAtEightTimesSpeed() = runTest {
-        var requestedEffect: PatsyCompanionEffect? = null
+    fun canonicalShrinkDoesNotRequestRainbowOrGlitter() = runTest {
+        var effectCount = 0
 
         val controller = PatsyCompanionController(
             rig = PatsyRigCoordinator(RecordingRuntime()),
-            onEffectRequested = { effect -> requestedEffect = effect },
+            onEffectRequested = { effectCount += 1 },
             frameWait = {},
         )
 
         controller.guideTo(PatsyCompanionTarget(normalizedX = 0.82f, normalizedY = 0.30f))
-
-        val effect = assertNotNull(requestedEffect)
-        assertEquals("video4635308202773325454.mp4", effect.assetName)
-        assertEquals(8f, effect.playbackSpeed)
-        assertEquals(PatsyCompanionEffectKind.RISING_RAINBOW_GLITTER, effect.kind)
+        assertEquals(0, effectCount)
     }
 
     @Test
@@ -101,6 +96,7 @@ class PatsyCanonicalShrinkTest {
         assertEquals(720, PatsyRigContractV1.ARTBOARD_WIDTH)
         assertEquals(720, PatsyRigContractV1.ARTBOARD_HEIGHT)
         assertEquals(true, PatsyRigContractV1.ARTBOARD_TRANSPARENT)
+        assertEquals("jump", enumValues<PatsyRigMotion>().firstOrNull { it.name == "JUMP" }?.riveValue)
         assertEquals("run", enumValues<PatsyRigMotion>().firstOrNull { it.name == "RUN" }?.riveValue)
         assertEquals("stand", enumValues<PatsyRigMotion>().firstOrNull { it.name == "STAND" }?.riveValue)
     }
