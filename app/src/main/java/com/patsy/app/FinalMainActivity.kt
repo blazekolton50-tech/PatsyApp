@@ -292,9 +292,16 @@ private fun FinalPatsyApp(initialDeepLink: String?) {
         if (initialDeepLink.isNullOrBlank() || debugPreview) return@LaunchedEffect
         val account = (bootstrapResult as? AccountBootstrapResult.Available)?.account
             ?: return@LaunchedEffect
-        page = when (val decision = ShellNavigationGate.resolveDeepLink(initialDeepLink, account)) {
-            is NavigationDecision.Allowed -> decision.route.destination.toFinalPage() ?: FinalAppPage.PROTECTED
-            is NavigationDecision.Denied -> FinalAppPage.PROTECTED
+        when (val decision = ShellNavigationGate.resolveDeepLink(initialDeepLink, account)) {
+            is NavigationDecision.Allowed -> {
+                val deepLinkedPage = decision.route.destination.toFinalPage() ?: FinalAppPage.PROTECTED
+                if (deepLinkedPage == FinalAppPage.THYNK) {
+                    navigateThynk(ThynkStudioEntry.IT)
+                } else {
+                    page = deepLinkedPage
+                }
+            }
+            is NavigationDecision.Denied -> page = FinalAppPage.PROTECTED
         }
     }
 
