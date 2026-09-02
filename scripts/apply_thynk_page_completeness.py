@@ -2,9 +2,18 @@ from pathlib import Path
 
 HOST = Path("app/src/main/java/com/patsy/app/thynk/ThynkStudioScreen.kt")
 
+ALREADY_APPLIED_MARKERS = {
+    "THyNK Music render registry": "when (ThynkMusicPageRenderer.kind(page.id))",
+    "music creator page rail": '"beats-sampler" to "BEATS SAMPLER"',
+    "specialist THyNK Music page bodies": "private fun androidx.compose.foundation.lazy.LazyListScope.recordingItems()",
+}
+
 
 def replace_once(source: str, old: str, new: str, label: str) -> str:
     if new in source:
+        return source
+    marker = ALREADY_APPLIED_MARKERS.get(label)
+    if marker is not None and marker in source:
         return source
     if old not in source:
         raise RuntimeError(f"Could not apply {label}: expected source block was not found")
