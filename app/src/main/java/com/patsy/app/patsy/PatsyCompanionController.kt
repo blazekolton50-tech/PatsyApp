@@ -34,6 +34,7 @@ sealed interface PatsyCompanionIntent {
     data object Blink : PatsyCompanionIntent
     data object Think : PatsyCompanionIntent
     data object Listen : PatsyCompanionIntent
+    data object Settle : PatsyCompanionIntent
 
     data class Speak(
         val viseme: PatsyRigViseme,
@@ -52,6 +53,8 @@ sealed interface PatsyCompanionIntent {
 
 enum class PatsyCompanionReaction {
     HAPPY,
+    JUDGY,
+    CONCERNED,
 }
 
 enum class PatsyCompanionMode {
@@ -163,6 +166,29 @@ class PatsyCompanionController(
                 ),
             )
 
+            PatsyCompanionIntent.Settle -> render(
+                PatsyCompanionMode.IDLE,
+                state.pose.copy(
+                    motion = PatsyRigMotion.IDLE,
+                    motionSpeed = if (state.pose.reducedMotion) 0f else IDLE_MOTION_SPEED,
+                    pointX = 0.5f,
+                    pointY = 0.5f,
+                    lookX = 0f,
+                    lookY = 0f,
+                    headTilt = 0f,
+                    leftEarDrive = 0f,
+                    rightEarDrive = 0f,
+                    tailDrive = 0f,
+                    tailEnergy = 0.35f,
+                    expression = PatsyRigExpression.CHEEKY,
+                    expressionIntensity = 0.5f,
+                    talking = false,
+                    viseme = PatsyRigViseme.REST,
+                    visemeIntensity = 0f,
+                    speechEnergy = 0f,
+                ),
+            )
+
             is PatsyCompanionIntent.Speak -> render(
                 PatsyCompanionMode.SPEAKING,
                 state.pose.copy(
@@ -180,6 +206,48 @@ class PatsyCompanionController(
                         expression = PatsyRigExpression.EXCITED,
                         expressionIntensity = 1f,
                         tailEnergy = 1f,
+                        talking = false,
+                        viseme = PatsyRigViseme.REST,
+                        visemeIntensity = 0f,
+                        speechEnergy = 0f,
+                    ),
+                )
+
+                PatsyCompanionReaction.JUDGY -> render(
+                    PatsyCompanionMode.REACTING,
+                    state.pose.copy(
+                        motion = PatsyRigMotion.IDLE,
+                        motionSpeed = if (state.pose.reducedMotion) 0f else IDLE_MOTION_SPEED,
+                        lookX = -0.3f,
+                        lookY = 0.2f,
+                        headTilt = -0.18f,
+                        leftEarDrive = 0.42f,
+                        rightEarDrive = -0.26f,
+                        tailDrive = 0f,
+                        tailEnergy = 0.12f,
+                        expression = PatsyRigExpression.CHEEKY,
+                        expressionIntensity = 0.95f,
+                        talking = false,
+                        viseme = PatsyRigViseme.REST,
+                        visemeIntensity = 0f,
+                        speechEnergy = 0f,
+                    ),
+                )
+
+                PatsyCompanionReaction.CONCERNED -> render(
+                    PatsyCompanionMode.REACTING,
+                    state.pose.copy(
+                        motion = PatsyRigMotion.IDLE,
+                        motionSpeed = if (state.pose.reducedMotion) 0f else IDLE_MOTION_SPEED,
+                        lookX = 0f,
+                        lookY = 0.12f,
+                        headTilt = 0.12f,
+                        leftEarDrive = -0.35f,
+                        rightEarDrive = -0.35f,
+                        tailDrive = 0f,
+                        tailEnergy = 0.12f,
+                        expression = PatsyRigExpression.CONCERNED,
+                        expressionIntensity = 0.9f,
                         talking = false,
                         viseme = PatsyRigViseme.REST,
                         visemeIntensity = 0f,
