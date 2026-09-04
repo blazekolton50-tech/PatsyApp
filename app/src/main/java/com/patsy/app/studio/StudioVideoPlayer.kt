@@ -42,7 +42,7 @@ private val StudioPanel = Color(0xFF202124)
 private val StudioText = Color(0xFFF7F7F7)
 private val StudioMuted = Color(0xFFAAAAB0)
 
-@OptIn(UnstableApi::class)
+@UnstableApi
 @Composable
 fun StudioVideoPlayer(
     sourceUri: String?,
