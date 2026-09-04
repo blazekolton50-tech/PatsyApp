@@ -3,6 +3,7 @@ name: Final Screen CI
 on:
   push:
     branches:
+      - main
       - feat/final-login-password-home-design-lock
   pull_request:
     branches:
