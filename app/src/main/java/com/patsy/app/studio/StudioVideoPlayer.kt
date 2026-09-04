@@ -1,5 +1,6 @@
 package com.patsy.app.studio
 
+import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,7 +43,7 @@ private val StudioPanel = Color(0xFF202124)
 private val StudioText = Color(0xFFF7F7F7)
 private val StudioMuted = Color(0xFFAAAAB0)
 
-@UnstableApi
+@OptIn(UnstableApi::class)
 @Composable
 fun StudioVideoPlayer(
     sourceUri: String?,
