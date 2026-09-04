@@ -427,7 +427,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.musicHomeItems(onOpen
 
 private fun androidx.compose.foundation.lazy.LazyListScope.createMusicItems(onOpenPage: (String) -> Unit) {
     item {
-        var prompt by mutableStateOf("")
+        var prompt by remember { mutableStateOf("") }
         Column {
             OutlinedTextField(
                 value = prompt,
@@ -782,7 +782,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.effectsItems() {
 
 private fun androidx.compose.foundation.lazy.LazyListScope.lyricsItems() {
     item {
-        var lyrics by mutableStateOf("Verse 1\nLate nights, city lights,\nChasing dreams, we ignite.\n\nChorus\nWe rise, we fall,\nWe break the wall.")
+        var lyrics by remember { mutableStateOf("Verse 1\nLate nights, city lights,\nChasing dreams, we ignite.\n\nChorus\nWe rise, we fall,\nWe break the wall.") }
         OutlinedTextField(value = lyrics, onValueChange = { lyrics = it }, modifier = Modifier.fillMaxWidth(), minLines = 10, label = { Text("LYRICS", color = FinalMuted) })
     }
     item { ChipRail(listOf("AI Write", "Rhymes", "Improve", "Translate")) }
