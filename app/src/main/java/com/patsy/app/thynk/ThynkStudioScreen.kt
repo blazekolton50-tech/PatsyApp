@@ -120,10 +120,6 @@ fun ThynkStudioScreen(
                         )
                     }
                 }
-                is ThynkWorkspaceRoute.Tool -> ThynkToolScreen(
-                    categoryId = current.categoryId,
-                    item = current.item,
-                )
                 is ThynkWorkspaceRoute.Music -> {
                     if (current.pageId == "recording") {
                         ThynkRecordingWorkspaceScreen()
