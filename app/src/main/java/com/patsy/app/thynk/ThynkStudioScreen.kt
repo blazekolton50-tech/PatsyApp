@@ -60,6 +60,7 @@ import com.patsy.app.ui.finaldesign.ThynkPanelDestination
 import com.patsy.app.studio.StudioEditorState
 import com.patsy.app.studio.StudioVideoPlayer
 import com.patsy.app.studio.reduceStudioState
+import java.util.Locale
 
 @Composable
 fun ThynkStudioScreen(
@@ -902,7 +903,7 @@ private fun MixerChannel(name: String) {
         Text(name, color = FinalWhite, fontSize = 10.sp, fontWeight = FontWeight.Bold)
         Text("PAN", color = FinalMuted, fontSize = 8.sp, modifier = Modifier.padding(top = 8.dp))
         Slider(value = level, onValueChange = { level = it }, modifier = Modifier.height(220.dp))
-        Text(String.format("%.1f", (level - 1f) * 12f), color = FinalWhite, fontSize = 10.sp)
+        Text(String.format(Locale.getDefault(), "%.1f", (level - 1f) * 12f), color = FinalWhite, fontSize = 10.sp)
     }
 }
 
