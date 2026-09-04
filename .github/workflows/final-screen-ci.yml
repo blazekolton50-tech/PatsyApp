@@ -25,6 +25,16 @@ jobs:
         run: ./gradlew testDebugUnitTest --stacktrace
       - name: Android lint
         run: ./gradlew lintDebug --stacktrace
+      - name: Show lint findings on failure
+        if: failure()
+        shell: bash
+        run: |
+          REPORT="app/build/intermediates/lint_intermediate_text_report/debug/lintReportDebug/lint-results-debug.txt"
+          if [ -f "$REPORT" ]; then
+            cat "$REPORT"
+          else
+            echo "Lint text report was not generated."
+          fi
       - name: Build debug APK
         run: ./gradlew assembleDebug --stacktrace
       - name: Build release variant
