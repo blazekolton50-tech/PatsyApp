@@ -1,6 +1,7 @@
 package com.patsy.app.patsy.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
@@ -64,7 +65,7 @@ fun PatsyCompanionOverlay(
         onDispose { runtime.close() }
     }
 
-    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize()) {
         PatsyRiveHost(
             runtime = runtime,
             modifier = Modifier.fillMaxSize(),
