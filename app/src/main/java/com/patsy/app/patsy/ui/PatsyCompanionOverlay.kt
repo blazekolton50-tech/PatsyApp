@@ -18,6 +18,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.patsy.app.R
+import com.patsy.app.patsy.PatsyAiCompanionBridge
+import com.patsy.app.patsy.PatsyAiPerformance
 import com.patsy.app.patsy.PatsyCompanionController
 import com.patsy.app.patsy.PatsyCompanionState
 import com.patsy.app.patsy.PatsyCompanionTarget
@@ -35,6 +37,8 @@ sealed interface PatsyCompanionCommand {
 fun PatsyCompanionOverlay(
     command: PatsyCompanionCommand?,
     onCommandConsumed: () -> Unit,
+    aiPerformance: PatsyAiPerformance? = null,
+    onAiPerformanceConsumed: () -> Unit = {},
     reducedMotion: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
@@ -50,6 +54,12 @@ fun PatsyCompanionOverlay(
 
     LaunchedEffect(reducedMotion) {
         controller.setReducedMotion(reducedMotion)
+    }
+
+    LaunchedEffect(aiPerformance) {
+        val performance = aiPerformance ?: return@LaunchedEffect
+        controller.dispatch(PatsyAiCompanionBridge.toIntent(performance))
+        onAiPerformanceConsumed()
     }
 
     LaunchedEffect(command) {
