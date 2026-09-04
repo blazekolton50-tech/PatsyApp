@@ -32,6 +32,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import kotlinx.coroutines.delay
@@ -41,6 +42,7 @@ private val StudioPanel = Color(0xFF202124)
 private val StudioText = Color(0xFFF7F7F7)
 private val StudioMuted = Color(0xFFAAAAB0)
 
+@OptIn(UnstableApi::class)
 @Composable
 fun StudioVideoPlayer(
     sourceUri: String?,
